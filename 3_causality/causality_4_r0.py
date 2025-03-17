@@ -19,14 +19,14 @@ exec(open("0_functions/python_functions.py").read())
 # --- Load and prepare Climate Variability Modes (CVMs) --- 
 
 # Obtain seasonal data for all CVM values (from NOAA)
-amo = np.reshape(pd.read_csv("0_data/cv_indices/amo.data", delim_whitespace=True).iloc[:, 1:].values, (516))[2:515] # Flatten, Mar 1980 - Nov 2022
-ao = np.reshape(pd.read_csv("0_data/cv_indices/ao.data", delim_whitespace=True).iloc[:, 1:].values, (516))[2:515]
-nao = np.reshape(pd.read_csv("0_data/cv_indices/nao.data", delim_whitespace=True).iloc[:, 1:].values, (516))[2:515]
-nino = np.reshape(pd.read_csv("0_data/cv_indices/nino.data", delim_whitespace=True).iloc[:, 1:].values, (516))[2:515]
-pdo = np.reshape(pd.read_csv("0_data/cv_indices/pdo.data", delim_whitespace=True).iloc[:, 1:].values, (516))[2:515]
-pna = np.reshape(pd.read_csv("0_data/cv_indices/pna.data", delim_whitespace=True).iloc[:, 1:].values, (516))[2:515]
-qbo = np.reshape(pd.read_csv("0_data/cv_indices/qbo.data", delim_whitespace=True).iloc[:, 1:].values, (516))[2:515]
-soi = np.reshape(pd.read_csv("0_data/cv_indices/soi.data", delim_whitespace=True).iloc[:, 1:].values, (516))[2:515]
+amo = np.reshape(pd.read_csv("0_data/cv_indices/amo.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515] # Flatten, Mar 1980 - Nov 2021
+ao = np.reshape(pd.read_csv("0_data/cv_indices/ao.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+nao = np.reshape(pd.read_csv("0_data/cv_indices/nao.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+nino = np.reshape(pd.read_csv("0_data/cv_indices/nino.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+pdo = np.reshape(pd.read_csv("0_data/cv_indices/pdo.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+pna = np.reshape(pd.read_csv("0_data/cv_indices/pna.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+qbo = np.reshape(pd.read_csv("0_data/cv_indices/qbo.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+soi = np.reshape(pd.read_csv("0_data/cv_indices/soi.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
 
 # Detrend CVMs according to their best respective detrending method:
 
@@ -39,9 +39,9 @@ amo_detrended = detrend(amo)
 pdo_detrended = detrend(pdo)
 qbo_detrended = detrend(qbo)
 
-# Obtain seasonal data for each variable, knowing that the arrays go from Mar 1980 to Nov 2022
+# Obtain seasonal data for each variable, knowing that the arrays go from Mar 1980 to Nov 2021
 start_date = '1980-03-01'
-end_date = '2022-11-30'
+end_date = '2021-11-30'
 date_range = pd.date_range(start=start_date, end=end_date, freq='MS')
 
 data_vector = np.random.rand(len(date_range))  # Example data
@@ -49,7 +49,7 @@ data_vector = np.random.rand(len(date_range))  # Example data
 # Loading CVMs from ORAS5 data (already detrended)
 data = xr.open_dataset("0_data/cv_indices/indices_oras5.nc")
 
-npmm = data['NPMM'][14:527].values # Mar 1980 - Nov 2022
+npmm = data['NPMM'][14:527].values # Mar 1980 - Nov 2021
 spmm = data['SPMM'][14:527].values
 iob = data['IOB'][14:527].values
 iod = data['IOD'][14:527].values

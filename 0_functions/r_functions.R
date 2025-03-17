@@ -28,7 +28,7 @@ quicksave_index <- function(var, filename) {
   detrend <- var - var_trend
 
   # Define the dimensions
-  time_dates <- seq(as.Date("1980-03-01"), as.Date("2022-11-01"), by = "month")
+  time_dates <- seq(as.Date("1980-03-01"), as.Date("2021-11-01"), by = "month")
   dim_time <- ncdim_def("time", "days since 1980-03-01", as.numeric(time_dates - as.Date("1980-03-01")))
 
   # Define the variable
@@ -177,7 +177,7 @@ quicksave <- function(var, box, filename) {
   }
 
   # Define the dimensions
-  time_dates <- seq(as.Date("1980-03-01"), as.Date("2022-11-01"), by = "month")
+  time_dates <- seq(as.Date("1980-03-01"), as.Date("2021-11-01"), by = "month")
   dim_time <- ncdim_def("time", "days since 1980-03-01", as.numeric(time_dates - as.Date("1980-03-01")))
   dim_lat <- ncdim_def("lat", "degrees_north", 
                        seq(return_box_data(lat, lon, box)[3], 

@@ -24,7 +24,7 @@ lat <- seq(-89.75, 89.75, by = 0.5)
 lon <- seq(-179.75, 179.75, by = 0.5)
 
 # Initialize the arrays to store the data
-combined_data <- array(NA, dim = c(43 * 12, length(lat), length(lon)))
+combined_data <- array(NA, dim = c(42 * 12, length(lat), length(lon)))
 names(dim(combined_data)) <- c("time", "lat", "lon") # Assign names to the dimensions
 
 # Initialize the list to hold the monthly data
@@ -40,7 +40,7 @@ for (month in 1:12) {
 }
 
 # Fill the combined array with the data from each month
-for (year in 1:43) {
+for (year in 1:42) {
   for (month in 1:12) {
     combined_data[(year - 1) * 12 + month, , ] <- monthly_data[[month]][year, , ]
   }
@@ -49,7 +49,7 @@ for (year in 1:43) {
 # --- Save the combined data to a NetCDF file --- #
 
 # Define the dimensions
-dim_time <- ncdim_def("time", "days since 1980-01-01", 1:(43 * 12 - 3))
+dim_time <- ncdim_def("time", "days since 1980-01-01", 1:(42 * 12 - 3))
 dim_lat <- ncdim_def("lat", "degrees_north", lat)
 dim_lon <- ncdim_def("lon", "degrees_east", lon)
 

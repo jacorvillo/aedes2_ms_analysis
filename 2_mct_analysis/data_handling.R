@@ -29,9 +29,9 @@ qbo <- as.list(read.table("0_data/cv_indices/qbo.data", header = TRUE))
 quicksave_index(unname(unlist(qbo[-1])), "0_data/cv_indices/qbo_seasonal_detrended.nc")
 
 # -- SSSR data handling -- #
-# Load monthly data and trim it from 1980:2022
+# Load monthly data and trim it from 1980:2021
 
-years <- 1980:2022
+years <- 1980:2021
 
 # Load the lon and lat arrays from the R0 data
 lon <- readRDS("0_data/spatial_values/lon_cams_global.RDS")
@@ -40,10 +40,10 @@ lat <- readRDS("0_data/spatial_values/lat_cams_global.RDS")
 # Load the monthly data, index it all in a list
 index_data <- list(
   Year = years,
-  Jan = readRDS(paste0("0_data/median_super/median_global_1.RDS"))[1:43, , ],  # 1980:2022
-  Feb = readRDS(paste0("0_data/median_super/median_global_2.RDS"))[1:43, , ],
-  Mar = readRDS(paste0("0_data/median_super/median_global_3.RDS"))[1:43, , ],
-  Apr = readRDS(paste0("0_data/median_super/median_global_4.RDS"))[1:43, , ],
+  Jan = readRDS(paste0("0_data/median_super/median_global_1.RDS"))[1:42, , ],  # 1980:2021
+  Feb = readRDS(paste0("0_data/median_super/median_global_2.RDS"))[1:42, , ],
+  Mar = readRDS(paste0("0_data/median_super/median_global_3.RDS"))[1:42, , ],
+  Apr = readRDS(paste0("0_data/median_super/median_global_4.RDS"))[1:42, , ],
   May = readRDS(paste0("0_data/median_super/median_global_5.RDS"))[2:44, , ],
   Jun = readRDS(paste0("0_data/median_super/median_global_6.RDS"))[2:44, , ],
   Jul = readRDS(paste0("0_data/median_super/median_global_7.RDS"))[2:44, , ],
