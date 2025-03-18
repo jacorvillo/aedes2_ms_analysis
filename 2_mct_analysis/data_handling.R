@@ -18,24 +18,16 @@ library(tidyr)
 library(purrr)
 library(reshape2)
 library(ncdf4)
-
-# -- CV indices data handling (only QBO) -- #
-
-# Read the QBO indices file
-qbo <- as.list(read.table("0_data/cv_indices/qbo.data", header = TRUE))
-
-# Detrend QBO using STL decomposition (same configuration as in 
-# timescale_decomposition.R) and save to NetCDF file
-quicksave_index(unname(unlist(qbo[-1])), "0_data/cv_indices/qbo_seasonal_detrended.nc")
+library(s2dv)
 
 # -- SSSR data handling -- #
 # Load monthly data and trim it from 1980:2021
 
 years <- 1980:2021
 
-# Load the lon and lat arrays from the R0 data
-lon <- readRDS("0_data/spatial_values/lon_cams_global.RDS")
-lat <- readRDS("0_data/spatial_values/lat_cams_global.RDS")
+# Create latitude and longitude values
+lat <- seq(-89.75, 89.75, by = 0.5)
+lon <- seq(-179.75, 179.75, by = 0.5)
 
 # Load the monthly data, index it all in a list
 index_data <- list(
@@ -191,3 +183,123 @@ quicksave(transform_3d(nau_index_data)$Value, nau, "0_data/sssrs/r9.nc")
 quicksave(transform_3d(eau_index_data)$Value, eau, "0_data/sssrs/r10.nc")
 quicksave(transform_3d(med_index_data)$Value, med, "0_data/sssrs/r11.nc")
 quicksave(transform_3d(index_data)$Value, global, "0_data/sssrs/global.nc")
+
+# -- CV indices data handling -- #
+
+# Read the detrended temperature data
+nc_file <- nc_open("0_data/tas_median/detrended_monthly_data.nc")
+
+# Load temperature data
+dtemps <- ncvar_get(nc_file, "detrended_temps")
+
+npmm_region <- list(lat = c(20, 40), lon = c(150, -180 + 210))
+spmm_region <- list(lat = c(-20, -40), lon = c(-180 + 180, -180 + 210))
+nino34_region <- list(lat = c(-5, 5), lon = c(-170, -120))
+atl3_region <- list(lat = c(-3, 3), lon = c(-20, 0))
+tna_region <- list(lat = c(5.5, 23.5), lon = c(-57.5, -15))
+iob_region <- list(lat = c(-30, 30), lon = c(30, 120))
+
+
+npmm <- calculate_temp_index(dtemps, npmm_region, std = TRUE)
+spmm <- calculate_temp_index(dtemps, spmm_region, std = TRUE)
+nino34 <- calculate_temp_index(dtemps, nino34_region, std = TRUE)
+atl3 <- calculate_temp_index(dtemps, atl3_region, std = TRUE)
+tna <- calculate_temp_index(dtemps, tna_region, std = TRUE)
+iob <- calculate_temp_index(dtemps, iob_region, std = TRUE)
+
+# Indices based on SST anomaly differences:
+
+iodw_region <- list(lat = c(-10, 10), lon = c(50, 70))
+iode_region <- list(lat = c(-10, 0), lon = c(90, 110))
+
+north_region <- list(lat = c(0, 20), lon = c(-60, -20))
+south_region <- list(lat = c(-40, -20), lon = c(-60, -20))
+
+west_region <- list(lat = c(-30, -10), lon = c(50, 70))
+east_region <- list(lat = c(-30, -10), lon = c(90, 110))
+
+iod_east <- calculate_temp_index(dtemps, iode_region, std = FALSE)
+iod_west <- calculate_temp_index(dtemps, iodw_region, std = FALSE)
+
+iod <- iod_west - iod_east
+
+siod_west <- calculate_temp_index(dtemps, west_region, std = FALSE)
+siod_east <- calculate_temp_index(dtemps, east_region, std = FALSE)
+
+siod <- siod_west - siod_east
+
+sasd_north <- calculate_temp_index(dtemps, north_region, std = FALSE)
+sasd_south <- calculate_temp_index(dtemps, south_region, std = FALSE)
+
+sasd1 <- sasd_north - sasd_south
+
+# Standardize the IOD, SIOD and SASD indices
+iod <- (iod - mean(iod, na.rm = TRUE)) / sd(iod, na.rm = TRUE)
+siod <- (siod - mean(siod, na.rm = TRUE)) / sd(siod, na.rm = TRUE)
+sasd1 <- (sasd1 - mean(sasd1, na.rm = TRUE)) / sd(sasd1, na.rm = TRUE)
+
+# Save the climate variability indices in dat files
+write.table(npmm, file = "0_data/cv_indices/computed_batch/npmm.dat", row.names = FALSE, col.names = FALSE)
+write.table(spmm, file = "0_data/cv_indices/computed_batch/spmm.dat", row.names = FALSE, col.names = FALSE)
+write.table(nino34, file = "0_data/cv_indices/computed_batch/nino34.dat", row.names = FALSE, col.names = FALSE)
+write.table(atl3, file = "0_data/cv_indices/computed_batch/atl3.dat", row.names = FALSE, col.names = FALSE)
+write.table(tna, file = "0_data/cv_indices/computed_batch/tna.dat", row.names = FALSE, col.names = FALSE)
+write.table(iob, file = "0_data/cv_indices/computed_batch/iob.dat", row.names = FALSE, col.names = FALSE)
+write.table(iod, file = "0_data/cv_indices/computed_batch/iod.dat", row.names = FALSE, col.names = FALSE)
+write.table(siod, file = "0_data/cv_indices/computed_batch/siod.dat", row.names = FALSE, col.names = FALSE)
+write.table(sasd1, file = "0_data/cv_indices/computed_batch/sasd.dat", row.names = FALSE, col.names = FALSE)
+
+# --------------------------------------------------------------------
+
+# AMO, NAO & PDO indices through s2dv:
+detrended_s2dv <- array(detrended_data, dim = c(year = 42, lat = length(lat), lon = length(lon), month = 12))
+amo <- s2dv::AMV(data = detrended_s2dv, data_lons = lon, data_lats = lat, type = "obs", lat_dim = "lat", lon_dim = "lon")
+
+nao <- s2dv::NAO(obs = detrended_s2dv, lat, lon, )
+
+
+# Define North Pacific region for PDO
+latmin_pdo <- which.min(abs(lat - 20))  # 20°N
+latmax_pdo <- which.min(abs(lat - 70))  # 65°N
+lonmin_pdo <- which.min(abs(lon - 100)) # 110°E
+lonmax_pdo <- which.min(abs(lon + 110)) # 100°W (260°E)
+
+# Invert longitude for plotting
+dtemps_rev 
+
+PlotEquiMap(
+  var = dtemps[1, latmin_pdo:latmax_pdo, lonmin_pdo:lonmax_pdo],
+  lon = -lon[lonmin_pdo:lonmax_pdo],
+  lat = lat[latmin_pdo:latmax_pdo],
+  filled.continents = FALSE,
+  filled.oceans = FALSE
+)
+
+# Extract North Pacific region
+npac_data <- ano_detrended_data[, latmin_pdo:latmax_pdo, lonmin_pdo:lonmax_pdo]
+
+# Perform EOF analysis
+pdo_eof <- EOF(npac_data,
+  lon = lon[lonmin_pdo:lonmax_pdo],
+  lat = lat[latmin_pdo:latmax_pdo],
+  time_dim = "sdate",
+  space_dim = c("lat", "lon"),
+  neofs = 5
+)
+
+# Extract the first PC time series (this is the PDO index)
+pdo_index <- pdo_eof$PCs[,1]
+
+normalize <- function(x) {
+  (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
+}
+
+# Normalize the PDO index to the range [0, 1]
+pdo_index <- normalize(pdo_index)
+
+# Standardize the PDO index
+pdo_index <- (pdo_index - mean(pdo_index, na.rm = TRUE)) / sd(pdo_index, na.rm = TRUE)
+
+# Save PDO index
+write.table(pdo_index, file = "0_data/cv_indices/computed_batch/pdo.dat", 
+            row.names = FALSE, col.names = FALSE)
