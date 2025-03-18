@@ -7,7 +7,7 @@
 #' correspond to the regions with the highest seasonal variance obtained in this script.
 
 # Set the working directory
-setwd("C:/Users/Usuario/Documents/Obsidian/vscode/github/monitoring_system_analysis/")
+setwd("C:/Users/jcorvill/Documents/Obsidian/vscode/github/monitoring_system_analysis/")
 
 # Necessary packages for the script:
 library(s2dv)
@@ -15,6 +15,9 @@ library(viridis)
 library(dplyr)
 library(zoo)
 library(ncdf4)
+
+# Source R functions:
+source("0_functions/r_functions.R")
 
 # Define main parameters
 months <- 1:12
@@ -45,29 +48,6 @@ for (year in 1:42) {
     combined_data[(year - 1) * 12 + month, , ] <- monthly_data[[month]][year, , ]
   }
 }
-
-# --- Save the combined data to a NetCDF file --- #
-
-# Define the dimensions
-dim_time <- ncdim_def("time", "days since 1980-01-01", 1:(42 * 12 - 3))
-dim_lat <- ncdim_def("lat", "degrees_north", lat)
-dim_lon <- ncdim_def("lon", "degrees_east", lon)
-
-# Define the variable
-var_combined_data <- ncvar_def("combined_data", "units", list(dim_time, dim_lat, dim_lon),
-  -9999, longname = "Combined Data", prec = "double"  
-)
-
-# Create the NetCDF file
-nc_file <- nc_create(
-  "data/combined_data.nc", 
-var_combined_data)
-
-# Write the data to the NetCDF file
-ncvar_put(nc_file, var_combined_data, combined_data[3:515, , ])
-
-# Close the NetCDF file
-nc_close(nc_file)
 
 # Initialize the arrays to store the variance explained by each component
 
@@ -232,3 +212,46 @@ s2dv::PlotEquiMap(
   height = 8,
   size_units = "in"
 )
+
+detrended_data <- array(NA, dim = c(504, length(lat), length(lon)))
+
+# Create a time vector for the x-axis
+time_vector <- seq(1, dim(combined_data)[1], by = 1)
+
+for (nlat in seq_along(lat)) {
+  for (nlon in seq_along(lon)) {
+    if (all(is.na(combined_data[, nlat, nlon]))) { # If all values are NA, set the values to NA
+      detrended_data[, nlat, nlon] <- NA
+    } else { # If there are some NA values, set those to 0
+      combined_data[is.na(combined_data[, nlat, nlon]), nlat, nlon] <- 0
+      # Detrend the data using LOESS smoothing with a span of 120 months
+      # and store the detrended data in the new array
+      detrended_data[, nlat, nlon] <- combined_data[, nlat, nlon] - predict(loess(combined_data[, nlat, nlon] ~ time_vector, span = 120 / 504))
+    }
+  }
+}
+
+norm <- normalize(detrended_data[3:503, , ]) # Trimming to account for incomplete seasons
+
+# --- Save the combined data to a NetCDF file --- #
+
+# Define the dimensions
+dim_time <- ncdim_def("time", "days since 1980-01-01", 1:(42 * 12 - 3))
+dim_lat <- ncdim_def("lat", "degrees_north", lat)
+dim_lon <- ncdim_def("lon", "degrees_east", lon)
+
+# Define the variable
+var_norm_data <- ncvar_def("detrended_temps", "units", list(dim_time, dim_lat, dim_lon),
+  -9999, longname = "Detrended R0 Values (Normalized)", prec = "double"  
+)
+
+# Create the NetCDF file
+nc_file <- nc_create(
+  "0_data/median_super/detrended_monthly_data.nc", 
+var_norm_data)
+
+# Write the data to the NetCDF file
+ncvar_put(nc_file, var_norm_data, norm)
+
+# Close the NetCDF file
+nc_close(nc_file)
