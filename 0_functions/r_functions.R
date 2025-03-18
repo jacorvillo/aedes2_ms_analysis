@@ -1,50 +1,41 @@
-quicksave_index <- function(var, filename) {
-  detrend <- array(NA, dim = length(var))
+normalize <- function(x) {
+  (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
+}
 
-  # Extract the time series for the current grid point
-  signal <- ts(var, frequency = 12, start = c(1980, 1))
+calculate_temp_index <- function(data, region, std) {
 
-  if (any(is.na(var))) {
-    if (all(is.na(var))) { # If all values are NA, set the values to NA
-      
-      var_trend <- 0
+  latmin_nino <- which.min(abs(lat - region$lat[1]))
+  latmax_nino <- which.min(abs(lat - region$lat[2]))
+  lonmin_nino <- which.min(abs(lon - region$lon[1]))
+  lonmax_nino <- which.min(abs(lon - region$lon[2]))
 
-    } else { # If there are some NA values, set those to 0
-      
-      signal[is.na(signal)] <- 0
+  # Extract data for the specified region
+  region_data <- data[, latmin_nino:latmax_nino, lonmin_nino:lonmax_nino]
 
-      # Decompose the time series into trend, seasonal, and decadal components
-      
-      components <- stl(signal, s.window = "per", t.window = 120)
-      var_trend <- components$time.series[, 2]
-    }
-    } else {
-      
-      # Decompose the time series into trend, seasonal, and decadal components
-      components <- stl(signal, s.window = "per", t.window = 120)
-      var_trend <- components$time.series[, 2]
-    }
+  # Step 1: Calculate the long-term mean for each month
+  long_term_mean <- apply(region_data, c(2, 3), mean, na.rm = TRUE)
 
-  detrend <- var - var_trend
+  # Step 2: Compute the anomalies
+  anomalies <- array(NA, dim = dim(region_data))
 
-  # Define the dimensions
-  time_dates <- seq(as.Date("1980-03-01"), as.Date("2021-11-01"), by = "month")
-  dim_time <- ncdim_def("time", "days since 1980-03-01", as.numeric(time_dates - as.Date("1980-03-01")))
+  for (i in seq_len(dim(region_data)[1])) {
 
-  # Define the variable
-  var_detrended_data <- ncvar_def("detrended_index", "units", list(dim_time),
-    -9999, longname = "Combined Data", prec = "double"  
-  )
+    anomalies[i, , ] <- region_data[i, , ] - long_term_mean
 
-  # Create the NetCDF file
-  nc_file <- nc_create(filename, list(var_detrended_data))
+  }
 
-  # Write the data to the NetCDF file
-  ncvar_put(nc_file, var_detrended_data, detrend[3:515])
+  # Area-average the anomalies
+  area_averaged_anomalies <- apply(anomalies, 1, mean)
 
-  # Close the NetCDF file
-  nc_close(nc_file)
-  
+  if (std) {
+    # Standardize the anomalies
+    std_dev <- sd(area_averaged_anomalies)
+    standardized_anomalies <- area_averaged_anomalies / std_dev
+  } else {
+    standardized_anomalies <- area_averaged_anomalies
+  }
+
+  return(standardized_anomalies)
 }
 
 fit_box <- function(x) {
