@@ -13,22 +13,35 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Set the working directory
-os.chdir("C:/Users/Usuario/Documents/Obsidian/vscode/github/monitoring_system_analysis/")
+os.chdir("C:/Users/jcorvill/Documents/Obsidian/vscode/github/monitoring_system_analysis/")
 
 # Source the python functions
 exec(open("0_functions/python_functions.py").read())
 
+# --- Self Climate Variability Modes (CVMs) Analysis ---
+
+npmm = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/npmm.dat", delim_whitespace=True).values, (500))
+spmm = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/spmm.dat", delim_whitespace=True).values, (500))
+nino = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/nino34.dat", delim_whitespace=True).values, (500))
+tna = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/tna.dat", delim_whitespace=True).values, (500))
+siod = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/siod.dat", delim_whitespace=True).values, (500))
+iod = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/iod.dat", delim_whitespace=True).values, (500))
+iob = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/iob.dat", delim_whitespace=True).values, (500))
+atl3 = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/atl3.dat", delim_whitespace=True).values, (500))
+sasd1 = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/sasd1.dat", delim_whitespace=True).values, (500))
+
+
 # ---Climate Variability Modes (CVMs) Analysis--- 
 
-# Obtain seasonal data for all CVM values (from NOAA)
-amo = np.reshape(pd.read_csv("0_data/cv_indices/amo.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515] # Flatten, Mar 1980 - Nov 2021
-ao = np.reshape(pd.read_csv("0_data/cv_indices/ao.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-nao = np.reshape(pd.read_csv("0_data/cv_indices/nao.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-nino = np.reshape(pd.read_csv("0_data/cv_indices/nino.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-pdo = np.reshape(pd.read_csv("0_data/cv_indices/pdo.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-pna = np.reshape(pd.read_csv("0_data/cv_indices/pna.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-qbo = np.reshape(pd.read_csv("0_data/cv_indices/qbo.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-soi = np.reshape(pd.read_csv("0_data/cv_indices/soi.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+# # Obtain seasonal data for all CVM values (from NOAA)
+# amo = np.reshape(pd.read_csv("0_data/cv_indices/amo.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515] # Flatten, Mar 1980 - Nov 2021
+# ao = np.reshape(pd.read_csv("0_data/cv_indices/ao.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+# nao = np.reshape(pd.read_csv("0_data/cv_indices/nao.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+# nino = np.reshape(pd.read_csv("0_data/cv_indices/nino.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+# pdo = np.reshape(pd.read_csv("0_data/cv_indices/pdo.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+# pna = np.reshape(pd.read_csv("0_data/cv_indices/pna.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+# qbo = np.reshape(pd.read_csv("0_data/cv_indices/qbo.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
+# soi = np.reshape(pd.read_csv("0_data/cv_indices/soi.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
 
 # Detrend CVMs according to their best respective detrending method:
 
@@ -37,14 +50,14 @@ soi = np.reshape(pd.read_csv("0_data/cv_indices/soi.data", delim_whitespace=True
 # pdo_detrended = lowpass_filter(pdo, 1/10, 1, 5)
 
 # El Niño 3.4, PNA, NAO, AO & SOI: Linear Regression
-nino_detrended = detrend(nino)
-pna_detrended = detrend(pna)
-nao_detrended = detrend(nao)
-ao_detrended = detrend(ao)
-soi_detrended = detrend(soi)
-amo_detrended = detrend(amo)
-pdo_detrended = detrend(pdo)
-qbo_detrended = detrend(qbo)
+# nino_detrended = detrend(nino)
+# pna_detrended = detrend(pna)
+# nao_detrended = detrend(nao)
+# ao_detrended = detrend(ao)
+# soi_detrended = detrend(soi)
+# amo_detrended = detrend(amo)
+# pdo_detrended = detrend(pdo)
+# qbo_detrended = detrend(qbo)
 
 # # QBO: Seasonal Decomposition (Read from the .nc file)
 # qbo_detrended = xr.open_dataset("0_data/cv_indices/qbo_seasonal_detrended.nc").detrended_index
@@ -57,29 +70,29 @@ start_date = '1980-03-01'
 end_date = '2021-11-30'
 date_range = pd.date_range(start=start_date, end=end_date, freq='MS')
 
-data_vector = np.random.rand(len(date_range))  # Example data
+# data_vector = np.random.rand(len(date_range))  # Example data
 
-# Loading CVMs from ORAS5 data (already detrended)
-data = xr.open_dataset("0_data/cv_indices/indices_oras5.nc")
+# # Loading CVMs from ORAS5 data (already detrended)
+# data = xr.open_dataset("0_data/cv_indices/indices_oras5.nc")
 
-npmm = data['NPMM'][14:527].values # Mar 1980 - Nov 2021
-spmm = data['SPMM'][14:527].values
-iob = data['IOB'][14:527].values
-iod = data['IOD'][14:527].values
-siod = data['SIOD'][14:527].values
-tna = data['TNA'][14:527].values
-atl3 = data['ATL3'][14:527].values
-sasd1 = data['SASD1'][14:527].values
+# npmm = data['NPMM'][14:527].values # Mar 1980 - Nov 2021
+# spmm = data['SPMM'][14:527].values
+# iob = data['IOB'][14:527].values
+# iod = data['IOD'][14:527].values
+# siod = data['SIOD'][14:527].values
+# tna = data['TNA'][14:527].values
+# atl3 = data['ATL3'][14:527].values
+# sasd1 = data['SASD1'][14:527].values
 
 # Step 4: Extract seasonal data
-amo_seasonal = extract_seasonal_months(date_range, amo_detrended)
-ao_seasonal = extract_seasonal_months(date_range, ao_detrended)
-nao_seasonal = extract_seasonal_months(date_range, nao_detrended)
-nino_seasonal = extract_seasonal_months(date_range, nino_detrended)
-pdo_seasonal = extract_seasonal_months(date_range, pdo_detrended)
-pna_seasonal = extract_seasonal_months(date_range, pna_detrended)
-qbo_seasonal = extract_seasonal_months(date_range, qbo_detrended)
-soi_seasonal = extract_seasonal_months(date_range, soi_detrended)
+amo_seasonal = extract_seasonal_months(date_range, amo)
+ao_seasonal = extract_seasonal_months(date_range, ao)
+nao_seasonal = extract_seasonal_months(date_range, nao)
+nino_seasonal = extract_seasonal_months(date_range, nino)
+pdo_seasonal = extract_seasonal_months(date_range, pdo)
+pna_seasonal = extract_seasonal_months(date_range, pna)
+qbo_seasonal = extract_seasonal_months(date_range, qbo)
+soi_seasonal = extract_seasonal_months(date_range, soi)
 npmm_seasonal = extract_seasonal_months(date_range, npmm)
 spmm_seasonal = extract_seasonal_months(date_range, spmm)
 iob_seasonal = extract_seasonal_months(date_range, iob)
@@ -112,14 +125,14 @@ index_dict_seasonal = {
 
 # Full time series:
 index_dict_total = {
-  "AMO": amo_detrended,
-  "AO": ao_detrended,
-  "NAO": nao_detrended,
-  "Niño 3.4": nino_detrended,
-  "PDO": pdo_detrended,
-  "PNA": pna_detrended,
-  "QBO": qbo_detrended,
-  "SOI": soi_detrended,
+  "AMO": amo,
+  "AO": ao,
+  "NAO": nao,
+  "Niño 3.4": nino,
+  "PDO": pdo,
+  "PNA": pna,
+  "QBO": qbo,
+  "SOI": soi,
   "NPMM": npmm,
   "SPMM": spmm,
   "IOB": iob,
