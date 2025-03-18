@@ -128,15 +128,42 @@ p2 <- ggplot(data = yearly_df, aes(x = time, y = anomaly_data)) +
     plot.title = element_text(size = 20, face = "bold", hjust = 0.5),
     axis.title = element_text(size = 14, face = "bold"),
     panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
+    plot.background = element_rect(fill = "white"),
+    panel.border = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold")
   ) +
-  scale_y_continuous(limits = c(-2, 2))
+  scale_x_continuous(breaks = seq(2, 42, by = 5), 
+                    labels = seq(1981, 2021, by = 5)) +
+  scale_y_continuous(limits = c(-2, 2)) +
+  scale_linetype_manual(values = c("solid", "solid"))
 
-# Combine plots vertically using patchwork
-library(patchwork)
-p <- p1 / p2
+# Combine plots with plot_grid and save with specific dimensions
+g <- plot_grid(
+  p1,
+  p2,
+  ncol = 1,
+  align = "v")
 
+# Save the plot with specific dimensions
+ggsave("4_outputs/temperature_trends.png", g, width = 15, height = 10, units = "in")
 
+# Save the detrended data to a NetCDF file
 
-ggsave("temperature_timeseries_2.png", p1, width = 20, height = 10, bg = "white")
-ggsave("temperature_timeseries_yearly_2.png", p2, width = 20, height = 10, bg = "white")
+detrended_monthly_data <- anomaly_data - smoothed_data
+
+time_dates <- seq(as.Date("1980-01-01"), as.Date("2021-12-01"), by = "month")
+dim_time <- ncdim_def("time", "days since 1980-03-01", as.numeric(time_dates - as.Date("1980-01-01")))
+
+var_combined_data <- ncvar_def("detrended_temps", "units", list(dim_time),
+    -9999, longname = "Detrended Temperature", prec = "double"  
+  )
+
+# Create the NetCDF file
+nc_file <- nc_create("0_data/tas_median/detrended_monthly_data.nc", list(var_combined_data))
+
+# Write the data to the NetCDF file
+ncvar_put(nc_file, var_combined_data, detrended_monthly_data)
+
+# Close the NetCDF file
+nc_close(nc_file)
