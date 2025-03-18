@@ -9,6 +9,9 @@
 # Set the working directory
 setwd("C:/Users/jcorvill/Documents/Obsidian/vscode/github/monitoring_system_analysis/")
 
+# Source R functions:
+source("0_functions/r_functions.R")
+
 # Load necessary libraries
 library(ncdf4)
 library(ggplot2)
@@ -148,22 +151,35 @@ g <- plot_grid(
 # Save the plot with specific dimensions
 ggsave("4_outputs/temperature_trends.png", g, width = 15, height = 10, units = "in")
 
-# Save the detrended data to a NetCDF file
+detrended_data <- array(NA, dim = c(length(time_vector), length(lat), length(lon)))
 
-detrended_monthly_data <- anomaly_data - smoothed_data
+for (nlat in seq_along(lat)) {
+  for (nlon in seq_along(lon)) {
+    detrended_data[, nlat, nlon] <- combined_data[, nlat, nlon] - predict(loess(combined_data[, nlat, nlon] ~ time_vector, span = 120 / 504))
+  }
+}
 
-time_dates <- seq(as.Date("1980-01-01"), as.Date("2021-12-01"), by = "month")
-dim_time <- ncdim_def("time", "days since 1980-03-01", as.numeric(time_dates - as.Date("1980-01-01")))
+detrended_data <- detrended_data[3:503, , ] # Trimming to account for incomplete seasons
 
-var_combined_data <- ncvar_def("detrended_temps", "units", list(dim_time),
-    -9999, longname = "Detrended Temperature", prec = "double"  
-  )
+# --- Save the combined data to a NetCDF file --- #
+
+# Define the dimensions
+dim_time <- ncdim_def("time", "days since 1980-01-01", 1:(42 * 12 - 3))
+dim_lat <- ncdim_def("lat", "degrees_north", lat)
+dim_lon <- ncdim_def("lon", "degrees_east", lon)
+
+# Define the variable
+var_detrended_data_data <- ncvar_def("detrended_temps", "units", list(dim_time, dim_lat, dim_lon),
+  -9999, longname = "Detrended Temperature", prec = "double"  
+)
 
 # Create the NetCDF file
-nc_file <- nc_create("0_data/tas_median/detrended_monthly_data.nc", list(var_combined_data))
+nc_file <- nc_create(
+  "0_data/tas_median/detrended_monthly_data.nc", 
+var_detrended_data_data)
 
 # Write the data to the NetCDF file
-ncvar_put(nc_file, var_combined_data, detrended_monthly_data)
+ncvar_put(nc_file, var_detrended_data_data, detrended_data)
 
 # Close the NetCDF file
 nc_close(nc_file)
