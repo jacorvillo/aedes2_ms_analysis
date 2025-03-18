@@ -9,6 +9,11 @@
 # Set the working directory
 setwd("C:/Users/jcorvill/Documents/Obsidian/vscode/github/monitoring_system_analysis/")
 
+# Load necessary libraries
+library(ncdf4)
+library(ggplot2)
+library(cowplot)
+
 # Define main parameters
 months <- 1:12
 
@@ -56,9 +61,6 @@ time_vector <- seq(1, length(median_data))
 loess_fit <- loess(anomaly_data ~ time_vector, span = 120 / 504)
 smoothed_data <- predict(loess_fit)
 
-# Quick plot of the median data using ggplot2
-library(ggplot2)
-
 
 # Same analysis, but for the yearly data -----------------------------------------------------------
 
@@ -78,7 +80,6 @@ time_vector_yearly <- seq(1, length(yearly_data))
 loess_fit <- loess(anomaly_data_yearly ~ time_vector_yearly, span = 120 / 504)
 smoothed_data_yearly <- predict(loess_fit)
 
-library(patchwork)
 
 # Monthly plot
 # Create data frames first
@@ -94,27 +95,34 @@ yearly_df <- data.frame(
   smoothed_data = smoothed_data_yearly
 )
 
-# Monthly plot
+time_ticks <- rep(1980:2021, each = 12)
+
 p1 <- ggplot(data = monthly_df, aes(x = time, y = anomaly_data)) +
-  geom_line(color = "blue") +
-  geom_line(aes(y = smoothed_data), color = "red", size = 1) +
-  labs(title = "Monthly Global Temperature Anomaly",
-       x = "Time (months)", y = "Temperature Anomaly") +
+  geom_line(color = "blue", aes(linetype = "ERA5 Reanalysis")) +
+  geom_line(aes(y = smoothed_data, linetype = "LOESS (frequency = 120 months)"), color = "red", size = 1) +
+  labs(title = "Global Land + Ocean Temperature Anomalies (1980-2021, Reference: ERA5)",
+       y = "Montly Anomalies (Cº)",
+       x = "Year") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 20, face = "bold", hjust = 0.5),
     axis.title = element_text(size = 14, face = "bold"),
     panel.background = element_rect(fill = "white"),
-    plot.background = element_rect(fill = "white")
+    plot.background = element_rect(fill = "white"),
+    panel.border = element_blank(),
+    legend.position = "none"  # Remove legend from p1
   ) +
-  scale_y_continuous(limits = c(-2, 2))
+  scale_x_continuous(breaks = seq(13, length(time_ticks), by = 60), 
+                    labels = seq(1981, 2021, by = 5)) +
+  scale_y_continuous(limits = c(-2, 2)) +
+  scale_linetype_manual(values = c("solid", "solid"))
 
 # Yearly plot  
 p2 <- ggplot(data = yearly_df, aes(x = time, y = anomaly_data)) +
-  geom_line(color = "blue") +
-  geom_line(aes(y = smoothed_data), color = "red", size = 1) +
-  labs(title = "Yearly Global Temperature Anomaly",
-       x = "Time (years)", y = "Temperature Anomaly") +
+  geom_line(color = "blue", aes(linetype = "ERA5 Reanalysis")) +  # Added linetype aesthetic
+  geom_line(aes(x = time, y = smoothed_data, linetype = "LOESS (frequency = 120 months)"), color = "red", size = 1) +
+  labs(y = "Yearly Anomalies (Cº)", 
+       x = "Year") +  # Added legend title
   theme_minimal() +
   theme(
     plot.title = element_text(size = 20, face = "bold", hjust = 0.5),
