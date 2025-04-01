@@ -16,7 +16,6 @@ source("0_functions/r_functions.R")
 library(ncdf4)
 library(ggplot2)
 library(cowplot)
-library(mgcv)
 
 # Define main parameters
 months <- 1:12
@@ -51,56 +50,56 @@ for (year in 1:42) {
 # From the combined data, we now obtain the median global temperature time series
 median_data <- apply(combined_data, 1, median, na.rm = TRUE)
 
-# GAM analysis for monthly data ----------------------------------------------------------
+# LOESS analysis for the entire time series --------------------------------------------------------
+# Create a data frame with the entire time series
 monthly_data_df <- data.frame(
-  month = 1:504,  # 42 years * 12 months
+  month = 1:length(median_data),
   temperature = median_data
 )
 
-choices <- c("tp", "cr", "cc", "gp")  # Different basis types for smoothing splines
-choice_names <- c("Thin Plate", "Cyclic Regression", "Cyclic Cubic", "Gaussian Process")
+# Define a range of span values to evaluate in months
+span_choices_monthly <- seq(1, 504, by = 1)  # Using month counts instead of fractions
+monthly_aic <- numeric(length(span_choices_monthly))
+monthly_rsq <- numeric(length(span_choices_monthly))
+monthly_gcv <- numeric(length(span_choices_monthly))
 
-# Commented out the optimal GAM analysis for monthly data for performance reasons 
-# (best k value is 246, best bs is Cyclic Regression)
+for (i in seq_along(span_choices_monthly)) {
+  span_choice <- span_choices_monthly[i] / 504  # Normalize span by dividing by total months
+  
+  # Fit LOESS model with span normalized by dividing by total months
+  model <- loess(temperature ~ month, data = monthly_data_df, 
+                span = span_choice, family = "gaussian")
+  
+  # Calculate AIC
+  n <- length(model$residuals)
+  sigma2 <- sum(model$residuals^2) / (n - model$enp)
+  monthly_aic[i] <- n * log(sigma2) + 2 * model$enp
+  
+  # Calculate R-squared
+  monthly_rsq[i] <- 1 - (sum(model$residuals^2) / sum((monthly_data_df$temperature - mean(monthly_data_df$temperature))^2))
+  
+  # Calculate GCV (Generalized Cross-Validation)
+  monthly_gcv[i] <- mean(model$residuals^2) / (1 - model$enp/n)^2
+}
 
-# k_choices_monthly <- seq(1, 275, by = 1)  # Range of k values for smoothing splines
-# monthly_aic <- matrix(NA, nrow = 4, ncol = length(k_choices_monthly))
-# monthly_r2 <- matrix(NA, nrow = 4, ncol = length(k_choices_monthly))
-# monthly_gcv <- matrix(NA, nrow = 4, ncol = length(k_choices_monthly))
+# Determine the optimal span values
+optimal_monthly_aic_idx <- which.min(monthly_aic)
+optimal_monthly_rsq_idx <- which.max(monthly_rsq)
+optimal_monthly_gcv_idx <- which.min(monthly_gcv)
 
+# Display the optimal span values
+cat("Monthly Time Series - Optimal span (AIC):", span_choices_monthly[optimal_monthly_aic_idx], "months\n")
+cat("Monthly Time Series - Optimal span (R2):", span_choices_monthly[optimal_monthly_rsq_idx], "months\n")
+cat("Monthly Time Series - Optimal span (GCV):", span_choices_monthly[optimal_monthly_gcv_idx], "months\n")
 
-# for (bs_choice in 1:4) {
-#   for (k_idx in seq_along(k_choices_monthly)) {
-#     k_choice <- k_choices_monthly[k_idx]
-#     choice <- choices[bs_choice]
-    
-#     # Fit the GAM
-#     model <- gam(temperature ~ s(month, k = k_choice, bs = choice), data = monthly_data_df)
-    
-#     monthly_aic[bs_choice, k_idx] <- AIC(model)
-#     monthly_r2[bs_choice, k_idx] <- summary(model)$r.sq
-#     monthly_gcv[bs_choice, k_idx] <- model$gcv.ubre
-#   }
-# }
+# Fit the model with the optimal span parameter (using GCV as criterion)
+optimal_span_monthly <- span_choices_monthly[optimal_monthly_gcv_idx] / 504
+optimal_model_monthly <- loess(temperature ~ month, data = monthly_data_df, 
+                              span = optimal_span_monthly, family = "gaussian")
 
-# # Determine the optimal parameters for monthly data
-# optimal_monthly_aic <- which(monthly_aic == min(monthly_aic, na.rm = TRUE), 
-  # arr.ind = TRUE) # -406.15
-# optimal_monthly_r2 <- which(monthly_r2 == max(monthly_r2, na.rm = TRUE), arr.ind = TRUE) # 0.996
-# optimal_monthly_gcv <- which(monthly_gcv == min(monthly_gcv, na.rm = TRUE), 
-# arr.ind = TRUE) # 0.036
+# Generate the trend predictions
+detrended_data <- predict(optimal_model_monthly)
 
-# # Display the optimal parameters
-# cat("Monthly Data - Optimal (AIC): [", optimal_monthly_aic[1], ",", optimal_monthly_aic[2], "]\n")
-# cat("Monthly Data - Optimal (R2): [", optimal_monthly_r2[1], ",", optimal_monthly_r2[2], "]\n")
-# cat("Monthly Data - Optimal (GCV): [", optimal_monthly_gcv[1], ",", optimal_monthly_gcv[2], "]\n")
-
-# Fit the model with the optimal parameters
-optimal_k_monthly <- 246
-optimal_bs_monthly <- choices[2]
-optimal_model_monthly <- gam(temperature ~ s(month, k = optimal_k_monthly, bs = optimal_bs_monthly),
-  data = monthly_data_df
-)
 
 # Same analysis, but for the yearly data -----------------------------------------------------------
 
@@ -110,45 +109,48 @@ for (i in 1:(length(median_data) / 12)) {
 }
 yearly_data <- apply(yearly_data, 1, median, na.rm = TRUE)
 
-data <- data.frame(
+yearly_data_df <- data.frame(
   year = 1:42,
-  temperature = yearly_data  # Replace with your actual temperature data
+  temperature = yearly_data
 )
 
-k_choices_yearly <- seq(1, 42, by = 1)  # Range of k values for smoothing splines in years
+# Define a range of span values to evaluate for yearly data
+span_choices_yearly <- seq(1, 42, by = 1)  # Wider range for yearly data
+yearly_aic <- numeric(length(span_choices_yearly))
+yearly_rsq <- numeric(length(span_choices_yearly))
+yearly_gcv <- numeric(length(span_choices_yearly))
 
-aic <- matrix(NA, nrow = 4, ncol = 42)
-r2 <- matrix(NA, nrow = 4, ncol = 42)
-gcv <- matrix(NA, nrow = 4, ncol = 42)
-
-for (bs_choice in 1:4) {
-  for (k_choice in k_choices_yearly) {
-    choice <- choices[bs_choice]
-    # Fit the GAM
-    model <- gam(temperature ~ s(year, k = k_choice, bs = choice), data = data)
-
-    aic[bs_choice, k_choice] <- AIC(model)
-    r2[bs_choice, k_choice] <- summary(model)$r.sq
-    gcv[bs_choice, k_choice] <- model$gcv.ubre
-  }
+for (i in seq_along(span_choices_yearly)) {
+  span_choice <- span_choices_yearly[i]
+  
+  # Fit LOESS model
+  model <- loess(temperature ~ year, data = yearly_data_df, span = span_choice / 42)  # Normalize span for yearly data
+  
+  # Calculate AIC
+  n <- length(model$residuals)
+  sigma2 <- sum(model$residuals^2) / (n - model$enp)
+  yearly_aic[i] <- n * log(sigma2) + 2 * model$enp
+  
+  # Calculate R-squared
+  yearly_rsq[i] <- 1 - (sum(model$residuals^2) / sum((yearly_data_df$temperature - mean(yearly_data_df$temperature))^2))
+  
+  # Calculate GCV
+  yearly_gcv[i] <- mean(model$residuals^2) / (1 - model$enp/n)^2
 }
 
-# Determine the optimal k value based on the model parameters
-optimal_aic <- which(aic == min(aic, na.rm = TRUE), arr.ind = TRUE) # -65.7
-optimal_r2 <- which(r2 == max(r2, na.rm = TRUE), arr.ind = TRUE) # 0.86
-optimal_gcv <- which(gcv == min(gcv, na.rm = TRUE), arr.ind = TRUE) # 0.015
+# Determine the optimal span values
+optimal_yearly_aic_idx <- which.min(yearly_aic)
+optimal_yearly_rsq_idx <- which.max(yearly_rsq)
+optimal_yearly_gcv_idx <- which.min(yearly_gcv)
 
-# Display the optimal parameters in matrix form
-cat("Yearly Data - Optimal k (AIC): [", optimal_aic[1], ",", optimal_aic[2], "]\n")
-cat("Yearly Data - Optimal k (R2): [", optimal_r2[1], ",", optimal_r2[2], "]\n")
-cat("Yearly Data - Optimal k (GCV): [", optimal_gcv[1], ",", optimal_gcv[2], "]\n")
+# Display the optimal span values
+cat("Yearly Data - Optimal span (AIC):", span_choices_yearly[optimal_yearly_aic_idx], "\n")
+cat("Yearly Data - Optimal span (R2):", span_choices_yearly[optimal_yearly_rsq_idx], "\n")
+cat("Yearly Data - Optimal span (GCV):", span_choices_yearly[optimal_yearly_gcv_idx], "\n")
 
-# Fit the model with the optimal k value
-optimal_k_yearly <- k_choices_yearly[optimal_aic[2]]  # Use the k value from AIC
-optimal_bs_yearly <- choices[optimal_aic[1]]  # Use the basis type from AIC
-optimal_model_yearly <- gam(temperature ~ s(year, k = optimal_k_yearly, 
-  bs = optimal_bs_yearly), data = data
-)
+# Fit the model with the optimal span parameter
+optimal_span_yearly <- span_choices_yearly[optimal_yearly_gcv_idx] / 42
+optimal_model_yearly <- loess(temperature ~ year, data = yearly_data_df, span = optimal_span_yearly)
 
 # -- Plotting the results ---
 
@@ -156,7 +158,7 @@ optimal_model_yearly <- gam(temperature ~ s(year, k = optimal_k_yearly,
 monthly_df <- data.frame(
   time = seq(1, 504, by = 1),
   median_data = median_data,  
-  smoothed_data = predict(optimal_model_monthly)  
+  smoothed_data = detrended_data
 )
 
 yearly_df <- data.frame(
@@ -185,8 +187,8 @@ p1 <- ggplot(data = monthly_df, aes(x = time, y = median_data)) +
     panel.border = element_blank(),
     legend.position = "none"  # Remove legend from p1
   ) +
-  scale_x_continuous(breaks = seq(13, length(time_ticks), by = 60), 
-                    labels = seq(1981, 2021, by = 5)) +
+  # scale_x_continuous(breaks = seq(13, length(time_ticks), by = 60), 
+  #                   labels = seq(1981, 2021, by = 5)) +
   scale_linetype_manual(values = c("solid", "solid"))
 
 # Yearly plot  
@@ -194,9 +196,7 @@ p2 <- ggplot(data = yearly_df, aes(x = time, y = median_data)) +
   geom_line(color = "blue", 
     aes(linetype = "AeDES2 Observational Ensemble (Era5 + Era5Land + CPC Unfied Global + GHCN-CAMS)"
   )) +
-  geom_line(aes(x = time, y = smoothed_data, linetype = paste0("GAM (smoothing spline = ", 
-    optimal_k_yearly, " years / ", optimal_k_monthly, " months, basis = ", 
-    choice_names[optimal_aic[1]], ")")), color = "red", size = 1) +
+  geom_line(aes(x = time, y = smoothed_data, linetype = paste0("GAM (smoothing spline = ")), color = "red", size = 1) +
   labs(y = "Yearly Global Temperature (Cº)", 
        x = "Year",
        linetype = "") +  # Empty legend title to remove "linetype"
@@ -261,9 +261,8 @@ for (nlat in seq_along(lat)) {
     )
 
     # Fit the model with the optimal parameters
-    optimal_model_monthly_3d <- gam(temperature ~ s(month, k = optimal_k_monthly, 
-      bs = optimal_bs_monthly), data = monthly_data_df_3d
-    )
+    optimal_model_monthly_3d <- loess(temperature ~ month, data = monthly_data_df_3d, span = optimal_span_monthly)
+
 
     # Detrended data for the specific lat/lon
     detrended_data_3d[, nlat, nlon] <- predict(optimal_model_monthly_3d)
