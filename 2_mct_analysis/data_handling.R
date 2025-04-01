@@ -7,7 +7,7 @@
 
 
 # Set working directory
-setwd("C:/Users/jcorvill/Documents/Obsidian/vscode/github/monitoring_system_analysis/")
+setwd("C:/Users/jcorvill/Documents/vscode/github/monitoring_system_analysis/")
 
 # Source R functions:
 source("0_functions/r_functions.R")
