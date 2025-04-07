@@ -10,7 +10,7 @@
 setwd("C:/Users/jcorvill/Documents/vscode/github/monitoring_system_analysis/")
 
 # Source R functions:
-source("0_functions/r_functions.R")
+source("0_data_and_functions/r_functions.R")
 
 # Load necessary libraries
 library(ncdf4)
@@ -239,7 +239,7 @@ var_detrended_data_data <- ncvar_def("detrended_temps", "units", list(dim_time),
 
 # Create the NetCDF file
 nc_file <- nc_create(
-  "0_data/tas_median/detrended_monthly_data.nc", 
+  "4_outputs/data/detrended_vars/detrended_tas_1d.nc", 
 var_detrended_data_data)
 
 # Write the data to the NetCDF file
@@ -281,7 +281,7 @@ var_norm_data <- ncvar_def("detrended_temps", "units", list(dim_time, dim_lat, d
 
 # Create the NetCDF file
 nc_file <- nc_create(
-  "0_data/median_super/detrended_monthly_data_3d.nc", 
+  "4_outputs/data/detrended_vars/detrended_tas_3d.nc", 
 var_norm_data)
 
 # Write the data to the NetCDF file
