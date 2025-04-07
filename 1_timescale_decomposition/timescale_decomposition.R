@@ -611,53 +611,86 @@ s2dv::PlotEquiMap(
 
 # ---- Timeseries for one grid point (150, 230) ---- #
 
-# First ggplot: All signals from the time-based decomposition
-p1 <- ggplot() +
-  geom_line(aes(x = seq(1, length(timeseries_time_seasonal)), y = combined_data[ , 150, 230], color = "Original Signal")) +
-  geom_line(aes(x = seq(1, length(timeseries_time_seasonal)), y = timeseries_time_seasonal, color = "Seasonal")) +
-  geom_line(aes(x = seq(1, length(timeseries_time_trend)), y = timeseries_time_trend, color = "Trend")) +
-  geom_line(aes(x = seq(1, length(timeseries_time_decadal)), y = timeseries_time_decadal, color = "Decadal")) +
-  geom_line(aes(x = seq(1, length(timeseries_time_remainder)), y = timeseries_time_remainder, color = "Remainder")) +
-  labs(title = "Time-based TD", x = "Time (months)", y = "R0 signal") +
-  theme_minimal() +
-  theme(legend.position = "none")
+# Extract original signal for the point
+original_signal <- combined_data[, 150, 230]
 
-# Second ggplot: All signals from the temperature-based decomposition
-p2 <- ggplot() +
-  geom_line(aes(x = seq(1, length(timeseries_temp_seasonal)), y = combined_data[ , 150, 230], color = "Original Signal")) +
-  geom_line(aes(x = seq(1, length(timeseries_temp_seasonal)), y = timeseries_temp_seasonal, color = "Seasonal")) +
-  geom_line(aes(x = seq(1, length(timeseries_temp_trend)), y = timeseries_temp_trend, color = "Trend")) +
-  geom_line(aes(x = seq(1, length(timeseries_temp_decadal)), y = timeseries_temp_decadal, color = "Decadal")) +
-  geom_line(aes(x = seq(1, length(timeseries_temp_remainder)), y = timeseries_temp_remainder, color = "Remainder")) +
-  labs(title = "Temperature-based TD", x = "Time (months)", y = "R0 signal") +
-  theme_minimal() +
-  theme(legend.position = "none")
+# Create time series data frames for plotting
+time_index <- 1:length(original_signal)
+dates <- seq(as.Date("1980-01-01"), by = "month", length.out = length(original_signal))
 
-# Extract the legend from a plot with the same aesthetics
-legend_plot <- ggplot() +
-  geom_line(aes(x = 1:10, y = 1:10, color = "Original Signal")) +
-  geom_line(aes(x = 1:10, y = 2:11, color = "Seasonal")) +
-  geom_line(aes(x = 1:10, y = 3:12, color = "Trend")) +
-  geom_line(aes(x = 1:10, y = 4:13, color = "Decadal")) +
-  geom_line(aes(x = 1:10, y = 5:14, color = "Remainder")) +
-  scale_color_manual(values = c("Original Signal" = "#000000", 
+# Time-based decomposition data frame
+time_df <- data.frame(
+  Date = dates,
+  Original = original_signal,
+  Trend = timeseries_time_trend,
+  Seasonal = timeseries_time_seasonal,
+  Decadal = timeseries_time_decadal,
+  Remainder = timeseries_time_remainder
+)
+
+# Temperature-based decomposition data frame
+temp_df <- data.frame(
+  Date = dates,
+  Original = original_signal,
+  Trend = timeseries_temp_trend,
+  Seasonal = timeseries_temp_seasonal,
+  Decadal = timeseries_temp_decadal,
+  Remainder = timeseries_temp_remainder
+)
+
+# Time-based decomposition plot
+time_plot <- ggplot() +
+  geom_line(data = time_df, aes(x = Date, y = Decadal), color = "green", size = 0.8) +
+  geom_line(data = time_df, aes(x = Date, y = Original), color = "black", alpha = 0.7) +
+  geom_line(data = time_df, aes(x = Date, y = Remainder), color = "purple", size = 0.8) +
+  geom_line(data = time_df, aes(x = Date, y = Seasonal), color = "blue", size = 0.8) +
+  geom_line(data = time_df, aes(x = Date, y = Trend), color = "red", size = 1) +
+  labs(title = "Time-based Decomposition [150, 230]",
+       x = "Date",
+       y = "R0 Value") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+# Temperature-based decomposition plot
+temp_plot <- ggplot() +
+  geom_line(data = temp_df, aes(x = Date, y = Decadal), color = "green", size = 0.8) +
+  geom_line(data = temp_df, aes(x = Date, y = Original), color = "black", alpha = 0.7) +
+  geom_line(data = temp_df, aes(x = Date, y = Remainder), color = "purple", size = 0.8) +
+  geom_line(data = temp_df, aes(x = Date, y = Seasonal), color = "blue", size = 0.8) +
+  geom_line(data = temp_df, aes(x = Date, y = Trend), color = "red", size = 1) +
+  labs(title = "Temperature-based Decomposition [150, 230]",
+       x = "Date",
+       y = "R0 Value") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+# Add a common legend
+legend_data <- data.frame(
+  Date = rep(dates[1], 5),
+  Value = rep(0, 5),
+  Component = c("Original", "Trend", "Seasonal", "Decadal", "Remainder")
+)
+
+legend_plot <- ggplot(legend_data, aes(x = Date, y = Value, color = Component)) +
+  geom_point() +
+  scale_color_manual(values = c("Decadal" = "green", 
+                               "Original" = "black", 
+                               "Remainder" = "purple",
                                "Seasonal" = "blue", 
-                               "Trend" = "red", 
-                               "Decadal" = "green", 
-                               "Remainder" = "purple")) +
-  theme_minimal()
+                               "Trend" = "red"
+                              )) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
 
 # Extract the legend
 legend <- get_legend(legend_plot)
 
-# Combine plots with plot_grid and add the legend
+# Combine plots with the common legend
 g <- plot_grid(
-  p1,
-  p2,
-  legend,
-  ncol = 1,
-  align = "h",
-  rel_heights = c(1, 1, 0.2)  # Adjust the height ratio for the legend
+  time_plot + theme(legend.position = "none"),
+  temp_plot + theme(legend.position = "none"),
+  nrow = 2,
+  align = "v"
 )
 
 # Save the combined plot
@@ -677,11 +710,11 @@ var_norm_data <- ncvar_def("detrended_temps", "units", list(dim_time, dim_lat, d
 
 # Create the NetCDF file
 nc_file <- nc_create(
-  "0_data/median_super/detrended_r_nought_data.nc", 
+  "4_outputs/data/detrended_vars/detrended_r_nought_data.nc", 
 var_norm_data)
 
-# Write the data to the NetCDF file
-ncvar_put(nc_file, var_norm_data, detrended_data[3:503, , ]) # Trimming to account for incomplete seasons
+# Write the data to the NetCDF file (Trimming to account for incomplete seasons)
+ncvar_put(nc_file, var_norm_data, detrended_signal[3:503, , ])
 
 # Close the NetCDF file
 nc_close(nc_file)
