@@ -160,10 +160,18 @@ for (nlat in seq_along(lat)) {
 
       remainder <- components$time.series[, 3] - decadal
 
-      percentage_trend_time[nlat, nlon] <- var(components$time.series[, 2], na.rm = TRUE) / var(combined_data[, nlat, nlon], na.rm = TRUE) * 100
-      percentage_seasonal_time[nlat, nlon] <- var(components$time.series[, 1], na.rm = TRUE) / var(combined_data[, nlat, nlon], na.rm = TRUE) * 100
-      percentage_decadal_time[nlat, nlon] <- var(decadal, na.rm = TRUE) / var(combined_data[, nlat, nlon], na.rm = TRUE) * 100
-      percentage_remaining_time[nlat, nlon] <- var(remainder, na.rm = TRUE) / var(combined_data[, nlat, nlon], na.rm = TRUE) * 100
+      # Calculate variance explained by each component
+      trend_var <- var(components$time.series[, 2], na.rm = TRUE)
+      seasonal_var <- var(components$time.series[, 1], na.rm = TRUE)
+      decadal_var <- var(decadal, na.rm = TRUE)
+      remainder_var <- var(remainder, na.rm = TRUE)
+      total_var <- var(combined_data[, nlat, nlon], na.rm = TRUE)
+      
+      # Calculate percentages
+      percentage_trend_time[nlat, nlon] <- trend_var / total_var * 100
+      percentage_seasonal_time[nlat, nlon] <- seasonal_var / total_var * 100
+      percentage_decadal_time[nlat, nlon] <- decadal_var / total_var * 100
+      percentage_remaining_time[nlat, nlon] <- remainder_var / total_var * 100
     
     }
     if (is.infinite(percentage_trend_time[nlat, nlon])) { # If the percentage is infinite, set it to NA
@@ -288,14 +296,13 @@ s2dv::PlotEquiMap(
 
 ####################### Temperature-based timescale decomposition ##################################
 
-
 # Load the detrended temperature signal:
 
-ncfile <- nc_open("0_data/tas_median/detrended_monthly_data.nc")
+ncfile <- nc_open("4_outputs/data/detrended_vars/detrended_tas_1d.nc")
 detrended_temps <- ncvar_get(ncfile, "detrended_temps")
 
 # Create a data frame with the temperature signal and the R0 data
-monthly_data_df <- data.frame(
+r_nought_vs_temp_df <- data.frame(
   r_nought = median_data,
   temperature = detrended_temps
 )
@@ -311,7 +318,7 @@ for (i in seq_along(span_choices)) {
   span_choice <- span_choices[i]
   
   # Fit LOESS model
-  model <- loess(r_nought ~ time, data = r_nought_vs_time_df, 
+  model <- loess(r_nought ~ temperature, data = r_nought_vs_temp_df, 
                 span = span_choice / length(median_data))
   
   # Calculate GCV (Generalized Cross-Validation)
@@ -323,7 +330,7 @@ for (i in seq_along(span_choices)) {
   aic_values[i] <- n * log(sigma2) + 2 * model$enp
   
   # Calculate R-squared
-  ss_total <- sum((r_nought_vs_time_df$r_nought - mean(r_nought_vs_time_df$r_nought))^2)
+  ss_total <- sum((r_nought_vs_temp_df$r_nought - mean(r_nought_vs_temp_df$r_nought))^2)
   ss_residual <- sum(model$residuals^2)
   rsq_values[i] <- 1 - (ss_residual / ss_total)
 }
@@ -359,7 +366,7 @@ for (nlat in seq_along(lat)) {
   for (nlon in seq_along(lon)) {
     cat("Processing grid point:", nlat, nlon, "for temperature-based TD\n")
 
-    if (all(is.na(combined_data[, nlat, nlon]))) { # If all values are NA, set the values to NA
+    if (all(is.na(combined_data[, nlat, nlon]))) { 
 
       percentage_trend_temp[nlat, nlon] <- NA
       percentage_seasonal_temp[nlat, nlon] <- NA
@@ -368,7 +375,7 @@ for (nlat in seq_along(lat)) {
 
       detrended_signal[, nlat, nlon] <- NA
 
-    } else { # If there are some NA values, set those to 0
+    } else { 
       
       signal <- combined_data[, nlat, nlon]
       signal[is.na(signal)] <- 0
@@ -381,22 +388,28 @@ for (nlat in seq_along(lat)) {
       
       # Apply Butterworth filter to extract decadal component
       bf <- butter(2, 1 / 120, type = "low")
-      decadal <- filtfilt(bf, detrended_signal)
+      decadal <- filtfilt(bf, detrended_signal[, nlat, nlon])
 
       remainder <- signal - trend - decadal # Calculate the remainder component
 
-      # Outline the seasonal component from the remainder
-      seasonal <- 
+      # Apply Butterworth filter to extract decadal component
+      bf <- butter(2, 1 / 12, type = "low")
+      seasonal <- filtfilt(bf, remainder)
 
-      # Decompose the time series into trend, seasonal, and decadal components
+      remainder <- remainder - seasonal # Calculate the remainder component
 
-      percentage_trend_temp[nlat, nlon] <- var(trend, na.rm = TRUE) / var(signal, na.rm = TRUE) * 100
-      percentage_seasonal_temp[nlat, nlon] <- var(seasonal, na.rm = TRUE) / var(signal, na.rm = TRUE) * 100
-      percentage_decadal_temp[nlat, nlon] <- var(decadal, na.rm = TRUE) / var(signal, na.rm = TRUE) * 100
-      percentage_remaining_temp[nlat, nlon] <- var(remainder, na.rm = TRUE) / var(signal, na.rm = TRUE) * 100
+      # Calculate variance explained by each component
+      trend_variance <- var(trend, na.rm = TRUE)
+      signal_variance <- var(signal, na.rm = TRUE)
+      
+      # Calculate percentages for each component
+      percentage_trend_temp[nlat, nlon] <- trend_variance / signal_variance * 100
+      percentage_seasonal_temp[nlat, nlon] <- var(seasonal, na.rm = TRUE) / signal_variance * 100
+      percentage_decadal_temp[nlat, nlon] <- var(decadal, na.rm = TRUE) / signal_variance * 100
+      percentage_remaining_temp[nlat, nlon] <- var(remainder, na.rm = TRUE) / signal_variance * 100
     
     }
-    if (is.infinite(percentage_trend_temp[nlat, nlon])) { # If the percentage is infinite, set it to NA
+    if (is.infinite(percentage_trend_temp[nlat, nlon])) {
       
       percentage_trend_temp[nlat, nlon] <- NA
       percentage_seasonal_temp[nlat, nlon] <- NA
