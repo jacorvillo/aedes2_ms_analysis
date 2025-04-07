@@ -27,6 +27,8 @@ library(dplyr)
 library(zoo)
 library(ncdf4)
 library(signal)
+library(ggplot2)
+library(cowplot)
 
 # Source R functions:
 source("0_data_and_functions/r_functions.R")
@@ -594,6 +596,59 @@ s2dv::PlotEquiMap(
 # Merging of all plots:
 
 
+# ---- Timeseries for one grid point (150, 230) ---- #
+
+# First ggplot: All signals from the time-based decomposition
+p1 <- ggplot() +
+  geom_line(aes(x = seq(1, length(timeseries_time_seasonal)), y = combined_data[ , 150, 230], color = "Original Signal")) +
+  geom_line(aes(x = seq(1, length(timeseries_time_seasonal)), y = timeseries_time_seasonal, color = "Seasonal")) +
+  geom_line(aes(x = seq(1, length(timeseries_time_trend)), y = timeseries_time_trend, color = "Trend")) +
+  geom_line(aes(x = seq(1, length(timeseries_time_decadal)), y = timeseries_time_decadal, color = "Decadal")) +
+  geom_line(aes(x = seq(1, length(timeseries_time_remainder)), y = timeseries_time_remainder, color = "Remainder")) +
+  labs(title = "Time-based TD", x = "Time (months)", y = "R0 signal") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+# Second ggplot: All signals from the temperature-based decomposition
+p2 <- ggplot() +
+  geom_line(aes(x = seq(1, length(timeseries_temp_seasonal)), y = combined_data[ , 150, 230], color = "Original Signal")) +
+  geom_line(aes(x = seq(1, length(timeseries_temp_seasonal)), y = timeseries_temp_seasonal, color = "Seasonal")) +
+  geom_line(aes(x = seq(1, length(timeseries_temp_trend)), y = timeseries_temp_trend, color = "Trend")) +
+  geom_line(aes(x = seq(1, length(timeseries_temp_decadal)), y = timeseries_temp_decadal, color = "Decadal")) +
+  geom_line(aes(x = seq(1, length(timeseries_temp_remainder)), y = timeseries_temp_remainder, color = "Remainder")) +
+  labs(title = "Temperature-based TD", x = "Time (months)", y = "R0 signal") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+# Extract the legend from a plot with the same aesthetics
+legend_plot <- ggplot() +
+  geom_line(aes(x = 1:10, y = 1:10, color = "Original Signal")) +
+  geom_line(aes(x = 1:10, y = 2:11, color = "Seasonal")) +
+  geom_line(aes(x = 1:10, y = 3:12, color = "Trend")) +
+  geom_line(aes(x = 1:10, y = 4:13, color = "Decadal")) +
+  geom_line(aes(x = 1:10, y = 5:14, color = "Remainder")) +
+  scale_color_manual(values = c("Original Signal" = "#000000", 
+                               "Seasonal" = "blue", 
+                               "Trend" = "red", 
+                               "Decadal" = "green", 
+                               "Remainder" = "purple")) +
+  theme_minimal()
+
+# Extract the legend
+legend <- get_legend(legend_plot)
+
+# Combine plots with plot_grid and add the legend
+g <- plot_grid(
+  p1,
+  p2,
+  legend,
+  ncol = 1,
+  align = "h",
+  rel_heights = c(1, 1, 0.2)  # Adjust the height ratio for the legend
+)
+
+# Save the combined plot
+ggsave("4_outputs/figures/timeseries_decomposition.eps", g, width = 10, height = 8)
 
 # --- Save the detrended R0 data through Temperature-based TD to a NetCDF file --- #
 
