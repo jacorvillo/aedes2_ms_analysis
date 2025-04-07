@@ -506,90 +506,90 @@ s2dv::PlotEquiMap(
 
 # Difference/ratio maps between the two approaches ------------------------------------------------
 
-ratio_trend <- percentage_trend_temp / percentage_trend_time
-ratio_seasonal <- percentage_seasonal_temp / percentage_seasonal_time
-ratio_decadal <- percentage_decadal_temp / percentage_decadal_time
-ratio_remaining <- percentage_remaining_temp / percentage_remaining_time
+# ratio_trend <- percentage_trend_temp[150, 230] / percentage_trend_time[150, 230]
+# ratio_seasonal <- percentage_seasonal_temp / percentage_seasonal_time
+# ratio_decadal <- percentage_decadal_temp / percentage_decadal_time
+# ratio_remaining <- percentage_remaining_temp / percentage_remaining_time
 
-s2dv::PlotEquiMap(
-  var = ratio_trend,
-  lon = lon,
-  lat = lat,
-  filled.continents = FALSE,
-  filled.oceans = TRUE,
-  triangle_ends = c(FALSE, FALSE),
-  brks = seq(-1, 1),
-  colNA = "grey",
-  draw_bar_ticks = TRUE,
-  title_scale = 0.65,
-  bar_tick_scale = 0.5,
-  axes_tick_scale = 0.5,
-  axes_label_scale = 0.5,
-  fileout = "4_outputs/td_ratio_trend.png",
-  width = 8,
-  height = 8,
-  size_units = "in"
-)
+# s2dv::PlotEquiMap(
+#   var = ratio_trend,
+#   lon = lon,
+#   lat = lat,
+#   filled.continents = FALSE,
+#   filled.oceans = TRUE,
+#   triangle_ends = c(FALSE, FALSE),
+#   # brks = seq(-1, 1),
+#   colNA = "grey",
+#   draw_bar_ticks = TRUE,
+#   title_scale = 0.65,
+#   bar_tick_scale = 0.5,
+#   axes_tick_scale = 0.5,
+#   axes_label_scale = 0.5,
+#   fileout = "4_outputs/figures/td_ratio_trend.eps",
+#   width = 8,
+#   height = 8,
+#   size_units = "in"
+# )
 
-s2dv::PlotEquiMap(
-  var = ratio_seasonal,
-  lon = lon,
-  lat = lat,
-  filled.continents = FALSE,
-  filled.oceans = TRUE,
-  triangle_ends = c(FALSE, FALSE),
-  brks = seq(-1, 1),
-  colNA = "grey",
-  draw_bar_ticks = TRUE,
-  title_scale = 0.65,
-  bar_tick_scale = 0.5,
-  axes_tick_scale = 0.5,
-  axes_label_scale = 0.5,
-  fileout = "4_outputs/td_ratio_seasonal.png",
-  width = 8,
-  height = 8,
-  size_units = "in"
-)
+# s2dv::PlotEquiMap(
+#   var = ratio_seasonal,
+#   lon = lon,
+#   lat = lat,
+#   filled.continents = FALSE,
+#   filled.oceans = TRUE,
+#   triangle_ends = c(FALSE, FALSE),
+#   brks = seq(-1, 1),
+#   colNA = "grey",
+#   draw_bar_ticks = TRUE,
+#   title_scale = 0.65,
+#   bar_tick_scale = 0.5,
+#   axes_tick_scale = 0.5,
+#   axes_label_scale = 0.5,
+#   fileout = "4_outputs/figures/td_ratio_seasonal.eps",
+#   width = 8,
+#   height = 8,
+#   size_units = "in"
+# )
 
-s2dv::PlotEquiMap(
-  var = ratio_decadal,
-  lon = lon,
-  lat = lat,
-  filled.continents = FALSE,
-  filled.oceans = TRUE,
-  triangle_ends = c(FALSE, FALSE),
-  brks = seq(-1, 1),
-  colNA = "grey",
-  draw_bar_ticks = TRUE,
-  title_scale = 0.65,
-  bar_tick_scale = 0.5,
-  axes_tick_scale = 0.5,
-  axes_label_scale = 0.5,
-  fileout = "4_outputs/td_ratio_decadal.png",
-  width = 8,
-  height = 8,
-  size_units = "in"
-)
+# s2dv::PlotEquiMap(
+#   var = ratio_decadal,
+#   lon = lon,
+#   lat = lat,
+#   filled.continents = FALSE,
+#   filled.oceans = TRUE,
+#   triangle_ends = c(FALSE, FALSE),
+#   brks = seq(-1, 1),
+#   colNA = "grey",
+#   draw_bar_ticks = TRUE,
+#   title_scale = 0.65,
+#   bar_tick_scale = 0.5,
+#   axes_tick_scale = 0.5,
+#   axes_label_scale = 0.5,
+#   fileout = "4_outputs/figures/td_ratio_decadal.eps",
+#   width = 8,
+#   height = 8,
+#   size_units = "in"
+# )
 
-s2dv::PlotEquiMap(
-  var = ratio_remaining,
-  lon = lon,
-  lat = lat,
-  filled.continents = FALSE,
-  filled.oceans = TRUE,
-  triangle_ends = c(FALSE, FALSE),
-  brks = seq(-1, 1),
-  colNA = "grey",
-  draw_bar_ticks = TRUE,
-  title_scale = 0.65,
-  bar_tick_scale = 0.5,
-  axes_tick_scale = 0.5,
-  axes_label_scale = 0.5,
-  fileout = "4_outputs/td_ratio_remaining.png",
-  width = 8,
-  height = 8,
-  size_units = "in"
-)
+# s2dv::PlotEquiMap(
+#   var = ratio_remaining,
+#   lon = lon,
+#   lat = lat,
+#   filled.continents = FALSE,
+#   filled.oceans = TRUE,
+#   triangle_ends = c(FALSE, FALSE),
+#   brks = seq(-1, 1),
+#   colNA = "grey",
+#   draw_bar_ticks = TRUE,
+#   title_scale = 0.65,
+#   bar_tick_scale = 0.5,
+#   axes_tick_scale = 0.5,
+#   axes_label_scale = 0.5,
+#   fileout = "4_outputs/figures/td_ratio_remaining.eps",
+#   width = 8,
+#   height = 8,
+#   size_units = "in"
+# )
 
 # Merging of all plots:
 
