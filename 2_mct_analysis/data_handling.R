@@ -10,7 +10,7 @@
 setwd("C:/Users/jcorvill/Documents/vscode/github/monitoring_system_analysis/")
 
 # Source R functions:
-source("0_functions/r_functions.R")
+source("0_data_and_functions/r_functions.R")
 
 # Necessary packages for the script:
 library(dplyr)

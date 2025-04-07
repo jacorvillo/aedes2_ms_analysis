@@ -14,7 +14,7 @@ import pandas as pd
 os.chdir("C:/Users/jcorvill/Documents/Obsidian/vscode/github/monitoring_system_analysis/")
 
 # Source the python functions
-exec(open("0_functions/python_functions.py").read())
+exec(open("0_data_and_functions/python_functions.py").read())
 
 # --- Self Climate Variability Modes (CVMs) Analysis ---
 

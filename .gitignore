@@ -451,3 +451,11 @@ merged.png
 4_outputs/figures/loess_and_seasonal_medians.zip
 4_outputs/figures/normalization_and_seasonal_medians.zip
 4_outputs/figures/preanalysis.zip
+4_outputs/td_decadal_time.png
+4_outputs/td_remaining_time.png
+4_outputs/td_seasonal_time.png
+4_outputs/td_trend_time.png
+4_outputs/data/detrended_vars/detrended_tas_1d.nc
+4_outputs/data/detrended_vars/detrended_tas_3d.nc
+4_outputs/figures/temperature_trends.eps
+4_outputs/figures/temperature_trends.png

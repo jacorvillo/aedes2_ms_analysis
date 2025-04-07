@@ -13,7 +13,7 @@ import xarray as xr
 os.chdir("C:/Users/jcorvill/Documents/Obsidian/vscode/github/monitoring_system_analysis/")
 
 # Source the python functions
-exec(open("0_functions/python_functions.py").read())
+exec(open("0_data_and_functions/python_functions.py").read())
 
 # Load the netcdf files:
 global_djf = xr.open_dataset("0_data/cc_ncdfs/global_correlation_djf_merged.nc")
