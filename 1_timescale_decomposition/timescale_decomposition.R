@@ -90,7 +90,7 @@ for (i in seq_along(span_choices)) {
   
   # Calculate GCV (Generalized Cross-Validation)
   n <- length(model$residuals)
-  gcv_values[i] <- mean(model$residuals^2) / (1 - model$enp/n)^2
+  gcv_values[i] <- mean(model$residuals^2) / (1 - model$enp / n)^2
   
   # Calculate AIC
   sigma2 <- sum(model$residuals^2) / n
@@ -174,7 +174,8 @@ for (nlat in seq_along(lat)) {
       percentage_remaining_time[nlat, nlon] <- remainder_var / total_var * 100
     
     }
-    if (is.infinite(percentage_trend_time[nlat, nlon])) { # If the percentage is infinite, set it to NA
+    if (is.infinite(percentage_trend_time[nlat, nlon])) { 
+      # If the percentage is infinite, set it to NA
       
       percentage_trend_time[nlat, nlon] <- NA
       percentage_seasonal_time[nlat, nlon] <- NA
@@ -323,7 +324,7 @@ for (i in seq_along(span_choices)) {
   
   # Calculate GCV (Generalized Cross-Validation)
   n <- length(model$residuals)
-  gcv_values[i] <- mean(model$residuals^2) / (1 - model$enp/n)^2
+  gcv_values[i] <- mean(model$residuals^2) / (1 - model$enp / n)^2
   
   # Calculate AIC
   sigma2 <- sum(model$residuals^2) / n
@@ -615,7 +616,7 @@ s2dv::PlotEquiMap(
 original_signal <- combined_data[, 150, 230]
 
 # Create time series data frames for plotting
-time_index <- 1:length(original_signal)
+time_index <- seq_along(original_signal)
 dates <- seq(as.Date("1980-01-01"), by = "month", length.out = length(original_signal))
 
 # Time-based decomposition data frame
@@ -704,17 +705,17 @@ dim_lat <- ncdim_def("lat", "degrees_north", lat)
 dim_lon <- ncdim_def("lon", "degrees_east", lon)
 
 # Define the variable
-var_norm_data <- ncvar_def("detrended_temps", "units", list(dim_time, dim_lat, dim_lon),
-  -9999, longname = "Detrended R0 Values (Normalized)", prec = "double"  
+var <- ncvar_def("detrended_r_nought", "units", list(dim_time, dim_lat, dim_lon),
+  -9999, longname = "Detrended R0 Values", prec = "double"  
 )
 
 # Create the NetCDF file
 nc_file <- nc_create(
   "4_outputs/data/detrended_vars/detrended_r_nought_data.nc", 
-var_norm_data)
+var)
 
 # Write the data to the NetCDF file (Trimming to account for incomplete seasons)
-ncvar_put(nc_file, var_norm_data, detrended_signal[3:503, , ])
+ncvar_put(nc_file, var, detrended_signal[3:503, , ])
 
 # Close the NetCDF file
 nc_close(nc_file)
