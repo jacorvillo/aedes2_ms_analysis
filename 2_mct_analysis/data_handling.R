@@ -213,67 +213,21 @@ siod <- (siod - mean(siod, na.rm = TRUE)) / sd(siod, na.rm = TRUE)
 sasd1 <- (sasd1 - mean(sasd1, na.rm = TRUE)) / sd(sasd1, na.rm = TRUE)
 
 # Save the climate variability indices in dat files
-write.table(npmm, file = "0_data/cv_indices/computed_batch/npmm.dat", row.names = FALSE, col.names = FALSE)
-write.table(spmm, file = "0_data/cv_indices/computed_batch/spmm.dat", row.names = FALSE, col.names = FALSE)
-write.table(nino34, file = "0_data/cv_indices/computed_batch/nino34.dat", row.names = FALSE, col.names = FALSE)
-write.table(atl3, file = "0_data/cv_indices/computed_batch/atl3.dat", row.names = FALSE, col.names = FALSE)
-write.table(tna, file = "0_data/cv_indices/computed_batch/tna.dat", row.names = FALSE, col.names = FALSE)
-write.table(iob, file = "0_data/cv_indices/computed_batch/iob.dat", row.names = FALSE, col.names = FALSE)
-write.table(iod, file = "0_data/cv_indices/computed_batch/iod.dat", row.names = FALSE, col.names = FALSE)
-write.table(siod, file = "0_data/cv_indices/computed_batch/siod.dat", row.names = FALSE, col.names = FALSE)
-write.table(sasd1, file = "0_data/cv_indices/computed_batch/sasd.dat", row.names = FALSE, col.names = FALSE)
-
-# --------------------------------------------------------------------
-
-# AMO, NAO & PDO indices through s2dv:
-detrended_s2dv <- array(detrended_data, dim = c(year = 42, lat = length(lat), lon = length(lon), month = 12))
-amo <- s2dv::AMV(data = detrended_s2dv, data_lons = lon, data_lats = lat, type = "obs", lat_dim = "lat", lon_dim = "lon")
-
-nao <- s2dv::NAO(obs = detrended_s2dv, lat, lon, )
-
-
-# Define North Pacific region for PDO
-latmin_pdo <- which.min(abs(lat - 20))  # 20°N
-latmax_pdo <- which.min(abs(lat - 70))  # 65°N
-lonmin_pdo <- which.min(abs(lon - 100)) # 110°E
-lonmax_pdo <- which.min(abs(lon + 110)) # 100°W (260°E)
-
-# Invert longitude for plotting
-dtemps_rev 
-
-PlotEquiMap(
-  var = dtemps[1, latmin_pdo:latmax_pdo, lonmin_pdo:lonmax_pdo],
-  lon = -lon[lonmin_pdo:lonmax_pdo],
-  lat = lat[latmin_pdo:latmax_pdo],
-  filled.continents = FALSE,
-  filled.oceans = FALSE
-)
-
-# Extract North Pacific region
-npac_data <- ano_detrended_data[, latmin_pdo:latmax_pdo, lonmin_pdo:lonmax_pdo]
-
-# Perform EOF analysis
-pdo_eof <- EOF(npac_data,
-  lon = lon[lonmin_pdo:lonmax_pdo],
-  lat = lat[latmin_pdo:latmax_pdo],
-  time_dim = "sdate",
-  space_dim = c("lat", "lon"),
-  neofs = 5
-)
-
-# Extract the first PC time series (this is the PDO index)
-pdo_index <- pdo_eof$PCs[,1]
-
-normalize <- function(x) {
-  (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
-}
-
-# Normalize the PDO index to the range [0, 1]
-pdo_index <- normalize(pdo_index)
-
-# Standardize the PDO index
-pdo_index <- (pdo_index - mean(pdo_index, na.rm = TRUE)) / sd(pdo_index, na.rm = TRUE)
-
-# Save PDO index
-write.table(pdo_index, file = "0_data/cv_indices/computed_batch/pdo.dat", 
-            row.names = FALSE, col.names = FALSE)
+write.table(npmm, file = "4_outputs/data/climate_indices/computed_batch/npmm.dat", 
+  row.names = FALSE, col.names = FALSE)
+write.table(spmm, file = "4_outputs/data/climate_indices/computed_batch/spmm.dat", 
+  row.names = FALSE, col.names = FALSE)
+write.table(nino34, file = "4_outputs/data/climate_indices/computed_batch/nino34.dat", 
+  row.names = FALSE, col.names = FALSE)
+write.table(atl3, file = "4_outputs/data/climate_indices/computed_batch/atl3.dat", 
+  row.names = FALSE, col.names = FALSE)
+write.table(tna, file = "4_outputs/data/climate_indices/computed_batch/tna.dat", 
+  row.names = FALSE, col.names = FALSE)
+write.table(iob, file = "4_outputs/data/climate_indices/computed_batch/iob.dat", 
+  row.names = FALSE, col.names = FALSE)
+write.table(iod, file = "4_outputs/data/climate_indices/computed_batch/iod.dat", 
+  row.names = FALSE, col.names = FALSE)
+write.table(siod, file = "4_outputs/data/climate_indices/computed_batch/siod.dat", 
+  row.names = FALSE, col.names = FALSE)
+write.table(sasd1, file = "4_outputs/data/climate_indices/computed_batch/sasd.dat", 
+  row.names = FALSE, col.names = FALSE)
