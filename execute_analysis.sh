@@ -17,6 +17,7 @@ else
 
     echo "1. Timescale decomposition in progress..."
     # Timescale decomposition
+    Rscript "1_timescale_decomposition/temp_trend.R"
     Rscript "1_timescale_decomposition/timescale_decomposition.R"
     check_status "Timescale decomposition"
     echo "Done!"
