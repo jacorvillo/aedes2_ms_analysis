@@ -30,21 +30,8 @@ lat <- seq(-89.75, 89.75, by = 0.5)
 lon <- seq(-179.75, 179.75, by = 0.5)
 
 # Load the monthly data, index it all in a list
-index_data <- list(
-  Year = years,
-  Jan = readRDS(paste0("0_data/median_super/median_global_1.RDS"))[1:42, , ],  # 1980:2021
-  Feb = readRDS(paste0("0_data/median_super/median_global_2.RDS"))[1:42, , ],
-  Mar = readRDS(paste0("0_data/median_super/median_global_3.RDS"))[1:42, , ],
-  Apr = readRDS(paste0("0_data/median_super/median_global_4.RDS"))[1:42, , ],
-  May = readRDS(paste0("0_data/median_super/median_global_5.RDS"))[2:44, , ],
-  Jun = readRDS(paste0("0_data/median_super/median_global_6.RDS"))[2:44, , ],
-  Jul = readRDS(paste0("0_data/median_super/median_global_7.RDS"))[2:44, , ],
-  Aug = readRDS(paste0("0_data/median_super/median_global_8.RDS"))[2:44, , ],
-  Sep = readRDS(paste0("0_data/median_super/median_global_9.RDS"))[2:44, , ],
-  Oct = readRDS(paste0("0_data/median_super/median_global_10.RDS"))[2:44, , ],
-  Nov = readRDS(paste0("0_data/median_super/median_global_11.RDS"))[2:44, , ],
-  Dec = readRDS(paste0("0_data/median_super/median_global_12.RDS"))[2:44, , ]
-)
+nc_file <- nc_open("4_outputs/data/detrended_vars/detrended_r_nought_data.nc")
+r_nought_data <- ncvar_get(nc_file, "detrended_r_nought")
 
 # Lists with all the detected SSSRs:
 nca <- list(
