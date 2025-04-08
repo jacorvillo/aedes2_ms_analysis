@@ -161,7 +161,7 @@ quicksave(r_nought_data, med, lon, lat, "4_outputs/data/sssrs/r11.nc")
 # -- CV indices data handling -- #
 
 # Read the detrended temperature data
-nc_file <- nc_open("0_data/tas_median/detrended_monthly_data.nc")
+nc_file <- nc_open("4_outputs/data/detrended_vars/detrended_tas_3d.nc")
 
 # Load temperature data
 dtemps <- ncvar_get(nc_file, "detrended_temps")
