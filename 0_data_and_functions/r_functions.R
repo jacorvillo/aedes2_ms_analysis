@@ -1,3 +1,75 @@
+fit_box <- function(x) {
+
+  # Fit the coordinates to their closest grid point in the R0 data:
+
+  # Find the nearest grid point to the vertex
+  nearest_lat_index <- which.min(abs(lat - x[2]))
+  nearest_lon_index <- which.min(abs(lon - x[1]))
+
+  # Replace the vertex with the nearest grid point
+  x[1] <- lon[nearest_lon_index]
+  x[2] <- lat[nearest_lat_index]
+
+  return(x)
+}
+
+return_box_data <- function(lon, lat, vertices) {
+  
+  # Function to return box data coordinates:
+
+  # Extract longitude and latitude from vertices
+  lon_vertices <- sapply(vertices, function(v) v[1])
+  lat_vertices <- sapply(vertices, function(v) v[2])
+  
+  # Determine the bounding box (min and max indices)
+  lon_min <- min(lon_vertices)
+  lon_max <- max(lon_vertices)
+  lat_min <- min(lat_vertices)
+  lat_max <- max(lat_vertices)
+  
+  return(c(lon_min, lon_max, lat_min, lat_max))
+}
+
+quicksave <- function(var, box, lon, lat, filename) {
+
+  # Extract longitude and latitude from vertices
+  lon_vertices <- sapply(box, function(v) v[1])
+  lat_vertices <- sapply(box, function(v) v[2])
+  
+  # Find the indices in the lon and lat arrays that correspond to the vertices
+  lon_indices <- sapply(lon_vertices, function(lon_val) which.min(abs(lon - lon_val)))
+  lat_indices <- sapply(lat_vertices, function(lat_val) which.min(abs(lat - lat_val)))
+
+  lon_min <- min(lon_indices)
+  lon_max <- max(lon_indices)
+  lat_min <- min(lat_indices)
+  lat_max <- max(lat_indices)
+
+  # Define the dimensions
+  time_dates <- seq(as.Date("1980-03-01"), as.Date("2021-11-01"), by = "month")
+  dim_time <- ncdim_def("time", "days since 1980-03-01", as.numeric(time_dates - as.Date("1980-03-01")))
+  dim_lat <- ncdim_def("lat", "degrees_north", 
+                       seq(return_box_data(lat, lon, box)[3], 
+                           return_box_data(lat, lon, box)[4], by = 0.5))
+  dim_lon <- ncdim_def("lon", "degrees_east", 
+                       seq(return_box_data(lon, lat, box)[1], 
+                           return_box_data(lon, lat, box)[2], by = 0.5))
+
+  # Define the variable
+  var_detrend_data <- ncvar_def("detrended_data", "units", list(dim_time, dim_lat, dim_lon),
+    -9999, longname = "Detrended Data", prec = "double"  
+  )
+
+  # Create the NetCDF file
+  nc_file <- nc_create(filename, list(var_detrend_data))
+
+  # Write the data to the NetCDF file
+  ncvar_put(nc_file, var_detrend_data, var[, lat_min:lat_max, lon_min:lon_max])
+
+  # Close the NetCDF file
+  nc_close(nc_file)
+}
+
 normalize <- function(x) {
   (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
 }
