@@ -6,11 +6,7 @@
 
 # Load necesary libraries and functions for the script 
 
-import os
 import xarray as xr
-
-# Set the working directory
-os.chdir("C:/Users/jcorvill/Documents/Obsidian/vscode/github/monitoring_system_analysis/")
 
 # Source the python functions
 exec(open("0_data_and_functions/python_functions.py").read())

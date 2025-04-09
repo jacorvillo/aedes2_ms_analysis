@@ -7,10 +7,6 @@
 #' Variability indices with the detrended temperature data obtained in temp_detrend.R, saving the 
 #' data in .dat files for the subsequent correlation and causality analysis.
 
-
-# Set working directory
-setwd("C:/Users/jcorvill/Documents/vscode/github/monitoring_system_analysis/")
-
 # Source R functions:
 source("0_data_and_functions/r_functions.R")
 

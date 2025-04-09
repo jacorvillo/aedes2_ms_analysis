@@ -4,9 +4,6 @@
 #' correlation index per grid point in the global domain. The analysis is performed for each season,
 #' and also for the whole time series.
 
-# Set the working directory
-setwd("C:/Users/Usuario/Documents/Obsidian/vscode/github/monitoring_system_analysis")
-
 # Source the R functions
 source("0_data_and_functions/r_functions.R")
 

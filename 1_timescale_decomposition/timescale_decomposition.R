@@ -17,9 +17,6 @@
 #' decadal components are obtained from the detrended data, with a 120-month frequency Butterworth
 #' filter.
 
-# Set the working directory
-setwd("C:/Users/jcorvill/Documents/vscode/github/monitoring_system_analysis/")
-
 # Necessary packages for the script:
 library(s2dv)
 library(viridis)

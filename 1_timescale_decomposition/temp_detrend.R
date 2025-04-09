@@ -7,9 +7,6 @@
 #' obtained trend is then saved, to be used as a climate change proxy for detrending R0 data 
 #' analysis by following the methodology from Green et al., 2011.
 
-# Set the working directory
-setwd("C:/Users/jcorvill/Documents/vscode/github/monitoring_system_analysis/")
-
 # Source R functions:
 source("0_data_and_functions/r_functions.R")
 

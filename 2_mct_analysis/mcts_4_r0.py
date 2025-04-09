@@ -9,14 +9,10 @@
 
 # Load necesary libraries
 
-import os
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-
-# Set the working directory
-os.chdir("C:/Users/jcorvill/Documents/vscode/github/monitoring_system_analysis/")
 
 # Source the python functions
 exec(open("0_data_and_functions/python_functions.py").read())
