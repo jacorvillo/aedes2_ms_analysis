@@ -1,9 +1,11 @@
 # data_handling.R
 
-#' @description This script reads the R0 monthly data from the AeDES2's Monitoring System and trims 
-#' it to the SSSRs detected in the timescale decomposition analysis with the boxes defined by 
-#' Iturbide et al., 2020. The script then computes the seasonal median 
-#' for each SSSR and Climate Variability indices, saving the data in CSV files. 
+#' @description This script reads the detrended R0 monthly data from the AeDES2's Monitoring 
+#' System,  as computed in the temperature-based timescale decomposition analysis, and trims 
+#' it to the SSSRs detected in the aforementioned script, with the boxes defined by 
+#' Iturbide et al., 2020. Additionally, this script also computes temperature-dependent Climate
+#' Variability indices with the detrended temperature data obtained in temp_trend.R, saving the 
+#' data in .dat files for the subsequent analysis in the following correlation and causality scripts.
 
 
 # Set working directory
