@@ -11,7 +11,7 @@
 #' 
 #' 2. Temperature-based: Assumes that the rate of change of the R0 signal is related to the
 #' warming of the planet. A quick LOESS analysis is performed to find the optimal span for the LOESS
-#' for the R0 vs temperature regression, using the 1D detrended temperature obtained in temp_trend.
+#' for the R0 vs temperature regression, using the 1D detrended temperature obtained in temp_detrend.
 #' The obtained R0 vs temperature is later transformed into the time dimension, which, following 
 #' the  methodology of Greene et al., 2011, consitutes the temperature-based trend. The seasonal and
 #' decadal components are obtained from the detrended data, with a 120-month frequency Butterworth
@@ -420,7 +420,7 @@ for (nlat in seq_along(lat)) {
     }
     if (nlat == 150 && nlon == 230) {
       timeseries_temp_seasonal <- seasonal
-      timeseries_temp_trend <- trend
+      timeseries_temp_detrend <- trend
       timeseries_temp_decadal <- decadal
       timeseries_temp_remainder <- remainder
     }
@@ -633,7 +633,7 @@ time_df <- data.frame(
 temp_df <- data.frame(
   Date = dates,
   Original = original_signal,
-  Trend = timeseries_temp_trend,
+  Trend = timeseries_temp_detrend,
   Seasonal = timeseries_temp_seasonal,
   Decadal = timeseries_temp_decadal,
   Remainder = timeseries_temp_remainder

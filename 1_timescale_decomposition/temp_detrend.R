@@ -1,4 +1,4 @@
-# temp_trend.R
+# temp_detrend.R
 
 #' @title Trend Analysis of Temperature Time Series
 #' 
