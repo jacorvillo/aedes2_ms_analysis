@@ -5,13 +5,9 @@
 # The script uses the Liang-Kleeman causality method, as implemented in the causality1d3d function. This function is a Python adaptation of the Liang-Kleeman causality method, as described in San Liang (2014, 2015).
 
 # Load the necessary libraries
-import os
 import xarray as xr
 import numpy as np
 import pandas as pd
-
-# Set the working directory
-os.chdir("C:/Users/jcorvill/Documents/Obsidian/vscode/github/monitoring_system_analysis/")
 
 # Source the python functions
 exec(open("0_data_and_functions/python_functions.py").read())
