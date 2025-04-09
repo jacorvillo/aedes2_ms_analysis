@@ -110,7 +110,7 @@ for select in range(16):
   selected_index = list_indexes[select]
   selected_title_string = title_strings[select]
 
-  fileout_name = f'4_outputs/{fileout_cmvs[select]}.png'
+  fileout_name = f'4_outputs/figures/{fileout_cmvs[select]}.png'
 
   fig, axs = plt.subplots(2, 2, figsize=(11, 6))
   axs = axs.ravel()  # Flatten the axs array for easier indexing
@@ -181,7 +181,7 @@ ax.legend()
 
 # Show plot
 plt.tight_layout()
-plt.savefig('4_outputs/trends_indices.png')
+plt.savefig('4_outputs/figures/trends_indices.png')
 
 # Clean up the plot space
 plt.close('all')
@@ -339,7 +339,7 @@ sh_sig_maps = {}
 for idx in indices:
   nh_corr_maps[idx], nh_sig_maps[idx] = plot_dicts_corr(
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/correlation_seasonal_nh_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/figures/correlation_seasonal_nh_{idx.lower().replace(' ', '_').replace('.', '')}.png",
     title=f"Seasonal R0 vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **nh_params
   )
@@ -348,16 +348,16 @@ for idx in indices:
 for idx in indices:
   sh_corr_maps[idx], sh_sig_maps[idx] = plot_dicts_corr(
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/correlation_seasonal_sh_{idx.lower().replace(' ', '_').replace('.', '')}.png", 
+    fileout_name=f"4_outputs/figures/correlation_seasonal_sh_{idx.lower().replace(' ', '_').replace('.', '')}.png", 
     title=f"Seasonal R0 vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **sh_params
   )
 
 # Save the correlation and significance maps
-save_seasonal_correlation_to_netcdf(nh_corr_maps, '0_data/cc_ncdfs/nh_correlation_seasonal.nc')
-save_seasonal_correlation_to_netcdf(sh_corr_maps, '0_data/cc_ncdfs/sh_correlation_seasonal.nc')
-save_seasonal_correlation_to_netcdf(nh_sig_maps, '0_data/cc_ncdfs/nh_correlation_significance_seasonal.nc')
-save_seasonal_correlation_to_netcdf(sh_sig_maps, '0_data/cc_ncdfs/sh_correlation_significance_seasonal.nc')
+save_seasonal_correlation_to_netcdf(nh_corr_maps, '4_outputs/correlation_and_causality/nh_correlation_seasonal.nc')
+save_seasonal_correlation_to_netcdf(sh_corr_maps, '4_outputs/correlation_and_causality/sh_correlation_seasonal.nc')
+save_seasonal_correlation_to_netcdf(nh_sig_maps, '4_outputs/correlation_and_causality/nh_correlation_significance_seasonal.nc')
+save_seasonal_correlation_to_netcdf(sh_sig_maps, '4_outputs/correlation_and_causality/sh_correlation_significance_seasonal.nc')
 
 # --- Total Correlation Analysis ---
 
@@ -387,7 +387,7 @@ sh_params = {
 for idx in indices:
    nh_corr_maps_total[idx], nh_sig_maps_total[idx] = plot_dicts_corr_total(
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/correlation_total_nh_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/figures/correlation_total_nh_{idx.lower().replace(' ', '_').replace('.', '')}.png",
     title=f"Full R0 Time Series vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **nh_params
   )
@@ -396,16 +396,16 @@ for idx in indices:
 for idx in indices:
   sh_corr_maps_total[idx], sh_sig_maps_total[idx] = plot_dicts_corr_total(
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/correlation_total_sh_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/figures/correlation_total_sh_{idx.lower().replace(' ', '_').replace('.', '')}.png",
     title=f"Full R0 Time Series vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **sh_params
   )
 
 # Save the correlation and significance maps
-save_total_correlation_to_netcdf(nh_corr_maps_total, '0_data/cc_ncdfs/nh_correlation_total.nc')
-save_total_correlation_to_netcdf(nh_sig_maps_total, '0_data/cc_ncdfs/sh_correlation_total.nc')
-save_total_correlation_to_netcdf(sh_corr_maps_total, '0_data/cc_ncdfs/nh_correlation_significance_total.nc')
-save_total_correlation_to_netcdf(sh_sig_maps_total, '0_data/cc_ncdfs/sh_correlation_significance_total.nc')
+save_total_correlation_to_netcdf(nh_corr_maps_total, '4_outputs/correlation_and_causality/nh_correlation_total.nc')
+save_total_correlation_to_netcdf(nh_sig_maps_total, '4_outputs/correlation_and_causality/sh_correlation_total.nc')
+save_total_correlation_to_netcdf(sh_corr_maps_total, '4_outputs/correlation_and_causality/nh_correlation_significance_total.nc')
+save_total_correlation_to_netcdf(sh_sig_maps_total, '4_outputs/correlation_and_causality/sh_correlation_significance_total.nc')
 
 global_data = xr.open_dataset("0_data/sssrs/global.nc")
 datasets = {
@@ -473,14 +473,14 @@ params = {
 for idx in indices:
   global_corr_maps[idx], global_sig_maps[idx] = plot_dicts_corr_global(
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/correlation_seasonal_global_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/figures/correlation_seasonal_global_{idx.lower().replace(' ', '_').replace('.', '')}.png",
     title=f"Seasonal R0 vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **params
   )
 
 # Save the correlation and significance maps
-save_seasonal_correlation_to_netcdf(global_corr_maps, '0_data/cc_ncdfs/global_correlation_seasonal.nc')
-save_seasonal_correlation_to_netcdf(global_sig_maps, '0_data/cc_ncdfs/global_correlation_significance_seasonal.nc')
+save_seasonal_correlation_to_netcdf(global_corr_maps, '4_outputs/correlation_and_causality/global_correlation_seasonal.nc')
+save_seasonal_correlation_to_netcdf(global_sig_maps, '4_outputs/correlation_and_causality/global_correlation_significance_seasonal.nc')
 
 # Dictionaries to store correlation and significance maps
 global_corr_maps_total = {}
@@ -499,10 +499,10 @@ params = {
 for idx in indices:
   global_corr_maps_total[idx], global_sig_maps_total[idx] = plot_dicts_corr_global_total(
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/correlation_total_global_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/figures/correlation_total_global_{idx.lower().replace(' ', '_').replace('.', '')}.png",
     title=f"Full R0 Time Series vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **params
   )
 
-save_total_correlation_to_netcdf(global_corr_maps_total, '4_outputs/sh_correlation_total.nc')
-save_total_correlation_to_netcdf(global_sig_maps_total, '4_outputs/nh_correlation_significance_total.nc')
+save_total_correlation_to_netcdf(global_corr_maps_total, '4_outputs/correlation_and_causality/sh_correlation_total.nc')
+save_total_correlation_to_netcdf(global_sig_maps_total, '4_outputs/correlation_and_causality/nh_correlation_significance_total.nc')
