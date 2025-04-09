@@ -13,152 +13,75 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Set the working directory
-os.chdir("C:/Users/jcorvill/Documents/Obsidian/vscode/github/monitoring_system_analysis/")
+os.chdir("C:/Users/jcorvill/Documents/vscode/github/monitoring_system_analysis/")
 
 # Source the python functions
 exec(open("0_data_and_functions/python_functions.py").read())
 
-# --- Self Climate Variability Modes (CVMs) Analysis ---
+# --- Climate Variability Modes (CVMs) Analysis ---
 
-npmm = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/npmm.dat", delim_whitespace=True).values, (500))
-spmm = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/spmm.dat", delim_whitespace=True).values, (500))
-nino = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/nino34.dat", delim_whitespace=True).values, (500))
-tna = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/tna.dat", delim_whitespace=True).values, (500))
-siod = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/siod.dat", delim_whitespace=True).values, (500))
-iod = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/iod.dat", delim_whitespace=True).values, (500))
-iob = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/iob.dat", delim_whitespace=True).values, (500))
-atl3 = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/atl3.dat", delim_whitespace=True).values, (500))
-sasd1 = np.reshape(pd.read_csv("0_data/cv_indices/computed_batch/sasd1.dat", delim_whitespace=True).values, (500))
-
-
-# ---Climate Variability Modes (CVMs) Analysis--- 
-
-# # Obtain seasonal data for all CVM values (from NOAA)
-# amo = np.reshape(pd.read_csv("0_data/cv_indices/amo.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515] # Flatten, Mar 1980 - Nov 2021
-# ao = np.reshape(pd.read_csv("0_data/cv_indices/ao.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-# nao = np.reshape(pd.read_csv("0_data/cv_indices/nao.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-# nino = np.reshape(pd.read_csv("0_data/cv_indices/nino.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-# pdo = np.reshape(pd.read_csv("0_data/cv_indices/pdo.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-# pna = np.reshape(pd.read_csv("0_data/cv_indices/pna.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-# qbo = np.reshape(pd.read_csv("0_data/cv_indices/qbo.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-# soi = np.reshape(pd.read_csv("0_data/cv_indices/soi.data", delim_whitespace=True).iloc[:, 1:].values, (504))[2:515]
-
-# Detrend CVMs according to their best respective detrending method:
-
-# AMO & PDO: LowPass Filter
-# amo_detrended = lowpass_filter(amo, 1/10, 1, 5)
-# pdo_detrended = lowpass_filter(pdo, 1/10, 1, 5)
-
-# El Niño 3.4, PNA, NAO, AO & SOI: Linear Regression
-# nino_detrended = detrend(nino)
-# pna_detrended = detrend(pna)
-# nao_detrended = detrend(nao)
-# ao_detrended = detrend(ao)
-# soi_detrended = detrend(soi)
-# amo_detrended = detrend(amo)
-# pdo_detrended = detrend(pdo)
-# qbo_detrended = detrend(qbo)
-
-# # QBO: Seasonal Decomposition (Read from the .nc file)
-# qbo_detrended = xr.open_dataset("0_data/cv_indices/qbo_seasonal_detrended.nc").detrended_index
-
-# # Remove any named dimensions from the detrended QBO data:
-# qbo_detrended = np.squeeze(qbo_detrended.values)
+npmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/npmm.dat", delim_whitespace=True).values, (503))[2:502]
+spmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/spmm.dat", delim_whitespace=True).values, (503))[2:502]
+nino = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/nino34.dat", delim_whitespace=True).values, (503))[2:502]
+atl3 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/atl3.dat", delim_whitespace=True).values, (503))[2:502]
+tna = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/tna.dat", delim_whitespace=True).values, (503))[2:502]
+iob = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/iob.dat", delim_whitespace=True).values, (503))[2:502]
+iod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/iod.dat", delim_whitespace=True).values, (503))[2:502]
+siod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/siod.dat", delim_whitespace=True).values, (503))[2:502]
+sasd1 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/sasd.dat", delim_whitespace=True).values, (503))[2:502]
 
 # Obtain seasonal data for each variable, knowing that the arrays go from Mar 1980 to Nov 2021
 start_date = '1980-03-01'
 end_date = '2021-11-30'
 date_range = pd.date_range(start=start_date, end=end_date, freq='MS')
 
-# data_vector = np.random.rand(len(date_range))  # Example data
-
-# # Loading CVMs from ORAS5 data (already detrended)
-# data = xr.open_dataset("0_data/cv_indices/indices_oras5.nc")
-
-# npmm = data['NPMM'][14:527].values # Mar 1980 - Nov 2021
-# spmm = data['SPMM'][14:527].values
-# iob = data['IOB'][14:527].values
-# iod = data['IOD'][14:527].values
-# siod = data['SIOD'][14:527].values
-# tna = data['TNA'][14:527].values
-# atl3 = data['ATL3'][14:527].values
-# sasd1 = data['SASD1'][14:527].values
-
-# Step 4: Extract seasonal data
-amo_seasonal = extract_seasonal_months(date_range, amo)
-ao_seasonal = extract_seasonal_months(date_range, ao)
-nao_seasonal = extract_seasonal_months(date_range, nao)
-nino_seasonal = extract_seasonal_months(date_range, nino)
-pdo_seasonal = extract_seasonal_months(date_range, pdo)
-pna_seasonal = extract_seasonal_months(date_range, pna)
-qbo_seasonal = extract_seasonal_months(date_range, qbo)
-soi_seasonal = extract_seasonal_months(date_range, soi)
+# Extract seasonal data for each climate index
 npmm_seasonal = extract_seasonal_months(date_range, npmm)
 spmm_seasonal = extract_seasonal_months(date_range, spmm)
+nino_seasonal = extract_seasonal_months(date_range, nino)
+atl3_seasonal = extract_seasonal_months(date_range, atl3)
+tna_seasonal = extract_seasonal_months(date_range, tna)
 iob_seasonal = extract_seasonal_months(date_range, iob)
 iod_seasonal = extract_seasonal_months(date_range, iod)
 siod_seasonal = extract_seasonal_months(date_range, siod)
-tna_seasonal = extract_seasonal_months(date_range, tna)
-atl3_seasonal = extract_seasonal_months(date_range, atl3)
 sasd1_seasonal = extract_seasonal_months(date_range, sasd1)
 
 # Save seasonal indexes in a dictionary
 
 index_dict_seasonal = {
-  "AMO": {"DJF": amo_seasonal['DJF'], "MAM": amo_seasonal['MAM'], "JJA": amo_seasonal['JJA'], "SON": amo_seasonal['SON']},
-  "AO": {"DJF": ao_seasonal['DJF'], "MAM": ao_seasonal['MAM'], "JJA": ao_seasonal['JJA'], "SON": ao_seasonal['SON']},
-  "NAO": {"DJF": nao_seasonal['DJF'], "MAM": nao_seasonal['MAM'], "JJA": nao_seasonal['JJA'], "SON": nao_seasonal['SON']},
-  "Niño 3.4": {"DJF": nino_seasonal['DJF'], "MAM": nino_seasonal['MAM'], "JJA": nino_seasonal['JJA'], "SON": nino_seasonal['SON']},
-  "PDO": {"DJF": pdo_seasonal['DJF'], "MAM": pdo_seasonal['MAM'], "JJA": pdo_seasonal['JJA'], "SON": pdo_seasonal['SON']},
-  "PNA": {"DJF": pna_seasonal['DJF'], "MAM": pna_seasonal['MAM'], "JJA": pna_seasonal['JJA'], "SON": pna_seasonal['SON']},
-  "QBO": {"DJF": qbo_seasonal['DJF'], "MAM": qbo_seasonal['MAM'], "JJA": qbo_seasonal['JJA'], "SON": qbo_seasonal['SON']},
-  "SOI": {"DJF": soi_seasonal['DJF'], "MAM": soi_seasonal['MAM'], "JJA": soi_seasonal['JJA'], "SON": soi_seasonal['SON']},
   "NPMM": {"DJF": npmm_seasonal['DJF'], "MAM": npmm_seasonal['MAM'], "JJA": npmm_seasonal['JJA'], "SON": npmm_seasonal['SON']},
   "SPMM": {"DJF": spmm_seasonal['DJF'], "MAM": spmm_seasonal['MAM'], "JJA": spmm_seasonal['JJA'], "SON": spmm_seasonal['SON']},
+  "Niño 3.4": {"DJF": nino_seasonal['DJF'], "MAM": nino_seasonal['MAM'], "JJA": nino_seasonal['JJA'], "SON": nino_seasonal['SON']},
+  "ATL3": {"DJF": atl3_seasonal['DJF'], "MAM": atl3_seasonal['MAM'], "JJA": atl3_seasonal['JJA'], "SON": atl3_seasonal['SON']},
+  "TNA": {"DJF": tna_seasonal['DJF'], "MAM": tna_seasonal['MAM'], "JJA": tna_seasonal['JJA'], "SON": tna_seasonal['SON']},
   "IOB": {"DJF": iob_seasonal['DJF'], "MAM": iob_seasonal['MAM'], "JJA": iob_seasonal['JJA'], "SON": iob_seasonal['SON']},
   "IOD": {"DJF": iod_seasonal['DJF'], "MAM": iod_seasonal['MAM'], "JJA": iod_seasonal['JJA'], "SON": iod_seasonal['SON']},
   "SIOD": {"DJF": siod_seasonal['DJF'], "MAM": siod_seasonal['MAM'], "JJA": siod_seasonal['JJA'], "SON": siod_seasonal['SON']},
-  "TNA": {"DJF": tna_seasonal['DJF'], "MAM": tna_seasonal['MAM'], "JJA": tna_seasonal['JJA'], "SON": tna_seasonal['SON']},
-  "ATL3": {"DJF": atl3_seasonal['DJF'], "MAM": atl3_seasonal['MAM'], "JJA": atl3_seasonal['JJA'], "SON": atl3_seasonal['SON']},
   "SASD1": {"DJF": sasd1_seasonal['DJF'], "MAM": sasd1_seasonal['MAM'], "JJA": sasd1_seasonal['JJA'], "SON": sasd1_seasonal['SON']}
 }
 
 # Full time series:
 index_dict_total = {
-  "AMO": amo,
-  "AO": ao,
-  "NAO": nao,
-  "Niño 3.4": nino,
-  "PDO": pdo,
-  "PNA": pna,
-  "QBO": qbo,
-  "SOI": soi,
   "NPMM": npmm,
   "SPMM": spmm,
+  "Niño 3.4": nino,
+  "ATL3": atl3,
+  "TNA": tna,
   "IOB": iob,
   "IOD": iod,
   "SIOD": siod,
-  "TNA": tna,
-  "ATL3": atl3,
   "SASD1": sasd1
 }
 
 # Group all the data in a single matrix
-index_amo = np.column_stack((np.array(amo_seasonal['DJF']), np.array(amo_seasonal['MAM'])[:-3], np.array(amo_seasonal['JJA'])[:-3], np.array(amo_seasonal['SON'])[:-3]))
-index_ao = np.column_stack((np.array(ao_seasonal['DJF']), np.array(ao_seasonal['MAM'])[:-3], np.array(ao_seasonal['JJA'])[:-3], np.array(ao_seasonal['SON'])[:-3]))
-index_nao = np.column_stack((np.array(nao_seasonal['DJF']), np.array(nao_seasonal['MAM'])[:-3], np.array(nao_seasonal['JJA'])[:-3], np.array(nao_seasonal['SON'])[:-3]))
-index_nino = np.column_stack((np.array(nino_seasonal['DJF']), np.array(nino_seasonal['MAM'])[:-3], np.array(nino_seasonal['JJA'])[:-3], np.array(nino_seasonal['SON'])[:-3]))
-index_pdo = np.column_stack((np.array(pdo_seasonal['DJF']), np.array(pdo_seasonal['MAM'])[:-3], np.array(pdo_seasonal['JJA'])[:-3], np.array(pdo_seasonal['SON'])[:-3]))
-index_pna = np.column_stack((np.array(pna_seasonal['DJF']), np.array(pna_seasonal['MAM'])[:-3], np.array(pna_seasonal['JJA'])[:-3], np.array(pna_seasonal['SON'])[:-3]))
-index_qbo = np.column_stack((np.array(qbo_seasonal['DJF']), np.array(qbo_seasonal['MAM'])[:-3], np.array(qbo_seasonal['JJA'])[:-3], np.array(qbo_seasonal['SON'])[:-3]))
-index_soi = np.column_stack((np.array(soi_seasonal['DJF']), np.array(soi_seasonal['MAM'])[:-3], np.array(soi_seasonal['JJA'])[:-3], np.array(soi_seasonal['SON'])[:-3]))
 index_npmm = np.column_stack((np.array(npmm_seasonal['DJF']), np.array(npmm_seasonal['MAM'])[:-3], np.array(npmm_seasonal['JJA'])[:-3], np.array(npmm_seasonal['SON'])[:-3]))
 index_spmm = np.column_stack((np.array(spmm_seasonal['DJF']), np.array(spmm_seasonal['MAM'])[:-3], np.array(spmm_seasonal['JJA'])[:-3], np.array(spmm_seasonal['SON'])[:-3]))
+index_nino = np.column_stack((np.array(nino_seasonal['DJF']), np.array(nino_seasonal['MAM'])[:-3], np.array(nino_seasonal['JJA'])[:-3], np.array(nino_seasonal['SON'])[:-3]))
+index_atl3 = np.column_stack((np.array(atl3_seasonal['DJF']), np.array(atl3_seasonal['MAM'])[:-3], np.array(atl3_seasonal['JJA'])[:-3], np.array(atl3_seasonal['SON'])[:-3]))
+index_tna = np.column_stack((np.array(tna_seasonal['DJF']), np.array(tna_seasonal['MAM'])[:-3], np.array(tna_seasonal['JJA'])[:-3], np.array(tna_seasonal['SON'])[:-3]))
 index_iob = np.column_stack((np.array(iob_seasonal['DJF']), np.array(iob_seasonal['MAM'])[:-3], np.array(iob_seasonal['JJA'])[:-3], np.array(iob_seasonal['SON'])[:-3]))
 index_iod = np.column_stack((np.array(iod_seasonal['DJF']), np.array(iod_seasonal['MAM'])[:-3], np.array(iod_seasonal['JJA'])[:-3], np.array(iod_seasonal['SON'])[:-3]))
 index_siod = np.column_stack((np.array(siod_seasonal['DJF']), np.array(siod_seasonal['MAM'])[:-3], np.array(siod_seasonal['JJA'])[:-3], np.array(siod_seasonal['SON'])[:-3]))
-index_tna = np.column_stack((np.array(tna_seasonal['DJF']), np.array(tna_seasonal['MAM'])[:-3], np.array(tna_seasonal['JJA'])[:-3], np.array(tna_seasonal['SON'])[:-3]))
-index_atl3 = np.column_stack((np.array(atl3_seasonal['DJF']), np.array(atl3_seasonal['MAM'])[:-3], np.array(atl3_seasonal['JJA'])[:-3], np.array(atl3_seasonal['SON'])[:-3]))
 index_sasd1 = np.column_stack((np.array(sasd1_seasonal['DJF']), np.array(sasd1_seasonal['MAM'])[:-3], np.array(sasd1_seasonal['JJA'])[:-3], np.array(sasd1_seasonal['SON'])[:-3]))
 
 #----------------- Figures for all CVMs -------------------------------------------------------------
@@ -169,9 +92,11 @@ yr = np.arange(0, 126)
 
 # Store all indexes in a list to iterate over them
 
-list_indexes = [index_amo, index_ao, index_nao, index_nino, index_pdo, index_pna, index_qbo, index_soi, index_npmm, index_spmm, index_iob, index_iod, index_siod, index_tna, index_atl3, index_sasd1]
-title_strings = ["AMO Index", "AO Index", "NAO Index", "El Niño 3.4 Index", "PDO Index", "PNA Index", "QBO Index", "SOI Index", "NPMM Index", "SPMM Index", "IOB Index", "IOD Index", "SIOD Index", "TNA Index", "ATL3 Index", "SASD1 Index"]
-fileout_cmvs = ["index_seasons_amo", "index_seasons_ao", "index_seasons_nao", "index_seasons_nino", "index_seasons_pdo", "index_seasons_pna", "index_seasons_qbo", "index_seasons_soi", "index_seasons_npmm", "index_seasons_spmm", "index_seasons_iob", "index_seasons_iod", "index_seasons_siod", "index_seasons_tna", "index_seasons_atl3", "index_seasons_sasd1"]
+list_indexes = [index_npmm, index_spmm, index_nino, index_atl3, index_tna, index_iob, index_iod, index_siod, index_sasd1]
+
+title_strings = ["NPMM Index", "SPMM Index", "El Niño 3.4 Index", "ATL3 Index", "TNA Index", "IOB Index", "IOD Index", "SIOD Index", "SASD1 Index"]
+
+fileout_cmvs = ["index_seasons_npmm", "index_seasons_spmm", "index_seasons_nino", "index_seasons_atl3", "index_seasons_tna", "index_seasons_iob", "index_seasons_iod", "index_seasons_siod", "index_seasons_sasd1"]
 
 # Configure matrices to store the slope and confidence intervals for each CVM in the linear regression
 matrix_slope = np.zeros((16, 4))
@@ -234,7 +159,8 @@ bar_width = 0.2
 fig, ax = plt.subplots(figsize=(16, 5))
 
 seasons = ['DJF', 'MAM', 'JJA', 'SON']
-index_names = ['AMO', 'AO', 'NAO', 'Niño 3.4', 'PDO', 'PNA', 'QBO', 'SOI', 'NPMM', 'SPMM', 'IOB', 'IOD', 'SIOD', 'TNA', 'ATL3', 'SASD1']
+
+index_names = ['NPMM', 'SPMM', 'Niño 3.4', 'ATL3', 'TNA', 'IOB', 'IOD', 'SIOD', 'SASD1']
 
 # Loop over each season and plot bars with error bars
 for i in range(num_seasons):
