@@ -1,7 +1,10 @@
 # mcts_4_r0.py
 
 # This script analyzes the different climate variability modes and their relationship with the SSSR 
-# R0 data, in the form correlation maps. 
+# R0 data, in the form correlation maps with statistical significance. The script briefly generates
+# timeseries for the climate variability modes to be analyzed, then performs correlation analysis
+# with the MonteCarlo method between said variability modes and the R0 data. The correlation
+# results are saved in later NCDF files for further analysis.
 
 
 # Load necesary libraries
