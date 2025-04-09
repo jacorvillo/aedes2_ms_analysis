@@ -5,7 +5,7 @@
 #' it to the SSSRs detected in the aforementioned script, with the boxes defined by 
 #' Iturbide et al., 2020. Additionally, this script also computes temperature-dependent Climate
 #' Variability indices with the detrended temperature data obtained in temp_trend.R, saving the 
-#' data in .dat files for the subsequent analysis in the following correlation and causality scripts.
+#' data in .dat files for the subsequent correlation and causality analysis.
 
 
 # Set working directory
