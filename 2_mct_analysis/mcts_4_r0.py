@@ -6,7 +6,6 @@
 # with the MonteCarlo method between said variability modes and the R0 data. The correlation
 # results are saved in later NCDF files for further analysis.
 
-
 # Load necesary libraries
 
 import xarray as xr
@@ -17,7 +16,7 @@ import pandas as pd
 # Source the python functions
 exec(open("0_data_and_functions/python_functions.py").read())
 
-# --- Climate Variability Modes (CVMs) Analysis ---
+# Climate Variability Modes (CVMs) Analysis-------------------------------------------------------
 
 npmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/npmm.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
 spmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/spmm.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
@@ -28,7 +27,6 @@ iob = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/iob.
 iod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/iod.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
 siod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/siod.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
 sasd1 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/sasd.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-
 
 # Obtain seasonal data for each variable, knowing that the arrays go from Mar 1980 to Nov 2021
 start_date = '1980-03-01'
@@ -84,7 +82,7 @@ index_iod = np.column_stack((np.array(iod_seasonal['DJF']), np.array(iod_seasona
 index_siod = np.column_stack((np.array(siod_seasonal['DJF']), np.array(siod_seasonal['MAM'])[:-3], np.array(siod_seasonal['JJA'])[:-3], np.array(siod_seasonal['SON'])[:-3]))
 index_sasd1 = np.column_stack((np.array(sasd1_seasonal['DJF']), np.array(sasd1_seasonal['MAM'])[:-3], np.array(sasd1_seasonal['JJA'])[:-3], np.array(sasd1_seasonal['SON'])[:-3]))
 
-#----------------- Figures for all CVMs -------------------------------------------------------------
+# Figures for all CVMs -----------------------------------------------------------------------------
 
 # Current evolution of the CVMs and associated linear trends:
 
@@ -377,7 +375,7 @@ save_total_correlation_to_netcdf(nh_sig_maps_total, '4_outputs/data/correlation_
 save_total_correlation_to_netcdf(sh_corr_maps_total, '4_outputs/data/correlation_and_causality/nh_correlation_significance_total.nc')
 save_total_correlation_to_netcdf(sh_sig_maps_total, '4_outputs/data/correlation_and_causality/sh_correlation_significance_total.nc')
 
-global_data = xr.open_dataset("4_outputs/data/sssrs/global.nc")
+global_data = xr.open_dataset("4_outputs/data/detrended_vars/detrended_r_nought_data.nc")
 datasets = {
   "Global": global_data,
 }

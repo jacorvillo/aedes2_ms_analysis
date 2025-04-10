@@ -18,7 +18,7 @@ library(reshape2)
 library(ncdf4)
 library(s2dv)
 
-# -- SSSR data handling -- #
+# SSSR data handling -------------------------------------------------------------------------------
 # Load monthly data and trim it from 1980:2021
 
 years <- 1980:2021
@@ -156,7 +156,7 @@ quicksave(r_nought_data, nau, lon, lat, "4_outputs/data/sssrs/r9.nc")
 quicksave(r_nought_data, eau, lon, lat, "4_outputs/data/sssrs/r10.nc")
 quicksave(r_nought_data, med, lon, lat, "4_outputs/data/sssrs/r11.nc")
 
-# -- CV indices data handling -- #
+# CV indices data handling-------------------------------------------------------------------------
 
 # Read the detrended temperature data
 nc_file <- nc_open("4_outputs/data/detrended_vars/detrended_tas_3d.nc")
@@ -170,7 +170,6 @@ nino34_region <- list(lat = c(-5, 5), lon = c(-170, -120))
 atl3_region <- list(lat = c(-3, 3), lon = c(-20, 0))
 tna_region <- list(lat = c(5.5, 23.5), lon = c(-57.5, -15))
 iob_region <- list(lat = c(-30, 30), lon = c(30, 120))
-
 
 npmm <- calculate_temp_index(dtemps, npmm_region, std = TRUE)
 spmm <- calculate_temp_index(dtemps, spmm_region, std = TRUE)

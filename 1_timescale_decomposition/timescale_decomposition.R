@@ -11,7 +11,9 @@
 #' 
 #' 2. Temperature-based: Assumes that the rate of change of the R0 signal is related to the
 #' warming of the planet. A quick LOESS analysis is performed to find the optimal span for the LOESS
-#' for the R0 vs temperature regression, using the 1D detrended temperature obtained in temp_detrend.
+#' for the R0 vs temperature regression, using the 1D detrended temperature obtained in 
+#' temp_detrend.R. 
+#' 
 #' The obtained R0 vs temperature is later transformed into the time dimension, which, following 
 #' the  methodology of Greene et al., 2011, consitutes the temperature-based trend. The seasonal and
 #' decadal components are obtained from the detrended data, with a 120-month frequency Butterworth
@@ -517,7 +519,7 @@ s2dv::PlotEquiMap(
   size_units = "in"
 )
 
-# Difference/ratio maps between the two approaches ------------------------------------------------
+################ Ratio of the components between time-based and temperature-based TD ###############
 
 # ratio_trend <- percentage_trend_temp[150, 230] / percentage_trend_time[150, 230]
 # ratio_seasonal <- percentage_seasonal_temp / percentage_seasonal_time
@@ -607,7 +609,7 @@ s2dv::PlotEquiMap(
 # Merging of all plots:
 
 
-# ---- Timeseries for one grid point (150, 230) ---- #
+############# Timeseries for one grid point (nlat = 150, nlon = 230) #######################
 
 # Extract original signal for the point
 original_signal <- combined_data[, 150, 230]
@@ -694,7 +696,7 @@ g <- plot_grid(
 # Save the combined plot
 ggsave("4_outputs/figures/timeseries_decomposition.eps", g, width = 10, height = 8)
 
-# --- Save the detrended R0 data through Temperature-based TD to a NetCDF file --- #
+########### Save detrended R0 data through Temperature-based TD to a NetCDF file #############
 
 # Define the dimensions
 time_dates <- seq(as.Date("1980-03-01"), as.Date("2021-11-01"), by = "month")

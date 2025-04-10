@@ -44,7 +44,7 @@ for (month in 1:12) {
 # the noise from interannual and interdecadal variability in the process)
 median_data <- apply(combined_data, 1, median, na.rm = TRUE)
 
-# LOESS analysis for the temperature time series ---------------------------------------------------
+# LOESS analysis for the monthly median temperature time series ------------------------------------
 
 # LOESS regression takes away the last remainders of the noise in the temperature data, though we
 # need to obtain an ideal span window for the LOESS regression. The goal with this analysis is to 
@@ -200,7 +200,7 @@ optimal_model_yearly <- loess(
 
 detrended_yearly_data <- predict(optimal_model_yearly)
 
-# -- Plotting the results ---
+# Plotting the results ----------------------------------------------------------------------------
 
 # Create data frames
 
@@ -277,7 +277,7 @@ g <- plot_grid(
 ggsave("4_outputs/figures/temperature_trends.png", g, width = 15, height = 10, units = "in")
 ggsave("4_outputs/figures/temperature_trends.eps", g, width = 15, height = 10, units = "in")
 
-# --- Save the detrended monthly data (1D) to a NetCDF file --- #
+# Save the detrended monthly data (1D) to a NetCDF file -------------------------------------------
 
 # Define the dimensions
 dim_time <- ncdim_def("time", "days since 1980-01-01", 1:(42 * 12))
@@ -298,7 +298,7 @@ ncvar_put(nc_file, var_detrended_data_data, detrended_monthly_data)
 # Close the NetCDF file
 nc_close(nc_file)
 
-# --- Detrend the monthly data (3D) with the same span as 1D, then save to a NetCDF file --- #
+# Detrend the monthly data (3D) with the same span as 1D, then save to a NetCDF file --------------
 
 # (This one takes a while...)
 
