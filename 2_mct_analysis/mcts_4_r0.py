@@ -188,17 +188,17 @@ plt.close('all')
 #----------- Correlation Analysis between CVMs and SSSR data ----------------------------------------
 
 # Load SSSR data:
-nca = xr.open_dataset("0_data/sssrs/r1.nc")
-cna = xr.open_dataset("0_data/sssrs/r2.nc")
-ena = xr.open_dataset("0_data/sssrs/r3.nc")
-sas = xr.open_dataset("0_data/sssrs/r4.nc")
-eas = xr.open_dataset("0_data/sssrs/r5.nc")
-ses = xr.open_dataset("0_data/sssrs/r6.nc")
-esaf = xr.open_dataset("0_data/sssrs/r7.nc")
-mdg = xr.open_dataset("0_data/sssrs/r8.nc")
-nau = xr.open_dataset("0_data/sssrs/r9.nc")
-eau = xr.open_dataset("0_data/sssrs/r10.nc")
-med = xr.open_dataset("0_data/sssrs/r11.nc")
+nca = xr.open_dataset("4_outputs/data/sssrs/r1.nc")
+cna = xr.open_dataset("4_outputs/data/sssrs/r2.nc")
+ena = xr.open_dataset("4_outputs/data/sssrs/r3.nc")
+sas = xr.open_dataset("4_outputs/data/sssrs/r4.nc")
+eas = xr.open_dataset("4_outputs/data/sssrs/r5.nc")
+ses = xr.open_dataset("4_outputs/data/sssrs/r6.nc")
+esaf = xr.open_dataset("4_outputs/data/sssrs/r7.nc")
+mdg = xr.open_dataset("4_outputs/data/sssrs/r8.nc")
+nau = xr.open_dataset("4_outputs/data/sssrs/r9.nc")
+eau = xr.open_dataset("4_outputs/data/sssrs/r10.nc")
+med = xr.open_dataset("4_outputs/data/sssrs/r11.nc")
 
 # Dictionary of datasets
 datasets = {
