@@ -327,7 +327,9 @@ for (nlat in seq_along(lat)) {
 }
 
 # Define the dimensions
-dim_time <- ncdim_def("time", "days since 1980-01-01", 1:(42 * 12))
+time_dates <- seq(as.Date("1980-01-01"), as.Date("2021-12-01"), by = "month")
+dim_time <- ncdim_def("time", "days since 1980-01-01",
+  as.numeric(time_dates - as.Date("1980-01-01")))
 dim_lat <- ncdim_def("lat", "degrees_north", lat)
 dim_lon <- ncdim_def("lon", "degrees_east", lon)
 

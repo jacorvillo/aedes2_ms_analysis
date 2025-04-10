@@ -697,7 +697,8 @@ ggsave("4_outputs/figures/timeseries_decomposition.eps", g, width = 10, height =
 # --- Save the detrended R0 data through Temperature-based TD to a NetCDF file --- #
 
 # Define the dimensions
-dim_time <- ncdim_def("time", "days since 1980-01-01", 1:(42 * 12 - 3))
+time_dates <- seq(as.Date("1980-03-01"), as.Date("2021-11-01"), by = "month")
+dim_time <- ncdim_def("time", "days since 1980-03-01", as.numeric(time_dates - as.Date("1980-03-01")))
 dim_lat <- ncdim_def("lat", "degrees_north", lat)
 dim_lon <- ncdim_def("lon", "degrees_east", lon)
 
