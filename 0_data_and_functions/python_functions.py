@@ -49,16 +49,6 @@ def calc_conf_interval(slope, stderr, alpha=0.05):
   t_val = stats.t.ppf(1 - alpha/2, df=len(yr) - 2)
   return slope - t_val * stderr, slope + t_val * stderr
 
-def process_seasonal(dataset, season):
-  data = dataset.sel(time=dataset.time.dt.season == season).combined_data
-  return np.nanmedian(
-    np.reshape(
-      np.array(data), 
-      (data.shape[0], data.shape[1], int(data.shape[2] / 3), 3)
-    ), 
-    axis=3
-  )
-
 def process_seasonal_detrended(dataset, season):
   data = dataset.sel(time=dataset.time.dt.season == season).detrended_data
   return np.array(data)
