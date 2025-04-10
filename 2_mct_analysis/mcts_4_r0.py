@@ -296,7 +296,7 @@ plot_dicts_cartopy(sh_detrended_dict, sh_spatial_dict, ['DJF', 'MAM', 'JJA', 'SO
 # --- Seasonal Correlation Analysis ---
 
 # Define common parameters for plotting
-indices = ['AMO', 'AO', 'NAO', 'Niño 3.4', 'PDO', 'PNA', 'QBO', 'SOI', 'NPMM', 'SPMM', 'IOB', 'IOD', 'SIOD', 'TNA', 'ATL3', 'SASD1']
+indices = ["NPMM", "SPMM", "Niño 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
 nh_params = {
   'r_nought_dict': nh_detrended_dict,
   'spatial_dict': nh_spatial_dict,
@@ -392,7 +392,7 @@ save_total_correlation_to_netcdf(nh_sig_maps_total, '4_outputs/correlation_and_c
 save_total_correlation_to_netcdf(sh_corr_maps_total, '4_outputs/correlation_and_causality/nh_correlation_significance_total.nc')
 save_total_correlation_to_netcdf(sh_sig_maps_total, '4_outputs/correlation_and_causality/sh_correlation_significance_total.nc')
 
-global_data = xr.open_dataset("0_data/sssrs/global.nc")
+global_data = xr.open_dataset("4_outputs/data/sssrs/global.nc")
 datasets = {
   "Global": global_data,
 }
