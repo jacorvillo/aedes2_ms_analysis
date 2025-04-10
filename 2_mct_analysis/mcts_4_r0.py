@@ -217,15 +217,10 @@ datasets = {
 }
 
 # Dictionary to store processed data
-processed_data = {}
 processed_detrended_data = {}
 
 # Process each dataset
 for region, dataset in datasets.items():
-  processed_data[region] = {
-    season: process_seasonal(dataset, season)
-    for season in ['DJF', 'MAM', 'JJA', 'SON']
-  }
   processed_detrended_data[region] = {
     season: process_seasonal_detrended(dataset, season)
     for season in ['DJF', 'MAM', 'JJA', 'SON']
@@ -234,9 +229,6 @@ for region, dataset in datasets.items():
 # Split into hemispheric dictionaries
 nh_regions = ['NCA', 'CNA', 'ENA', 'MED', 'SAS', 'EAS']
 sh_regions = ['SES', 'ESAF', 'MDG', 'NAU', 'EAU']
-
-nh_dict = {region: processed_data[region] for region in nh_regions}
-sh_dict = {region: processed_data[region] for region in sh_regions}
 
 nh_detrended_dict = {region: processed_detrended_data[region] for region in nh_regions}
 sh_detrended_dict = {region: processed_detrended_data[region] for region in sh_regions}
@@ -399,21 +391,15 @@ datasets = {
 }
 
 # Dictionary to store processed data
-processed_data = {}
 processed_detrended_data = {}
 
 # Process each dataset
 for region, dataset in datasets.items():
-  processed_data[region] = {
-    season: process_seasonal(dataset, season)
-    for season in ['DJF', 'MAM', 'JJA', 'SON']
-  }
   processed_detrended_data[region] = {
     season: process_seasonal_detrended(dataset, season)
     for season in ['DJF', 'MAM', 'JJA', 'SON']
   }
 
-global_dict = {'Global': processed_data['Global']}
 global_detrended_dict = {'Global': processed_detrended_data['Global']}
 
 regions = {
