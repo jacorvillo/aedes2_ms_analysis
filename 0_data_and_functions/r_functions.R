@@ -106,6 +106,24 @@ calculate_temp_index <- function(data, region, std) {
   return(standardized_anomalies)
 }
 
+write_formatted_index <- function(df, filename) {
+  # Create a header line with proper spacing
+  header <- paste("Year", paste(sprintf("%6s", months), collapse = ""))
+  
+  # Open the file and write the header
+  con <- file(filename, "w")
+  writeLines(header, con)
+  
+  # Write the data with proper formatting
+  for (i in 1:nrow(df)) {
+    year_str <- sprintf(" %4d", df$Year[i])
+    values_str <- paste(sprintf("%8.3f", unlist(df[i, 2:13])), collapse = "")
+    line <- paste0(year_str, values_str)
+    writeLines(line, con)
+  }
+  close(con)
+}
+
 
 load_correlation_data <- function(nc_file, nc_sig_file) {
   # Open NetCDF files
