@@ -324,10 +324,10 @@ for idx in indices:
   )
 
 # Save the correlation and significance maps
-save_seasonal_correlation_to_netcdf(nh_corr_maps, '4_outputs/correlation_and_causality/nh_correlation_seasonal.nc')
-save_seasonal_correlation_to_netcdf(sh_corr_maps, '4_outputs/correlation_and_causality/sh_correlation_seasonal.nc')
-save_seasonal_correlation_to_netcdf(nh_sig_maps, '4_outputs/correlation_and_causality/nh_correlation_significance_seasonal.nc')
-save_seasonal_correlation_to_netcdf(sh_sig_maps, '4_outputs/correlation_and_causality/sh_correlation_significance_seasonal.nc')
+save_seasonal_correlation_to_netcdf(nh_corr_maps, '4_outputs/data/correlation_and_causality/nh_correlation_seasonal.nc')
+save_seasonal_correlation_to_netcdf(sh_corr_maps, '4_outputs/data/correlation_and_causality/sh_correlation_seasonal.nc')
+save_seasonal_correlation_to_netcdf(nh_sig_maps, '4_outputs/data/correlation_and_causality/nh_correlation_significance_seasonal.nc')
+save_seasonal_correlation_to_netcdf(sh_sig_maps, '4_outputs/data/correlation_and_causality/sh_correlation_significance_seasonal.nc')
 
 # --- Total Correlation Analysis ---
 
@@ -372,10 +372,10 @@ for idx in indices:
   )
 
 # Save the correlation and significance maps
-save_total_correlation_to_netcdf(nh_corr_maps_total, '4_outputs/correlation_and_causality/nh_correlation_total.nc')
-save_total_correlation_to_netcdf(nh_sig_maps_total, '4_outputs/correlation_and_causality/sh_correlation_total.nc')
-save_total_correlation_to_netcdf(sh_corr_maps_total, '4_outputs/correlation_and_causality/nh_correlation_significance_total.nc')
-save_total_correlation_to_netcdf(sh_sig_maps_total, '4_outputs/correlation_and_causality/sh_correlation_significance_total.nc')
+save_total_correlation_to_netcdf(nh_corr_maps_total, '4_outputs/data/correlation_and_causality/nh_correlation_total.nc')
+save_total_correlation_to_netcdf(nh_sig_maps_total, '4_outputs/data/correlation_and_causality/sh_correlation_total.nc')
+save_total_correlation_to_netcdf(sh_corr_maps_total, '4_outputs/data/correlation_and_causality/nh_correlation_significance_total.nc')
+save_total_correlation_to_netcdf(sh_sig_maps_total, '4_outputs/data/correlation_and_causality/sh_correlation_significance_total.nc')
 
 global_data = xr.open_dataset("4_outputs/data/sssrs/global.nc")
 datasets = {
@@ -443,8 +443,8 @@ for idx in indices:
   )
 
 # Save the correlation and significance maps
-save_seasonal_correlation_to_netcdf(global_corr_maps, '4_outputs/correlation_and_causality/global_correlation_seasonal.nc')
-save_seasonal_correlation_to_netcdf(global_sig_maps, '4_outputs/correlation_and_causality/global_correlation_significance_seasonal.nc')
+save_seasonal_correlation_to_netcdf(global_corr_maps, '4_outputs/data/correlation_and_causality/global_correlation_seasonal.nc')
+save_seasonal_correlation_to_netcdf(global_sig_maps, '4_outputs/data/correlation_and_causality/global_correlation_significance_seasonal.nc')
 
 # Dictionaries to store correlation and significance maps
 global_corr_maps_total = {}
@@ -468,5 +468,5 @@ for idx in indices:
     **params
   )
 
-save_total_correlation_to_netcdf(global_corr_maps_total, '4_outputs/correlation_and_causality/sh_correlation_total.nc')
-save_total_correlation_to_netcdf(global_sig_maps_total, '4_outputs/correlation_and_causality/nh_correlation_significance_total.nc')
+save_total_correlation_to_netcdf(global_corr_maps_total, '4_outputs/data/correlation_and_causality/sh_correlation_total.nc')
+save_total_correlation_to_netcdf(global_sig_maps_total, '4_outputs/data/correlation_and_causality/nh_correlation_significance_total.nc')
