@@ -276,14 +276,6 @@ sh_spatial_dict = spatial_dicts['sh_spatial_dict']
 nh_total_dict = total_dicts['nh_total_dict']
 sh_total_dict = total_dicts['sh_total_dict']
 
-# Plot detrended median of medians:
-
-# For the northern hemisfere:
-plot_dicts_cartopy(nh_detrended_dict, nh_spatial_dict, ['DJF', 'MAM', 'JJA', 'SON'], np.linspace(-1, 6, 20), '4_outputs/figures/nh_seasonal_medians_detrended_test.png', midpoint = 1, colmap = "coolwarm", title = 'R0 Maps by Season and Region (Detrended Median of Seasonal Medians)')
-
-# For the southern hemisfere:
-plot_dicts_cartopy(sh_detrended_dict, sh_spatial_dict, ['DJF', 'MAM', 'JJA', 'SON'], np.linspace(-1, 6, 20), '4_outputs/figures/sh_seasonal_medians_detrended.png', midpoint = 1, colmap = "coolwarm", title = 'R0 Maps by Season and Region (Detrended Median of Seasonal Medians)')
-
 # Correlation computation:
 
 # --- Seasonal Correlation Analysis ---
@@ -430,11 +422,6 @@ global_total_dict = total_dicts['global_total_dict']
 
 global_corr_maps = {}
 global_sig_maps = {}
-
-
-# Plot detrended median of medians:
-
-plot_dicts_global(global_detrended_dict, global_spatial_dict, ['DJF', 'MAM', 'JJA', 'SON'], np.linspace(0, 6, 20), '4_outputs/figures/global_seasonal_medians_detrended.png', midpoint = 1, colmap = "coolwarm", title = 'R0 Maps by Season and Region (Median of Seasonal Medians)')
 
 # Define common parameters
 params = {

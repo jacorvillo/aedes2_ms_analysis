@@ -53,61 +53,6 @@ def process_seasonal_detrended(dataset, season):
   data = dataset.sel(time=dataset.time.dt.season == season).detrended_data
   return np.array(data)
 
-def plot_dicts_cartopy(r_nought_dict, spatial_dict, seasons, levs, fileout_name, midpoint, colmap, title):
-  """
-  Plots median of maps in r_nought_dict for the first time dimension (SSSR data)
-
-  Parameters:
-  - r_nought_dict: Dictionary where keys are region names and values are dictionaries with seasonal data.
-  - spatial_dict: Dictionary with spatial information (lat, lon) for each region.
-  - seasons: List of seasons to plot.
-  - levs: Levels for contour plots.
-  - fileout_name: Output file name for the plot.
-  - midpoint: Midpoint for the colormap normalization (optional).
-  """
-  # Define the size of each subplot
-  subplot_width = 5
-  subplot_height = 4
-
-  # Calculate the overall figure size
-  fig_width = subplot_width * len(r_nought_dict)
-  fig_height = subplot_height * len(seasons)
-
-  fig, axs = plt.subplots(len(seasons), len(r_nought_dict), figsize=(fig_width, fig_height), subplot_kw={'projection': ccrs.PlateCarree()})
-  axs = axs.reshape(len(seasons), len(r_nought_dict))
-
-  # Define common color levels and colormap
-  cmap = plt.get_cmap(colmap)
-
-  # Normalize the colormap to set the midpoint if provided
-  if midpoint is not None:
-    norm = mc.TwoSlopeNorm(vmin=np.min(levs), vcenter=midpoint, vmax=np.max(levs))
-  else:
-    norm = plt.Normalize(vmin=np.min(levs), vmax=np.max(levs))
-
-  for i, (region, data) in enumerate(r_nought_dict.keys()):
-    lat = spatial_dict[region]['lat']
-    lon = spatial_dict[region]['lon']
-    for j, season in enumerate(seasons):
-      ax = axs[j, i]
-      ax.set_title(f'{region} - {season}', fontsize=10)
-      A = r_nought_dict[region][season]
-      A = np.nanmedian(A, axis = 2)
-      cf = ax.contourf(lon, lat, np.transpose(A), cmap=cmap, levels=levs, norm=norm, extend='both', transform=ccrs.PlateCarree())
-      ax.coastlines()
-      gl = ax.gridlines(draw_labels=True)
-      gl.ylabels_right = False
-      gl.xlabels_top = False
-
-  # Add a common colorbar at the bottom
-  cbar_ax = fig.add_axes([0.2, 0.05, 0.6, 0.02])
-  fig.colorbar(cf, cax=cbar_ax, orientation='horizontal', label='R0 Value')
-
-  plt.suptitle(title, fontsize=16)
-  plt.tight_layout(rect=[0, 0.1, 1, 0.96])
-  plt.savefig(fileout_name)
-  plt.close()
-
 def save_seasonal_correlation_to_netcdf(correlation_dict, output_filename):
   """
   Saves correlation maps from multiple climate indices into a single NetCDF file.
@@ -192,64 +137,6 @@ def save_total_correlation_to_netcdf(correlation_dict, output_filename):
 
   # Save to NetCDF file
   ds.to_netcdf(output_filename)
-
-def plot_dicts_global(r_nought_dict, spatial_dict, seasons, levs, fileout_name, midpoint, colmap, title):
-    """
-    Plots all maps in r_nought_dict for the first time dimension.
-
-    Parameters:
-    - r_nought_dict: Dictionary where keys are region names and values are dictionaries with seasonal data.
-    - spatial_dict: Dictionary with spatial information (lat, lon) for each region.
-    - seasons: List of seasons to plot.
-    - levs: Levels for contour plots.
-    - fileout_name: Output file name for the plot.
-    - midpoint: Midpoint for the colormap normalization (optional).
-    """
-    # Define the size of each subplot
-    subplot_width = 10
-    subplot_height = 8
-
-    # Calculate the overall figure size
-    fig_width = subplot_width * 2
-    fig_height = subplot_height * 2
-
-    fig, axs = plt.subplots(2, 2, figsize=(fig_width, fig_height), subplot_kw={'projection': ccrs.PlateCarree()})
-
-    # Define common color levels and colormap
-    cmap = plt.get_cmap(colmap)
-
-    # Normalize the colormap to set the midpoint if provided
-    if midpoint is not None:
-        norm = mc.TwoSlopeNorm(vmin=np.min(levs), vcenter=midpoint, vmax=np.max(levs))
-    else:
-        norm = plt.Normalize(vmin=np.min(levs), vmax=np.max(levs))
-
-    # Assuming r_nought_dict has only one region
-    region = list(r_nought_dict.keys())[0]
-    lat = spatial_dict[region]['lat']
-    lon = spatial_dict[region]['lon']
-
-    for j, season in enumerate(seasons):
-        row = j // 2
-        col = j % 2
-        ax = axs[row, col]
-        ax.set_title(f'{region} - {season}', fontsize=10)
-        A = r_nought_dict[region][season]
-        A = np.nanmedian(A, axis=2)
-        cf = ax.contourf(lon, lat, np.transpose(A), cmap=cmap, levels=levs, norm=norm, extend='both', transform=ccrs.PlateCarree())
-        ax.coastlines()
-        gl = ax.gridlines(draw_labels=True)
-        gl.ylabels_right = False
-        gl.xlabels_top = False
-
-    # Add a common colorbar at the bottom
-    cbar_ax = fig.add_axes([0.2, 0.05, 0.6, 0.02])
-    fig.colorbar(cf, cax=cbar_ax, orientation='horizontal', label='R0 Value')
-
-    plt.suptitle(title, fontsize=16)
-    plt.tight_layout(rect=[0, 0.1, 1, 0.96])
-    plt.savefig(fileout_name)
-    plt.close()
 
 def pearsonr_2D(y, x):
   upper = np.sum((x - np.mean(x)) * (y - np.mean(y, axis=1)[:,None]), axis=1)
