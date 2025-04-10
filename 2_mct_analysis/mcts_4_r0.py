@@ -19,15 +19,16 @@ exec(open("0_data_and_functions/python_functions.py").read())
 
 # --- Climate Variability Modes (CVMs) Analysis ---
 
-npmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/npmm.dat", delim_whitespace=True).values, (503))[2:502]
-spmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/spmm.dat", delim_whitespace=True).values, (503))[2:502]
-nino = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/nino34.dat", delim_whitespace=True).values, (503))[2:502]
-atl3 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/atl3.dat", delim_whitespace=True).values, (503))[2:502]
-tna = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/tna.dat", delim_whitespace=True).values, (503))[2:502]
-iob = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/iob.dat", delim_whitespace=True).values, (503))[2:502]
-iod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/iod.dat", delim_whitespace=True).values, (503))[2:502]
-siod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/siod.dat", delim_whitespace=True).values, (503))[2:502]
-sasd1 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/sasd.dat", delim_whitespace=True).values, (503))[2:502]
+npmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/npmm.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+spmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/spmm.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+nino = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/nino34.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+atl3 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/atl3.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+tna = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/tna.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+iob = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/iob.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+iod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/iod.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+siod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/siod.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+sasd1 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/sasd.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+
 
 # Obtain seasonal data for each variable, knowing that the arrays go from Mar 1980 to Nov 2021
 start_date = '1980-03-01'
