@@ -88,7 +88,7 @@ index_sasd1 = np.column_stack((np.array(sasd1_seasonal['DJF']), np.array(sasd1_s
 
 # Current evolution of the CVMs and associated linear trends:
 
-yr = np.arange(0, 126)
+yr = np.arange(0, 123)
 
 # Store all indexes in a list to iterate over them
 
@@ -99,12 +99,12 @@ title_strings = ["NPMM Index", "SPMM Index", "El Niño 3.4 Index", "ATL3 Index",
 fileout_cmvs = ["index_seasons_npmm", "index_seasons_spmm", "index_seasons_nino", "index_seasons_atl3", "index_seasons_tna", "index_seasons_iob", "index_seasons_iod", "index_seasons_siod", "index_seasons_sasd1"]
 
 # Configure matrices to store the slope and confidence intervals for each CVM in the linear regression
-matrix_slope = np.zeros((16, 4))
-matrix_cinf = np.zeros((16, 4))
-matrix_csup = np.zeros((16, 4))
-matrix_intercept = np.zeros((16, 4))
+matrix_slope = np.zeros((9, 4))
+matrix_cinf = np.zeros((9, 4))
+matrix_csup = np.zeros((9, 4))
+matrix_intercept = np.zeros((9, 4))
 
-for select in range(16):
+for select in range(9):
 
   # Select the index to plot
   selected_index = list_indexes[select]
@@ -121,7 +121,7 @@ for select in range(16):
     # Trend
     slope, intercept, r_value, p_value, std_err = stats.linregress(yr, selected_index[:, ss])
     conf_int = calc_conf_interval(slope, std_err)
-    axs[ss].plot(yr, intercept + slope * yr, "r--", label=f'Linear trend (slope={slope:.2f})/n95% CI: [{conf_int[0]:.2f}, {conf_int[1]:.2f}]')
+    axs[ss].plot(yr, intercept + slope * yr, "r--", label=f'Linear trend (slope={slope:.2f})\n 95% CI: [{conf_int[0]:.2f}, {conf_int[1]:.2f}]')
 
     matrix_slope[select,ss] = slope
     matrix_cinf[select,ss] = conf_int[0]
@@ -156,7 +156,7 @@ x = np.arange(num_modes)
 bar_width = 0.2
 
 # Set up the figure and axes
-fig, ax = plt.subplots(figsize=(16, 5))
+fig, ax = plt.subplots(figsize=(9, 5))
 
 seasons = ['DJF', 'MAM', 'JJA', 'SON']
 
