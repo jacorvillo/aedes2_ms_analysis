@@ -70,10 +70,6 @@ quicksave <- function(var, box, lon, lat, filename) {
   nc_close(nc_file)
 }
 
-normalize <- function(x) {
-  (x - min(x, na.rm = TRUE)) / (max(x, na.rm = TRUE) - min(x, na.rm = TRUE))
-}
-
 calculate_temp_index <- function(data, region, std) {
 
   latmin_nino <- which.min(abs(lat - region$lat[1]))
