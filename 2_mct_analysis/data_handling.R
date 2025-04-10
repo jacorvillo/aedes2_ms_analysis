@@ -210,22 +210,36 @@ iod <- (iod - mean(iod, na.rm = TRUE)) / sd(iod, na.rm = TRUE)
 siod <- (siod - mean(siod, na.rm = TRUE)) / sd(siod, na.rm = TRUE)
 sasd1 <- (sasd1 - mean(sasd1, na.rm = TRUE)) / sd(sasd1, na.rm = TRUE)
 
-# Save the climate variability indices in dat files
-write.table(npmm, file = "4_outputs/data/climate_indices/computed_batch/npmm.dat", 
-  row.names = FALSE, col.names = FALSE)
-write.table(spmm, file = "4_outputs/data/climate_indices/computed_batch/spmm.dat", 
-  row.names = FALSE, col.names = FALSE)
-write.table(nino34, file = "4_outputs/data/climate_indices/computed_batch/nino34.dat", 
-  row.names = FALSE, col.names = FALSE)
-write.table(atl3, file = "4_outputs/data/climate_indices/computed_batch/atl3.dat", 
-  row.names = FALSE, col.names = FALSE)
-write.table(tna, file = "4_outputs/data/climate_indices/computed_batch/tna.dat", 
-  row.names = FALSE, col.names = FALSE)
-write.table(iob, file = "4_outputs/data/climate_indices/computed_batch/iob.dat", 
-  row.names = FALSE, col.names = FALSE)
-write.table(iod, file = "4_outputs/data/climate_indices/computed_batch/iod.dat", 
-  row.names = FALSE, col.names = FALSE)
-write.table(siod, file = "4_outputs/data/climate_indices/computed_batch/siod.dat", 
-  row.names = FALSE, col.names = FALSE)
-write.table(sasd1, file = "4_outputs/data/climate_indices/computed_batch/sasd.dat", 
-  row.names = FALSE, col.names = FALSE)
+# Format climate indices to match AMO data structure
+years <- 1980:2021
+months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+format_index_data <- function(index_data) {
+  # Reshape data into year-month format
+  matrix_data <- matrix(index_data, ncol = 12, byrow = TRUE)
+  df <- data.frame(Year = years, matrix_data)
+  names(df)[2:13] <- months
+  return(df)
+}
+
+# Format each index
+npmm_df <- format_index_data(npmm)
+spmm_df <- format_index_data(spmm)
+nino34_df <- format_index_data(nino34)
+atl3_df <- format_index_data(atl3)
+tna_df <- format_index_data(tna)
+iob_df <- format_index_data(iob)
+iod_df <- format_index_data(iod)
+siod_df <- format_index_data(siod)
+sasd_df <- format_index_data(sasd1)
+
+# Save each index with proper formatting
+write_formatted_index(npmm_df, "4_outputs/data/climate_indices/computed_batch/npmm.dat")
+write_formatted_index(spmm_df, "4_outputs/data/climate_indices/computed_batch/spmm.dat")
+write_formatted_index(nino34_df, "4_outputs/data/climate_indices/computed_batch/nino34.dat")
+write_formatted_index(atl3_df, "4_outputs/data/climate_indices/computed_batch/atl3.dat")
+write_formatted_index(tna_df, "4_outputs/data/climate_indices/computed_batch/tna.dat")
+write_formatted_index(iob_df, "4_outputs/data/climate_indices/computed_batch/iob.dat")
+write_formatted_index(iod_df, "4_outputs/data/climate_indices/computed_batch/iod.dat")
+write_formatted_index(siod_df, "4_outputs/data/climate_indices/computed_batch/siod.dat")
+write_formatted_index(sasd_df, "4_outputs/data/climate_indices/computed_batch/sasd.dat")
