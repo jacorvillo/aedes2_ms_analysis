@@ -702,7 +702,7 @@ dim_lat <- ncdim_def("lat", "degrees_north", lat)
 dim_lon <- ncdim_def("lon", "degrees_east", lon)
 
 # Define the variable
-var <- ncvar_def("detrended_r_nought", "units", list(dim_time, dim_lat, dim_lon),
+var <- ncvar_def("detrended_data", "units", list(dim_time, dim_lat, dim_lon),
   -9999, longname = "Detrended R0 Values", prec = "double"  
 )
 
