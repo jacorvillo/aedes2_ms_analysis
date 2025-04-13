@@ -108,7 +108,7 @@ for select in range(9):
   selected_index = list_indexes[select]
   selected_title_string = title_strings[select]
 
-  fileout_name = f'4_outputs/figures/{fileout_cmvs[select]}.png'
+  fileout_name = f'4_outputs/figures/{fileout_cmvs[select]}.eps'
 
   fig, axs = plt.subplots(2, 2, figsize=(11, 6))
   axs = axs.ravel()  # Flatten the axs array for easier indexing
@@ -179,7 +179,7 @@ ax.legend()
 
 # Show plot
 plt.tight_layout()
-plt.savefig('4_outputs/figures/trends_indices.png')
+plt.savefig('4_outputs/figures/trends_indices.eps')
 
 # Clean up the plot space
 plt.close('all')
@@ -307,7 +307,7 @@ sh_sig_maps = {}
 for idx in indices:
   nh_corr_maps[idx], nh_sig_maps[idx] = plot_dicts_corr(
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/figures/correlation_seasonal_nh_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/figures/correlation_seasonal_nh_{idx.lower().replace(' ', '_').replace('.', '')}.eps",
     title=f"Seasonal R0 vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **nh_params
   )
@@ -316,7 +316,7 @@ for idx in indices:
 for idx in indices:
   sh_corr_maps[idx], sh_sig_maps[idx] = plot_dicts_corr(
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/figures/correlation_seasonal_sh_{idx.lower().replace(' ', '_').replace('.', '')}.png", 
+    fileout_name=f"4_outputs/figures/correlation_seasonal_sh_{idx.lower().replace(' ', '_').replace('.', '')}.eps", 
     title=f"Seasonal R0 vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **sh_params
   )
@@ -355,7 +355,7 @@ sh_params = {
 for idx in indices:
    nh_corr_maps_total[idx], nh_sig_maps_total[idx] = plot_dicts_corr_total(
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/figures/correlation_total_nh_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/figures/correlation_total_nh_{idx.lower().replace(' ', '_').replace('.', '')}.eps",
     title=f"Full R0 Time Series vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **nh_params
   )
@@ -364,7 +364,7 @@ for idx in indices:
 for idx in indices:
   sh_corr_maps_total[idx], sh_sig_maps_total[idx] = plot_dicts_corr_total(
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/figures/correlation_total_sh_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/figures/correlation_total_sh_{idx.lower().replace(' ', '_').replace('.', '')}.eps",
     title=f"Full R0 Time Series vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **sh_params
   )
@@ -435,7 +435,7 @@ params = {
 for idx in indices:
   global_corr_maps[idx], global_sig_maps[idx] = plot_dicts_corr_global(
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/figures/correlation_seasonal_global_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/figures/correlation_seasonal_global_{idx.lower().replace(' ', '_').replace('.', '')}.eps",
     title=f"Seasonal R0 vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **params
   )
@@ -461,7 +461,7 @@ params = {
 for idx in indices:
   global_corr_maps_total[idx], global_sig_maps_total[idx] = plot_dicts_corr_global_total(
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/figures/correlation_total_global_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/figures/correlation_total_global_{idx.lower().replace(' ', '_').replace('.', '')}.eps",
     title=f"Full R0 Time Series vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **params
   )
