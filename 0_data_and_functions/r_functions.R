@@ -1,3 +1,8 @@
+# r_functions.R
+
+# @description: This file contains all the functions used in the R scripts.
+
+
 fit_box <- function(x) {
 
   # Fit the coordinates to their closest grid point in the R0 data:

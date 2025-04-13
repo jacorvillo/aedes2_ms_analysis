@@ -108,7 +108,7 @@ for region, dataset in datasets.items():
     for season in ['DJF', 'MAM', 'JJA', 'SON']
   }
   processed_detrended_data[region] = {
-    season: process_seasonal_detrended(dataset, season)
+    season: process_seasonal(dataset, season)
     for season in ['DJF', 'MAM', 'JJA', 'SON']
   }
 
@@ -287,7 +287,7 @@ for region, dataset in datasets.items():
     for season in ['DJF', 'MAM', 'JJA', 'SON']
   }
   processed_detrended_data[region] = {
-    season: process_seasonal_detrended(dataset, season)
+    season: process_seasonal(dataset, season)
     for season in ['DJF', 'MAM', 'JJA', 'SON']
   }
 
