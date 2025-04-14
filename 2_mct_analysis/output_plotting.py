@@ -17,7 +17,7 @@ global_mam = xr.open_dataset("4_outputs/data/correlation_and_causality/global_co
 global_jja = xr.open_dataset("4_outputs/data/correlation_and_causality/global_correlation_jja_merged.nc")
 global_son = xr.open_dataset("4_outputs/data/correlation_and_causality/global_correlation_son_merged.nc")
   
-plot_merged(global_djf, 'DJF', '4_outputs/figures/correlation_final_global_')
-plot_merged(global_mam, 'MAM', '4_outputs/figures/correlation_final_global_')
-plot_merged(global_jja, 'JJA', '4_outputs/figures/correlation_final_global_')
-plot_merged(global_son, 'SON', '4_outputs/figures/correlation_final_global_')
+plot_merged_analysis(global_djf, 'DJF', '4_outputs/figures/correlation_final_global_', analysis_type="correlation")
+plot_merged_analysis(global_mam, 'MAM', '4_outputs/figures/correlation_final_global_', analysis_type="correlation")
+plot_merged_analysis(global_jja, 'JJA', '4_outputs/figures/correlation_final_global_', analysis_type="correlation")
+plot_merged_analysis(global_son, 'SON', '4_outputs/figures/correlation_final_global_', analysis_type="correlation")

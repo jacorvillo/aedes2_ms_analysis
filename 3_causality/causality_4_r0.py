@@ -196,27 +196,41 @@ sh_sig_maps = {}
 
 # Generate plots for Northern Hemisphere and store maps
 for idx in indices:
-  nh_causality_maps[idx], nh_sig_maps[idx] = plot_dicts_causality(
+  nh_causality_maps[idx], nh_sig_maps[idx] = plot_dicts_analysis(
+    r_nought_dict=nh_detrended_dict,
+    spatial_dict=nh_spatial_dict,
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/causality_nh_{idx.lower().replace(' ', '_').replace('.', '')}",
+    seasons=["DJF", "MAM", "JJA", "SON"],
+    fileout_name=f"4_outputs/figures/causality_nh_{idx.lower().replace(' ', '_').replace('.', '')}",
+    levs=np.linspace(-0.01, 0.01, 20),
+    midpoint=0,
+    colmap="RdYlBu_r",
     title=f"Seasonal R0 vs {idx} Causality (Detrended, dots = ssig of 99%)",
-    **nh_params
+    analysis_type="causality",
+    is_global=False
   )
 
 # Generate plots for Southern Hemisphere and store maps    
 for idx in indices:
-  sh_causality_maps[idx], sh_sig_maps[idx] = plot_dicts_causality(
+  sh_causality_maps[idx], sh_sig_maps[idx] = plot_dicts_analysis(
+    r_nought_dict=sh_detrended_dict,
+    spatial_dict=sh_spatial_dict,
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/causality_sh_{idx.lower().replace(' ', '_').replace('.', '')}", 
+    seasons=["DJF", "MAM", "JJA", "SON"],
+    fileout_name=f"4_outputs/figures/causality_sh_{idx.lower().replace(' ', '_').replace('.', '')}",
+    levs=np.linspace(-0.01, 0.01, 20),
+    midpoint=0,
+    colmap="RdYlBu_r",
     title=f"Seasonal R0 vs {idx} Causality (Detrended, dots = ssig of 99%)",
-    **sh_params
+    analysis_type="causality",
+    is_global=False
   )
 
 # Save the causality and significance maps
-save_causality_maps_to_netcdf(nh_causality_maps, '4_outputs/data/correlation_and_causality/nh_causality_seasonal.nc')
-save_causality_maps_to_netcdf(nh_sig_maps, '4_outputs/data/correlation_and_causality/nh_causality_significance_seasonal.nc')
-save_causality_maps_to_netcdf(sh_causality_maps, '4_outputs/data/correlation_and_causality/sh_causality_seasonal.nc')
-save_causality_maps_to_netcdf(sh_sig_maps, '4_outputs/data/correlation_and_causality/sh_causality_significance_seasonal.nc')
+save_analysis_to_netcdf(nh_causality_maps, '4_outputs/data/correlation_and_causality/nh_causality_seasonal.nc', analysis_type="causality", is_seasonal=True)
+save_analysis_to_netcdf(nh_sig_maps, '4_outputs/data/correlation_and_causality/nh_causality_significance_seasonal.nc', analysis_type="causality", is_seasonal=True)
+save_analysis_to_netcdf(sh_causality_maps, '4_outputs/data/correlation_and_causality/sh_causality_seasonal.nc', analysis_type="causality", is_seasonal=True)
+save_analysis_to_netcdf(sh_sig_maps, '4_outputs/data/correlation_and_causality/sh_causality_significance_seasonal.nc', analysis_type="causality", is_seasonal=True)
 
 # -- For whole timeseries --
 
@@ -244,27 +258,41 @@ sh_params = {
 
 # Generate plots for Northern Hemisphere
 for idx in indices:
-   nh_causality_maps_total[idx], nh_sig_maps_total[idx] = plot_dicts_causality_total(
+   nh_causality_maps_total[idx], nh_sig_maps_total[idx] = plot_dicts_analysis(
+    r_nought_dict=nh_total_dict,
+    spatial_dict=nh_spatial_dict,
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/causality_total_nh_{idx.lower().replace(' ', '_').replace('.', '')}",
+    seasons=None,
+    fileout_name=f"4_outputs/figures/causality_total_nh_{idx.lower().replace(' ', '_').replace('.', '')}",
+    levs=np.linspace(-0.01, 0.01, 20),
+    midpoint=0,
+    colmap="RdYlBu_r",
     title=f"Full R0 Time Series vs {idx} Causality (Detrended, dots = ssig of 99%)",
-    **nh_params
+    analysis_type="causality",
+    is_global=False
   )
 
 # Generate plots for Southern Hemisphere    
 for idx in indices:
-  sh_causality_maps_total[idx], sh_sig_maps_total[idx] = plot_dicts_causality_total(
+  sh_causality_maps_total[idx], sh_sig_maps_total[idx] = plot_dicts_analysis(
+    r_nought_dict=sh_total_dict,
+    spatial_dict=sh_spatial_dict,
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/causality_total_sh_{idx.lower().replace(' ', '_').replace('.', '')}",
+    seasons=None,
+    fileout_name=f"4_outputs/figures/causality_total_sh_{idx.lower().replace(' ', '_').replace('.', '')}",
+    levs=np.linspace(-0.01, 0.01, 20),
+    midpoint=0,
+    colmap="RdYlBu_r",
     title=f"Full R0 Time Series vs {idx} Causality (Detrended, dots = ssig of 99%)",
-    **sh_params
+    analysis_type="causality",
+    is_global=False
   )
 
 # Save the causality and significance maps
-save_total_causality_maps_to_netcdf(nh_causality_maps_total, '4_outputs/data/correlation_and_causality/nh_causality_total.nc')
-save_total_causality_maps_to_netcdf(nh_sig_maps_total, '4_outputs/data/correlation_and_causality/save_total_causality_maps_to_netcdf.nc')
-save_total_causality_maps_to_netcdf(nh_sig_maps_total, '4_outputs/data/correlation_and_causality/sh_causality_total.nc')
-save_total_causality_maps_to_netcdf(nh_sig_maps_total, '4_outputs/data/correlation_and_causality/sh_causality_significance_total.nc')
+save_analysis_to_netcdf(nh_causality_maps_total, '4_outputs/data/correlation_and_causality/nh_causality_total.nc', analysis_type="causality", is_seasonal=False)
+save_analysis_to_netcdf(nh_sig_maps_total, '4_outputs/data/correlation_and_causality/nh_causality_significance_total.nc', analysis_type="causality", is_seasonal=False)
+save_analysis_to_netcdf(sh_causality_maps_total, '4_outputs/data/correlation_and_causality/sh_causality_total.nc', analysis_type="causality", is_seasonal=False)
+save_analysis_to_netcdf(sh_sig_maps_total, '4_outputs/data/correlation_and_causality/sh_causality_significance_total.nc', analysis_type="causality", is_seasonal=False)
 
 # -- Global data --
 
@@ -328,15 +356,22 @@ params = {
 
 # Generate plots for each index
 for idx in indices:
-  global_causality_maps[idx], global_sig_maps[idx] = plot_dicts_causality_global(
+  global_causality_maps[idx], global_sig_maps[idx] = plot_dicts_analysis(
+    r_nought_dict=global_detrended_dict,
+    spatial_dict=global_spatial_dict,
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/causality_global_{idx.lower().replace(' ', '_').replace('.', '')}",
-    title=f"Seasonal R0 Time Series vs {idx} Causality (Detrended, dots = ssig of 99%)",
-    **params
+    seasons=["DJF", "MAM", "JJA", "SON"],
+    fileout_name=f"4_outputs/figures/causality_global_{idx.lower().replace(' ', '_').replace('.', '')}",
+    levs=np.linspace(-0.01, 0.01, 20),
+    midpoint=0,
+    colmap="RdYlBu_r",
+    title=f"Seasonal R0 vs {idx} Causality (Detrended, dots = ssig of 99%)",
+    analysis_type="causality",
+    is_global=True
   )
 
-save_causality_maps_to_netcdf(global_causality_maps, '4_outputs/data/correlation_and_causality/global_causality_seasonal.nc')
-save_causality_maps_to_netcdf(global_sig_maps, '4_outputs/data/correlation_and_causality/global_causality_significance_seasonal.nc')
+save_analysis_to_netcdf(global_causality_maps, '4_outputs/data/correlation_and_causality/global_causality_seasonal.nc', analysis_type="causality", is_seasonal=True)
+save_analysis_to_netcdf(global_sig_maps, '4_outputs/data/correlation_and_causality/global_causality_significance_seasonal.nc', analysis_type="causality", is_seasonal=True)
 
 global_causality_maps_total = {}
 global_sig_maps_total = {}
@@ -352,13 +387,20 @@ params = {
 
 # Generate plots for each index
 for idx in indices:
-  global_causality_maps_total[idx], global_sig_maps_total[idx] = plot_dicts_causality_global_total(
+  global_causality_maps_total[idx], global_sig_maps_total[idx] = plot_dicts_analysis(
+    r_nought_dict=global_total_dict,
+    spatial_dict=global_spatial_dict,
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/causality_total_global_{idx.lower().replace(' ', '_').replace('.', '')}",
+    seasons=None,
+    fileout_name=f"4_outputs/figures/causality_total_global_{idx.lower().replace(' ', '_').replace('.', '')}",
+    levs=np.linspace(-0.01, 0.01, 20),
+    midpoint=0,
+    colmap="RdYlBu_r",
     title=f"Full R0 Time Series vs {idx} Causality (Detrended, dots = ssig of 99%)",
-    **params
+    analysis_type="causality",
+    is_global=True
   )
 
-  # Save the causality and significance maps
-save_total_causality_maps_to_netcdf(global_causality_maps_total, '4_outputs/data/correlation_and_causality/global_causality_total.nc')
-save_total_causality_maps_to_netcdf(global_sig_maps_total, '4_outputs/data/correlation_and_causality/global_causality_significance_total.nc')
+# Save the causality and significance maps
+save_analysis_to_netcdf(global_causality_maps_total, '4_outputs/data/correlation_and_causality/global_causality_total.nc', analysis_type="causality", is_seasonal=False)
+save_analysis_to_netcdf(global_sig_maps_total, '4_outputs/data/correlation_and_causality/global_causality_significance_total.nc', analysis_type="causality", is_seasonal=False)
