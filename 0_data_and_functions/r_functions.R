@@ -136,7 +136,7 @@ load_correlation_data <- function(nc_file, nc_sig_file) {
   nc_sig <- nc_open(nc_sig_file)
 
   # List of climate indices
-  indices <- c('AMO', 'AO', 'NAO', 'Niño_34', 'PDO', 'PNA', 'QBO', 'SOI', 'NPMM', 'SPMM', 'IOB', 'IOD', 'SIOD', 'TNA', 'ATL3', 'SASD1')
+  indices <- c("NPMM", "SPMM", "Niño_34", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1")
   
   # Initialize results lists
   seasons <- list(djf = 1, mam = 2, jja = 3, son = 4)
@@ -175,21 +175,21 @@ max_correlation_index <- function(correlation_data, season) {
   season_correlation <- correlation_data$correlation[[season]]
   season_significance <- correlation_data$significance[[season]]
 
-  # Create two arrays to store results
-  max_values <- array(NA, dim = c(720, 360))
-  max_values_sig <- array(NA, dim = c(720, 360))
-  max_indices <- array(NA, dim = c(720, 360))
-  max_indices_sig <- array(NA, dim = c(720, 360))
+  # Create arrays to store results for top 3 correlations
+  max_values <- array(NA, dim = c(720, 360, 3))
+  max_values_sig <- array(NA, dim = c(720, 360, 3))
+  max_indices <- array(NA, dim = c(720, 360, 3))
+  max_indices_sig <- array(NA, dim = c(720, 360, 3))
 
   # Convert list to array for easier processing
-  data_array <- array(NA, dim = c(720, 360, 16))
-  data_array_sig <- array(NA, dim = c(720, 360, 16))
-  for (i in 1:16) {
-  data_array[, , i] <- season_correlation[[i]]
-  data_array_sig[, , i] <- season_significance[[i]]
+  data_array <- array(NA, dim = c(720, 360, 9))
+  data_array_sig <- array(NA, dim = c(720, 360, 9))
+  for (i in 1:9) {
+    data_array[, , i] <- season_correlation[[i]]
+    data_array_sig[, , i] <- season_significance[[i]]
   }
 
-  # Calculate max values and indices for each grid point
+  # Calculate top 3 values and indices for each grid point
   for (i in 1:720) {
     for (j in 1:360) {
       grid_values <- data_array[i, j, ]
@@ -200,30 +200,29 @@ max_correlation_index <- function(correlation_data, season) {
       
       # Handle missing values
       if (all(is.na(grid_values))) {
-      
-        max_values[i, j] <- NA
-        max_indices[i, j] <- NA
-
+        max_values[i, j, ] <- NA
+        max_indices[i, j, ] <- NA
       } else {
-        # Find index of maximum absolute value
-        max_abs_index <- which.max(abs(grid_values))
-
-        # Store original value (keeping its sign)
-        max_values[i, j] <- grid_values[max_abs_index]
-        max_indices[i, j] <- max_abs_index
+        # Find indices of top 3 absolute values
+        abs_values <- abs(grid_values)
+        top3_indices <- order(abs_values, decreasing = TRUE)[1:3]
+        
+        # Store original values (keeping their signs)
+        max_values[i, j, ] <- grid_values[top3_indices]
+        max_indices[i, j, ] <- top3_indices
       }
 
       if (all(is.na(grid_values_sig))) {
-        max_values_sig[i, j] <- NA
-        max_indices_sig[i, j] <- NA
-
+        max_values_sig[i, j, ] <- NA
+        max_indices_sig[i, j, ] <- NA
       } else {
-        # Find index of maximum absolute value
-        max_abs_index_sig <- which.max(abs(grid_values_sig))
+        # Find indices of top 3 absolute values
+        abs_values_sig <- abs(grid_values_sig)
+        top3_indices_sig <- order(abs_values_sig, decreasing = TRUE)[1:3]
         
-        # Store original value (keeping its sign)
-        max_values_sig[i, j] <- grid_values_sig[max_abs_index_sig]
-        max_indices_sig[i, j] <- max_abs_index_sig
+        # Store original values (keeping their signs)
+        max_values_sig[i, j, ] <- grid_values_sig[top3_indices_sig]
+        max_indices_sig[i, j, ] <- top3_indices_sig
       }
     }
   }
@@ -236,12 +235,12 @@ max_correlation_index <- function(correlation_data, season) {
   overlap_indices[!is.na(max_indices_sig)] <- max_indices_sig[!is.na(max_indices_sig)]
   
   return(list(
-  max_values = max_values,
-  max_indices = max_indices,
-  max_values_sig = max_values_sig,
-  max_indices_sig = max_indices_sig,
-  overlap_values = overlap_values,
-  overlap_indices = overlap_indices
+    max_values = max_values,
+    max_indices = max_indices,
+    max_values_sig = max_values_sig,
+    max_indices_sig = max_indices_sig,
+    overlap_values = overlap_values,
+    overlap_indices = overlap_indices
   ))
 }
 
@@ -252,30 +251,31 @@ quicksave_merge <- function(var, filename) {
                        seq(-89.75, 89.75, by = 0.5))
   dim_lon <- ncdim_def("lon", "degrees_east", 
                        seq(-179.75, 179.75, by = 0.5))
+  dim_rank <- ncdim_def("rank", "rank", 1:3)
 
-  # Define the variable
-  var_max_values <- ncvar_def("max_values", "units", list(dim_lon, dim_lat),
-    -9999, longname = "Maximum Correlation (Not Sig.)", prec = "double"  
+  # Define the variables
+  var_max_values <- ncvar_def("max_values", "units", list(dim_lon, dim_lat, dim_rank),
+    -9999, longname = "Top 3 Correlation Values", prec = "double"  
   )
 
-  var_max_indices <- ncvar_def("max_indices", "units", list(dim_lon, dim_lat),
-    -9999, longname = "Maximum Correlation IDs (Not Sig.)", prec = "double"  
+  var_max_indices <- ncvar_def("max_indices", "units", list(dim_lon, dim_lat, dim_rank),
+    -9999, longname = "Top 3 Correlation IDs", prec = "double"  
   )
 
-  var_max_values_sig <- ncvar_def("max_values_sig", "units", list(dim_lon, dim_lat),
-    -9999, longname = "Maximum Correlation (Sig.)", prec = "double"  
+  var_max_values_sig <- ncvar_def("max_values_sig", "units", list(dim_lon, dim_lat, dim_rank),
+    -9999, longname = "Top 3 Correlation Values (Sig.)", prec = "double"  
   )
 
-  var_max_indices_sig <- ncvar_def("max_indices_sig", "units", list(dim_lon, dim_lat),
-    -9999, longname = "Maximum Correlation IDs (Sig.)", prec = "double"  
+  var_max_indices_sig <- ncvar_def("max_indices_sig", "units", list(dim_lon, dim_lat, dim_rank),
+    -9999, longname = "Top 3 Correlation IDs (Sig.)", prec = "double"  
   )
 
-  var_overlap <- ncvar_def("overlap", "units", list(dim_lon, dim_lat),
-    -9999, longname = "Overlapped Maximum Correlation (Not Sig. + Sig)", prec = "double"  
+  var_overlap <- ncvar_def("overlap", "units", list(dim_lon, dim_lat, dim_rank),
+    -9999, longname = "Overlapped Top 3 Correlation Values", prec = "double"  
   )
 
-  var_overlap_indices <- ncvar_def("overlap_indices", "units", list(dim_lon, dim_lat),
-    -9999, longname = "Overlapped Maximum Correlation IDs (Not Sig. + Sig)", prec = "double"  
+  var_overlap_indices <- ncvar_def("overlap_indices", "units", list(dim_lon, dim_lat, dim_rank),
+    -9999, longname = "Overlapped Top 3 Correlation IDs", prec = "double"  
   )
 
   # Create the NetCDF file
@@ -299,7 +299,7 @@ load_causality_data <- function(nc_file, nc_sig_file) {
   nc_sig <- nc_open(nc_sig_file)
 
   # List of climate indices
-  indices <- c('AMO', 'AO', 'NAO', 'Niño_34', 'PDO', 'PNA', 'QBO', 'SOI', 'NPMM', 'SPMM', 'IOB', 'IOD', 'SIOD', 'TNA', 'ATL3', 'SASD1')
+  indices <- c("NPMM", "SPMM", "Niño_34", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1")
   
   # Initialize results lists
   seasons <- list(djf = 1, mam = 2, jja = 3, son = 4)
@@ -339,26 +339,26 @@ max_causality_index <- function(causality_data, season) {
   season_significance <- causality_data$significance[[season]]
 
   # Remove any -Inf values
-  for (i in 1:16) {
+  for (i in 1:9) {
     season_causality[[i]][is.infinite(season_causality[[i]])] <- NA
     season_significance[[i]][is.infinite(season_significance[[i]])] <- NA
   }
 
-  # Create two arrays to store results
-  max_values <- array(NA, dim = c(720, 360))
-  max_values_sig <- array(NA, dim = c(720, 360))
-  max_indices <- array(NA, dim = c(720, 360))
-  max_indices_sig <- array(NA, dim = c(720, 360))
+  # Create arrays to store results for top 3 causalities
+  max_values <- array(NA, dim = c(720, 360, 3))
+  max_values_sig <- array(NA, dim = c(720, 360, 3))
+  max_indices <- array(NA, dim = c(720, 360, 3))
+  max_indices_sig <- array(NA, dim = c(720, 360, 3))
 
   # Convert list to array for easier processing
-  data_array <- array(NA, dim = c(720, 360, 16))
-  data_array_sig <- array(NA, dim = c(720, 360, 16))
-  for (i in 1:16) {
+  data_array <- array(NA, dim = c(720, 360, 9))
+  data_array_sig <- array(NA, dim = c(720, 360, 9))
+  for (i in 1:9) {
     data_array[, , i] <- season_causality[[i]]
     data_array_sig[, , i] <- season_significance[[i]]
   }
 
-  # Calculate max values and indices for each grid point
+  # Calculate top 3 values and indices for each grid point
   for (i in 1:720) {
     for (j in 1:360) {
       grid_values <- data_array[i, j, ]
@@ -369,41 +369,39 @@ max_causality_index <- function(causality_data, season) {
       
       # Handle missing values
       if (all(is.na(grid_values))) {
-      
-        max_values[i, j] <- NA
-        max_indices[i, j] <- NA
-
+        max_values[i, j, ] <- NA
+        max_indices[i, j, ] <- NA
       } else {
-        # Find index of maximum absolute value
-        max_abs_index <- which.max(abs(grid_values))
-
-        # Store original value (keeping its sign)
-        max_values[i, j] <- grid_values[max_abs_index]
-        max_indices[i, j] <- max_abs_index
+        # Find indices of top 3 absolute values
+        abs_values <- abs(grid_values)
+        top3_indices <- order(abs_values, decreasing = TRUE)[1:3]
+        
+        # Store original values (keeping their signs)
+        max_values[i, j, ] <- grid_values[top3_indices]
+        max_indices[i, j, ] <- top3_indices
       }
 
       if (all(is.na(grid_values_sig))) {
-        max_values_sig[i, j] <- NA
-        max_indices_sig[i, j] <- NA
-
+        max_values_sig[i, j, ] <- NA
+        max_indices_sig[i, j, ] <- NA
       } else {
-        # Find index of maximum absolute value
-        max_abs_index_sig <- which.max(abs(grid_values_sig))
+        # Find indices of top 3 absolute values
+        abs_values_sig <- abs(grid_values_sig)
+        top3_indices_sig <- order(abs_values_sig, decreasing = TRUE)[1:3]
         
-        # Store original value (keeping its sign)
-        max_values_sig[i, j] <- grid_values_sig[max_abs_index_sig]
-        max_indices_sig[i, j] <- max_abs_index_sig
+        # Store original values (keeping their signs)
+        max_values_sig[i, j, ] <- grid_values_sig[top3_indices_sig]
+        max_indices_sig[i, j, ] <- top3_indices_sig
       }
     }
   }
 
-  # Overlap significant values over non-significant values:
-
+  # Overlap significant values over non-significant values
   overlap_values <- max_values
   overlap_values[!is.na(max_values_sig)] <- max_values_sig[!is.na(max_values_sig)]
-
+  
   overlap_indices <- max_indices
-  overlap_indices[!is.na(max_values_sig)] <- max_indices_sig[!is.na(max_values_sig)]
+  overlap_indices[!is.na(max_indices_sig)] <- max_indices_sig[!is.na(max_indices_sig)]
   
   return(list(
     max_values = max_values,
@@ -422,30 +420,31 @@ quicksave_merge_causality <- function(var, filename) {
                        seq(-89.75, 89.75, by = 0.5))
   dim_lon <- ncdim_def("lon", "degrees_east", 
                        seq(-179.75, 179.75, by = 0.5))
+  dim_rank <- ncdim_def("rank", "rank", 1:3)
 
-  # Define the variable
-  var_max_values <- ncvar_def("max_values", "units", list(dim_lon, dim_lat),
-    NaN, longname = "Maximum Causality (Not Sig.)", prec = "double"  
+  # Define the variables
+  var_max_values <- ncvar_def("max_values", "units", list(dim_lon, dim_lat, dim_rank),
+    NaN, longname = "Top 3 Causality Values", prec = "double"  
   )
 
-  var_max_indices <- ncvar_def("max_indices", "units", list(dim_lon, dim_lat),
-    NaN, longname = "Maximum Causality IDs (Not Sig.)", prec = "double"  
+  var_max_indices <- ncvar_def("max_indices", "units", list(dim_lon, dim_lat, dim_rank),
+    NaN, longname = "Top 3 Causality IDs", prec = "double"  
   )
 
-  var_max_values_sig <- ncvar_def("max_values_sig", "units", list(dim_lon, dim_lat),
-    NaN, longname = "Maximum Causality (Sig.)", prec = "double"  
+  var_max_values_sig <- ncvar_def("max_values_sig", "units", list(dim_lon, dim_lat, dim_rank),
+    NaN, longname = "Top 3 Causality Values (Sig.)", prec = "double"  
   )
 
-  var_max_indices_sig <- ncvar_def("max_indices_sig", "units", list(dim_lon, dim_lat),
-    NaN, longname = "Maximum Causality IDs (Sig.)", prec = "double"  
+  var_max_indices_sig <- ncvar_def("max_indices_sig", "units", list(dim_lon, dim_lat, dim_rank),
+    NaN, longname = "Top 3 Causality IDs (Sig.)", prec = "double"  
   )
 
-  var_overlap <- ncvar_def("overlap", "units", list(dim_lon, dim_lat),
-    NaN, longname = "Overlapped Maximum Causality (Not Sig. + Sig)", prec = "double"  
+  var_overlap <- ncvar_def("overlap", "units", list(dim_lon, dim_lat, dim_rank),
+    NaN, longname = "Overlapped Top 3 Causality Values", prec = "double"  
   )
 
-  var_overlap_indices <- ncvar_def("overlap_indices", "units", list(dim_lon, dim_lat),
-    NaN, longname = "Overlapped Maximum Causality IDs (Not Sig. + Sig)", prec = "double"  
+  var_overlap_indices <- ncvar_def("overlap_indices", "units", list(dim_lon, dim_lat, dim_rank),
+    NaN, longname = "Overlapped Top 3 Causality IDs", prec = "double"  
   )
 
   # Create the NetCDF file

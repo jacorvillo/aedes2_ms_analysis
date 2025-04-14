@@ -29,9 +29,9 @@ siod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/sio
 sasd1 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/sasd.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
 
 # Obtain seasonal data for each variable, knowing that the arrays go from Mar 1980 to Nov 2021
-start_date = '1980-03-01'
-end_date = '2021-11-30'
-date_range = pd.date_range(start=start_date, end=end_date, freq='MS')
+start_date = "1980-03-01"
+end_date = "2021-11-30"
+date_range = pd.date_range(start=start_date, end=end_date, freq="MS")
 
 # Extract seasonal data for each climate index
 npmm_seasonal = extract_seasonal_months(date_range, npmm)
@@ -47,15 +47,15 @@ sasd1_seasonal = extract_seasonal_months(date_range, sasd1)
 # Save seasonal indexes in a dictionary
 
 index_dict_seasonal = {
-  "NPMM": {"DJF": npmm_seasonal['DJF'], "MAM": npmm_seasonal['MAM'], "JJA": npmm_seasonal['JJA'], "SON": npmm_seasonal['SON']},
-  "SPMM": {"DJF": spmm_seasonal['DJF'], "MAM": spmm_seasonal['MAM'], "JJA": spmm_seasonal['JJA'], "SON": spmm_seasonal['SON']},
-  "Niño 3.4": {"DJF": nino_seasonal['DJF'], "MAM": nino_seasonal['MAM'], "JJA": nino_seasonal['JJA'], "SON": nino_seasonal['SON']},
-  "ATL3": {"DJF": atl3_seasonal['DJF'], "MAM": atl3_seasonal['MAM'], "JJA": atl3_seasonal['JJA'], "SON": atl3_seasonal['SON']},
-  "TNA": {"DJF": tna_seasonal['DJF'], "MAM": tna_seasonal['MAM'], "JJA": tna_seasonal['JJA'], "SON": tna_seasonal['SON']},
-  "IOB": {"DJF": iob_seasonal['DJF'], "MAM": iob_seasonal['MAM'], "JJA": iob_seasonal['JJA'], "SON": iob_seasonal['SON']},
-  "IOD": {"DJF": iod_seasonal['DJF'], "MAM": iod_seasonal['MAM'], "JJA": iod_seasonal['JJA'], "SON": iod_seasonal['SON']},
-  "SIOD": {"DJF": siod_seasonal['DJF'], "MAM": siod_seasonal['MAM'], "JJA": siod_seasonal['JJA'], "SON": siod_seasonal['SON']},
-  "SASD1": {"DJF": sasd1_seasonal['DJF'], "MAM": sasd1_seasonal['MAM'], "JJA": sasd1_seasonal['JJA'], "SON": sasd1_seasonal['SON']}
+  "NPMM": {"DJF": npmm_seasonal["DJF"], "MAM": npmm_seasonal["MAM"], "JJA": npmm_seasonal["JJA"], "SON": npmm_seasonal["SON"]},
+  "SPMM": {"DJF": spmm_seasonal["DJF"], "MAM": spmm_seasonal["MAM"], "JJA": spmm_seasonal["JJA"], "SON": spmm_seasonal["SON"]},
+  "Niño 3.4": {"DJF": nino_seasonal["DJF"], "MAM": nino_seasonal["MAM"], "JJA": nino_seasonal["JJA"], "SON": nino_seasonal["SON"]},
+  "ATL3": {"DJF": atl3_seasonal["DJF"], "MAM": atl3_seasonal["MAM"], "JJA": atl3_seasonal["JJA"], "SON": atl3_seasonal["SON"]},
+  "TNA": {"DJF": tna_seasonal["DJF"], "MAM": tna_seasonal["MAM"], "JJA": tna_seasonal["JJA"], "SON": tna_seasonal["SON"]},
+  "IOB": {"DJF": iob_seasonal["DJF"], "MAM": iob_seasonal["MAM"], "JJA": iob_seasonal["JJA"], "SON": iob_seasonal["SON"]},
+  "IOD": {"DJF": iod_seasonal["DJF"], "MAM": iod_seasonal["MAM"], "JJA": iod_seasonal["JJA"], "SON": iod_seasonal["SON"]},
+  "SIOD": {"DJF": siod_seasonal["DJF"], "MAM": siod_seasonal["MAM"], "JJA": siod_seasonal["JJA"], "SON": siod_seasonal["SON"]},
+  "SASD1": {"DJF": sasd1_seasonal["DJF"], "MAM": sasd1_seasonal["MAM"], "JJA": sasd1_seasonal["JJA"], "SON": sasd1_seasonal["SON"]}
 }
 
 # Full time series:
@@ -72,15 +72,15 @@ index_dict_total = {
 }
 
 # Group all the data in a single matrix
-index_npmm = np.column_stack((np.array(npmm_seasonal['DJF']), np.array(npmm_seasonal['MAM'])[:-3], np.array(npmm_seasonal['JJA'])[:-3], np.array(npmm_seasonal['SON'])[:-3]))
-index_spmm = np.column_stack((np.array(spmm_seasonal['DJF']), np.array(spmm_seasonal['MAM'])[:-3], np.array(spmm_seasonal['JJA'])[:-3], np.array(spmm_seasonal['SON'])[:-3]))
-index_nino = np.column_stack((np.array(nino_seasonal['DJF']), np.array(nino_seasonal['MAM'])[:-3], np.array(nino_seasonal['JJA'])[:-3], np.array(nino_seasonal['SON'])[:-3]))
-index_atl3 = np.column_stack((np.array(atl3_seasonal['DJF']), np.array(atl3_seasonal['MAM'])[:-3], np.array(atl3_seasonal['JJA'])[:-3], np.array(atl3_seasonal['SON'])[:-3]))
-index_tna = np.column_stack((np.array(tna_seasonal['DJF']), np.array(tna_seasonal['MAM'])[:-3], np.array(tna_seasonal['JJA'])[:-3], np.array(tna_seasonal['SON'])[:-3]))
-index_iob = np.column_stack((np.array(iob_seasonal['DJF']), np.array(iob_seasonal['MAM'])[:-3], np.array(iob_seasonal['JJA'])[:-3], np.array(iob_seasonal['SON'])[:-3]))
-index_iod = np.column_stack((np.array(iod_seasonal['DJF']), np.array(iod_seasonal['MAM'])[:-3], np.array(iod_seasonal['JJA'])[:-3], np.array(iod_seasonal['SON'])[:-3]))
-index_siod = np.column_stack((np.array(siod_seasonal['DJF']), np.array(siod_seasonal['MAM'])[:-3], np.array(siod_seasonal['JJA'])[:-3], np.array(siod_seasonal['SON'])[:-3]))
-index_sasd1 = np.column_stack((np.array(sasd1_seasonal['DJF']), np.array(sasd1_seasonal['MAM'])[:-3], np.array(sasd1_seasonal['JJA'])[:-3], np.array(sasd1_seasonal['SON'])[:-3]))
+index_npmm = np.column_stack((np.array(npmm_seasonal["DJF"]), np.array(npmm_seasonal["MAM"])[:-3], np.array(npmm_seasonal["JJA"])[:-3], np.array(npmm_seasonal["SON"])[:-3]))
+index_spmm = np.column_stack((np.array(spmm_seasonal["DJF"]), np.array(spmm_seasonal["MAM"])[:-3], np.array(spmm_seasonal["JJA"])[:-3], np.array(spmm_seasonal["SON"])[:-3]))
+index_nino = np.column_stack((np.array(nino_seasonal["DJF"]), np.array(nino_seasonal["MAM"])[:-3], np.array(nino_seasonal["JJA"])[:-3], np.array(nino_seasonal["SON"])[:-3]))
+index_atl3 = np.column_stack((np.array(atl3_seasonal["DJF"]), np.array(atl3_seasonal["MAM"])[:-3], np.array(atl3_seasonal["JJA"])[:-3], np.array(atl3_seasonal["SON"])[:-3]))
+index_tna = np.column_stack((np.array(tna_seasonal["DJF"]), np.array(tna_seasonal["MAM"])[:-3], np.array(tna_seasonal["JJA"])[:-3], np.array(tna_seasonal["SON"])[:-3]))
+index_iob = np.column_stack((np.array(iob_seasonal["DJF"]), np.array(iob_seasonal["MAM"])[:-3], np.array(iob_seasonal["JJA"])[:-3], np.array(iob_seasonal["SON"])[:-3]))
+index_iod = np.column_stack((np.array(iod_seasonal["DJF"]), np.array(iod_seasonal["MAM"])[:-3], np.array(iod_seasonal["JJA"])[:-3], np.array(iod_seasonal["SON"])[:-3]))
+index_siod = np.column_stack((np.array(siod_seasonal["DJF"]), np.array(siod_seasonal["MAM"])[:-3], np.array(siod_seasonal["JJA"])[:-3], np.array(siod_seasonal["SON"])[:-3]))
+index_sasd1 = np.column_stack((np.array(sasd1_seasonal["DJF"]), np.array(sasd1_seasonal["MAM"])[:-3], np.array(sasd1_seasonal["JJA"])[:-3], np.array(sasd1_seasonal["SON"])[:-3]))
 
 # Figures for all CVMs -----------------------------------------------------------------------------
 
@@ -108,18 +108,18 @@ for select in range(9):
   selected_index = list_indexes[select]
   selected_title_string = title_strings[select]
 
-  fileout_name = f'4_outputs/figures/{fileout_cmvs[select]}.eps'
+  fileout_name = f"4_outputs/figures/{fileout_cmvs[select]}.eps"
 
   fig, axs = plt.subplots(2, 2, figsize=(11, 6))
   axs = axs.ravel()  # Flatten the axs array for easier indexing
   
-  for ss, season in enumerate(['DJF', 'MAM', 'JJA', 'SON']): # Loop over the seasons
+  for ss, season in enumerate(["DJF", "MAM", "JJA", "SON"]): # Loop over the seasons
 
-    axs[ss].plot(yr, selected_index[:, ss], linewidth=1.5, label=f'Seasonal {selected_title_string} anomalies')
+    axs[ss].plot(yr, selected_index[:, ss], linewidth=1.5, label=f"Seasonal {selected_title_string} anomalies")
     # Trend
     slope, intercept, r_value, p_value, std_err = stats.linregress(yr, selected_index[:, ss])
     conf_int = calc_conf_interval(slope, std_err)
-    axs[ss].plot(yr, intercept + slope * yr, "r--", label=f'Linear trend (slope={slope:.2f})\n 95% CI: [{conf_int[0]:.2f}, {conf_int[1]:.2f}]')
+    axs[ss].plot(yr, intercept + slope * yr, "r--", label=f"Linear trend (slope={slope:.2f})\n 95% CI: [{conf_int[0]:.2f}, {conf_int[1]:.2f}]")
 
     matrix_slope[select,ss] = slope
     matrix_cinf[select,ss] = conf_int[0]
@@ -127,19 +127,19 @@ for select in range(9):
     matrix_intercept[select,ss] = intercept
     
     axs[ss].grid(True)
-    axs[ss].legend(loc='best', fontsize='small')
+    axs[ss].legend(loc="best", fontsize="small")
     if ss == 2:
-        axs[ss].set_title(f'{selected_title_string} - {season}', fontsize=14)
+        axs[ss].set_title(f"{selected_title_string} - {season}", fontsize=14)
     else:
-        axs[ss].set_title(f'{selected_title_string} - {season}', fontsize=14)
-    axs[ss].set_ylabel('Index', fontsize=12)
+        axs[ss].set_title(f"{selected_title_string} - {season}", fontsize=14)
+    axs[ss].set_ylabel("Index", fontsize=12)
     axs[ss].set_ylim(np.nanmax(selected_index), np.nanmin(selected_index))
   
   plt.tight_layout()
   plt.savefig(fileout_name)
 
 # Clean up the plot space
-plt.close('all')
+plt.close("all")
 
 # Summary of linear trend outputs and confidence intervals:
 
@@ -156,9 +156,9 @@ bar_width = 0.2
 # Set up the figure and axes
 fig, ax = plt.subplots(figsize=(9, 5))
 
-seasons = ['DJF', 'MAM', 'JJA', 'SON']
+seasons = ["DJF", "MAM", "JJA", "SON"]
 
-index_names = ['NPMM', 'SPMM', 'Niño 3.4', 'ATL3', 'TNA', 'IOB', 'IOD', 'SIOD', 'SASD1']
+index_names = ["NPMM", "SPMM", "Niño 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
 
 # Loop over each season and plot bars with error bars
 for i in range(num_seasons):
@@ -170,19 +170,19 @@ for i in range(num_seasons):
           yerr=error, capsize=5)
 
 # Adding labels and title
-ax.set_xlabel('Modes')
-ax.set_ylabel('Trends')
-ax.set_title('Trends on Selected Modes of Variability for Season')
+ax.set_xlabel("Modes")
+ax.set_ylabel("Trends")
+ax.set_title("Trends on Selected Modes of Variability for Season")
 ax.set_xticks(x + bar_width * (num_seasons - 1) / 2)
 ax.set_xticklabels(index_names)
 ax.legend()
 
 # Show plot
 plt.tight_layout()
-plt.savefig('4_outputs/figures/trends_indices.eps')
+plt.savefig("4_outputs/figures/trends_indices.eps")
 
 # Clean up the plot space
-plt.close('all')
+plt.close("all")
 
 #----------- Correlation Analysis between CVMs and SSSR data ----------------------------------------
 
@@ -201,17 +201,17 @@ med = xr.open_dataset("4_outputs/data/sssrs/r11.nc")
 
 # Dictionary of datasets
 datasets = {
-  'NCA': nca,
-  'CNA': cna, 
-  'ENA': ena,
-  'SAS': sas,
-  'EAS': eas,
-  'SES': ses,
-  'ESAF': esaf,
-  'MDG': mdg,
-  'NAU': nau,
-  'EAU': eau,
-  'MED': med
+  "NCA": nca,
+  "CNA": cna, 
+  "ENA": ena,
+  "SAS": sas,
+  "EAS": eas,
+  "SES": ses,
+  "ESAF": esaf,
+  "MDG": mdg,
+  "NAU": nau,
+  "EAU": eau,
+  "MED": med
 }
 
 # Dictionary to store processed data
@@ -221,32 +221,32 @@ processed_detrended_data = {}
 for region, dataset in datasets.items():
   processed_detrended_data[region] = {
     season: process_seasonal(dataset, season)
-    for season in ['DJF', 'MAM', 'JJA', 'SON']
+    for season in ["DJF", "MAM", "JJA", "SON"]
   }
 
 # Split into hemispheric dictionaries
-nh_regions = ['NCA', 'CNA', 'ENA', 'MED', 'SAS', 'EAS']
-sh_regions = ['SES', 'ESAF', 'MDG', 'NAU', 'EAU']
+nh_regions = ["NCA", "CNA", "ENA", "MED", "SAS", "EAS"]
+sh_regions = ["SES", "ESAF", "MDG", "NAU", "EAU"]
 
 nh_detrended_dict = {region: processed_detrended_data[region] for region in nh_regions}
 sh_detrended_dict = {region: processed_detrended_data[region] for region in sh_regions}
 
 # Create dictionaries to store spatial and total data for each region
 regions = {
-  'nh': {  # Northern Hemisphere
-    'NCA': nca,
-    'CNA': cna, 
-    'ENA': ena,
-    'MED': med,
-    'SAS': sas,
-    'EAS': eas
+  "nh": {  # Northern Hemisphere
+    "NCA": nca,
+    "CNA": cna, 
+    "ENA": ena,
+    "MED": med,
+    "SAS": sas,
+    "EAS": eas
   },
-  'sh': {  # Southern Hemisphere 
-    'SES': ses,
-    'ESAF': esaf,
-    'MDG': mdg,
-    'NAU': nau,
-    'EAU': eau
+  "sh": {  # Southern Hemisphere 
+    "SES": ses,
+    "ESAF": esaf,
+    "MDG": mdg,
+    "NAU": nau,
+    "EAU": eau
   }
 }
 
@@ -256,23 +256,23 @@ total_dicts = {}
 
 for region_type, region_data in regions.items():
   # Create spatial dictionary
-  spatial_dicts[f'{region_type}_spatial_dict'] = {
-    name: {'lat': data.lat, 'lon': data.lon}
+  spatial_dicts[f"{region_type}_spatial_dict"] = {
+    name: {"lat": data.lat, "lon": data.lon}
     for name, data in region_data.items()
   }
   
   # Create total data dictionary
-  total_dicts[f'{region_type}_total_dict'] = {
+  total_dicts[f"{region_type}_total_dict"] = {
     name: np.array(data.detrended_data)
     for name, data in region_data.items()
   }
 
 # Unpack dictionaries into individual variables to maintain compatibility
-nh_spatial_dict = spatial_dicts['nh_spatial_dict']
-sh_spatial_dict = spatial_dicts['sh_spatial_dict'] 
+nh_spatial_dict = spatial_dicts["nh_spatial_dict"]
+sh_spatial_dict = spatial_dicts["sh_spatial_dict"] 
 
-nh_total_dict = total_dicts['nh_total_dict']
-sh_total_dict = total_dicts['sh_total_dict']
+nh_total_dict = total_dicts["nh_total_dict"]
+sh_total_dict = total_dicts["sh_total_dict"]
 
 # Correlation computation:
 
@@ -281,20 +281,20 @@ sh_total_dict = total_dicts['sh_total_dict']
 # Define common parameters for plotting
 indices = ["NPMM", "SPMM", "Niño 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
 nh_params = {
-  'r_nought_dict': nh_detrended_dict,
-  'spatial_dict': nh_spatial_dict,
-  'seasons': ['DJF', 'MAM', 'JJA', 'SON'],
-  'levs': np.linspace(-0.5, 0.5, 20),
-  'midpoint': 0,
-  'colmap': "Spectral_r"
+  "r_nought_dict": nh_detrended_dict,
+  "spatial_dict": nh_spatial_dict,
+  "seasons": ["DJF", "MAM", "JJA", "SON"],
+  "levs": np.linspace(-0.5, 0.5, 20),
+  "midpoint": 0,
+  "colmap": "Spectral_r"
 }
 sh_params = {
-  'r_nought_dict': sh_detrended_dict,
-  'spatial_dict': sh_spatial_dict,
-  'seasons': ['DJF', 'MAM', 'JJA', 'SON'],
-  'levs': np.linspace(-0.5, 0.5, 20),
-  'midpoint': 0,
-  'colmap': "Spectral_r"
+  "r_nought_dict": sh_detrended_dict,
+  "spatial_dict": sh_spatial_dict,
+  "seasons": ["DJF", "MAM", "JJA", "SON"],
+  "levs": np.linspace(-0.5, 0.5, 20),
+  "midpoint": 0,
+  "colmap": "Spectral_r"
 }
 
 # Dictionaries to store correlation and significance maps
@@ -307,7 +307,7 @@ sh_sig_maps = {}
 for idx in indices:
   nh_corr_maps[idx], nh_sig_maps[idx] = plot_dicts_corr(
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/figures/correlation_seasonal_nh_{idx.lower().replace(' ', '_').replace('.', '')}.eps",
+    fileout_name=f"4_outputs/figures/correlation_seasonal_nh_{idx.lower().replace(" ", "_").replace(".", "")}.eps",
     title=f"Seasonal R0 vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **nh_params
   )
@@ -316,16 +316,16 @@ for idx in indices:
 for idx in indices:
   sh_corr_maps[idx], sh_sig_maps[idx] = plot_dicts_corr(
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/figures/correlation_seasonal_sh_{idx.lower().replace(' ', '_').replace('.', '')}.eps", 
+    fileout_name=f"4_outputs/figures/correlation_seasonal_sh_{idx.lower().replace(" ", "_").replace(".", "")}.eps", 
     title=f"Seasonal R0 vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **sh_params
   )
 
 # Save the correlation and significance maps
-save_seasonal_correlation_to_netcdf(nh_corr_maps, '4_outputs/data/correlation_and_causality/nh_correlation_seasonal.nc')
-save_seasonal_correlation_to_netcdf(sh_corr_maps, '4_outputs/data/correlation_and_causality/sh_correlation_seasonal.nc')
-save_seasonal_correlation_to_netcdf(nh_sig_maps, '4_outputs/data/correlation_and_causality/nh_correlation_significance_seasonal.nc')
-save_seasonal_correlation_to_netcdf(sh_sig_maps, '4_outputs/data/correlation_and_causality/sh_correlation_significance_seasonal.nc')
+save_seasonal_correlation_to_netcdf(nh_corr_maps, "4_outputs/data/correlation_and_causality/nh_correlation_seasonal.nc")
+save_seasonal_correlation_to_netcdf(sh_corr_maps, "4_outputs/data/correlation_and_causality/sh_correlation_seasonal.nc")
+save_seasonal_correlation_to_netcdf(nh_sig_maps, "4_outputs/data/correlation_and_causality/nh_correlation_significance_seasonal.nc")
+save_seasonal_correlation_to_netcdf(sh_sig_maps, "4_outputs/data/correlation_and_causality/sh_correlation_significance_seasonal.nc")
 
 # --- Total Correlation Analysis ---
 
@@ -337,25 +337,25 @@ sh_sig_maps_total = {}
 
 # Define common parameters
 nh_params = {
-  'r_nought_dict': nh_total_dict,
-  'spatial_dict': nh_spatial_dict,
-  'levs': np.linspace(-0.5, 0.5, 20), 
-  'midpoint': 0,
-  'colmap': "Spectral_r"
+  "r_nought_dict": nh_total_dict,
+  "spatial_dict": nh_spatial_dict,
+  "levs": np.linspace(-0.5, 0.5, 20), 
+  "midpoint": 0,
+  "colmap": "Spectral_r"
 }
 sh_params = {
-  'r_nought_dict': sh_total_dict,
-  'spatial_dict': sh_spatial_dict,
-  'levs': np.linspace(-0.5, 0.5, 20),
-  'midpoint': 0, 
-  'colmap': "Spectral_r"
+  "r_nought_dict": sh_total_dict,
+  "spatial_dict": sh_spatial_dict,
+  "levs": np.linspace(-0.5, 0.5, 20),
+  "midpoint": 0, 
+  "colmap": "Spectral_r"
 }
 
 # Generate plots for Northern Hemisphere
 for idx in indices:
    nh_corr_maps_total[idx], nh_sig_maps_total[idx] = plot_dicts_corr_total(
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/figures/correlation_total_nh_{idx.lower().replace(' ', '_').replace('.', '')}.eps",
+    fileout_name=f"4_outputs/figures/correlation_total_nh_{idx.lower().replace(" ", "_").replace(".", "")}.eps",
     title=f"Full R0 Time Series vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **nh_params
   )
@@ -364,16 +364,16 @@ for idx in indices:
 for idx in indices:
   sh_corr_maps_total[idx], sh_sig_maps_total[idx] = plot_dicts_corr_total(
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/figures/correlation_total_sh_{idx.lower().replace(' ', '_').replace('.', '')}.eps",
+    fileout_name=f"4_outputs/figures/correlation_total_sh_{idx.lower().replace(" ", "_").replace(".", "")}.eps",
     title=f"Full R0 Time Series vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **sh_params
   )
 
 # Save the correlation and significance maps
-save_total_correlation_to_netcdf(nh_corr_maps_total, '4_outputs/data/correlation_and_causality/nh_correlation_total.nc')
-save_total_correlation_to_netcdf(nh_sig_maps_total, '4_outputs/data/correlation_and_causality/sh_correlation_total.nc')
-save_total_correlation_to_netcdf(sh_corr_maps_total, '4_outputs/data/correlation_and_causality/nh_correlation_significance_total.nc')
-save_total_correlation_to_netcdf(sh_sig_maps_total, '4_outputs/data/correlation_and_causality/sh_correlation_significance_total.nc')
+save_total_correlation_to_netcdf(nh_corr_maps_total, "4_outputs/data/correlation_and_causality/nh_correlation_total.nc")
+save_total_correlation_to_netcdf(nh_sig_maps_total, "4_outputs/data/correlation_and_causality/sh_correlation_total.nc")
+save_total_correlation_to_netcdf(sh_corr_maps_total, "4_outputs/data/correlation_and_causality/nh_correlation_significance_total.nc")
+save_total_correlation_to_netcdf(sh_sig_maps_total, "4_outputs/data/correlation_and_causality/sh_correlation_significance_total.nc")
 
 global_data = xr.open_dataset("4_outputs/data/detrended_vars/detrended_r_nought_data.nc")
 datasets = {
@@ -387,14 +387,14 @@ processed_detrended_data = {}
 for region, dataset in datasets.items():
   processed_detrended_data[region] = {
     season: process_seasonal(dataset, season)
-    for season in ['DJF', 'MAM', 'JJA', 'SON']
+    for season in ["DJF", "MAM", "JJA", "SON"]
   }
 
-global_detrended_dict = {'Global': processed_detrended_data['Global']}
+global_detrended_dict = {"Global": processed_detrended_data["Global"]}
 
 regions = {
-  'global': {
-    'Global': global_data
+  "global": {
+    "Global": global_data
   }
 }
 
@@ -404,45 +404,45 @@ total_dicts = {}
 
 for region_type, region_data in regions.items():
   # Create spatial dictionary
-  spatial_dicts[f'{region_type}_spatial_dict'] = {
-    name: {'lat': data.lat, 'lon': data.lon}
+  spatial_dicts[f"{region_type}_spatial_dict"] = {
+    name: {"lat": data.lat, "lon": data.lon}
     for name, data in region_data.items()
   }
   
   # Create total data dictionary
-  total_dicts[f'{region_type}_total_dict'] = {
+  total_dicts[f"{region_type}_total_dict"] = {
     name: np.array(data.detrended_data)
     for name, data in region_data.items()
   }
 
-global_spatial_dict = spatial_dicts['global_spatial_dict']
-global_total_dict = total_dicts['global_total_dict']
+global_spatial_dict = spatial_dicts["global_spatial_dict"]
+global_total_dict = total_dicts["global_total_dict"]
 
 global_corr_maps = {}
 global_sig_maps = {}
 
 # Define common parameters
 params = {
-  'r_nought_dict': global_detrended_dict,
-  'spatial_dict': global_spatial_dict,
-  'levs': np.linspace(-0.5, 0.5, 20),
-  'midpoint': 0,
-  'seasons': ['DJF', 'MAM', 'JJA', 'SON'],
-  'colmap': "Spectral_r"
+  "r_nought_dict": global_detrended_dict,
+  "spatial_dict": global_spatial_dict,
+  "levs": np.linspace(-0.5, 0.5, 20),
+  "midpoint": 0,
+  "seasons": ["DJF", "MAM", "JJA", "SON"],
+  "colmap": "Spectral_r"
 }
 
 # Generate plots for each index
 for idx in indices:
   global_corr_maps[idx], global_sig_maps[idx] = plot_dicts_corr_global(
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/figures/correlation_seasonal_global_{idx.lower().replace(' ', '_').replace('.', '')}.eps",
+    fileout_name=f"4_outputs/figures/correlation_seasonal_global_{idx.lower().replace(" ", "_").replace(".", "")}.eps",
     title=f"Seasonal R0 vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **params
   )
 
 # Save the correlation and significance maps
-save_seasonal_correlation_to_netcdf(global_corr_maps, '4_outputs/data/correlation_and_causality/global_correlation_seasonal.nc')
-save_seasonal_correlation_to_netcdf(global_sig_maps, '4_outputs/data/correlation_and_causality/global_correlation_significance_seasonal.nc')
+save_seasonal_correlation_to_netcdf(global_corr_maps, "4_outputs/data/correlation_and_causality/global_correlation_seasonal.nc")
+save_seasonal_correlation_to_netcdf(global_sig_maps, "4_outputs/data/correlation_and_causality/global_correlation_significance_seasonal.nc")
 
 # Dictionaries to store correlation and significance maps
 global_corr_maps_total = {}
@@ -450,21 +450,21 @@ global_sig_maps_total = {}
 
 # Define common parameters
 params = {
-  'r_nought_dict': global_total_dict,
-  'spatial_dict': global_spatial_dict,
-  'levs': np.linspace(-0.5, 0.5, 20),
-  'midpoint': 0,
-  'colmap': "Spectral_r"
+  "r_nought_dict": global_total_dict,
+  "spatial_dict": global_spatial_dict,
+  "levs": np.linspace(-0.5, 0.5, 20),
+  "midpoint": 0,
+  "colmap": "Spectral_r"
 }
 
 # Generate plots for each index
 for idx in indices:
   global_corr_maps_total[idx], global_sig_maps_total[idx] = plot_dicts_corr_global_total(
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/figures/correlation_total_global_{idx.lower().replace(' ', '_').replace('.', '')}.eps",
+    fileout_name=f"4_outputs/figures/correlation_total_global_{idx.lower().replace(" ", "_").replace(".", "")}.eps",
     title=f"Full R0 Time Series vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
     **params
   )
 
-save_total_correlation_to_netcdf(global_corr_maps_total, '4_outputs/data/correlation_and_causality/sh_correlation_total.nc')
-save_total_correlation_to_netcdf(global_sig_maps_total, '4_outputs/data/correlation_and_causality/nh_correlation_significance_total.nc')
+save_total_correlation_to_netcdf(global_corr_maps_total, "4_outputs/data/correlation_and_causality/sh_correlation_total.nc")
+save_total_correlation_to_netcdf(global_sig_maps_total, "4_outputs/data/correlation_and_causality/nh_correlation_significance_total.nc")
