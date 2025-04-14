@@ -479,7 +479,7 @@ def plot_dicts_corr_global_total(r_nought_dict, spatial_dict, index_dict, fileou
     ds2 = xr.DataArray(ds2, dims=["time", "lat", "lon"])
     ds1 = xr.DataArray(ds1, dims=["time"])
 
-    causalA, causalsigA = causality1d3d(ds1, ds2, normalise = False, sig = 99)
+    causalA, causalsigA = causality1d3d(ds1, ds2, normalise = True, sig = 99)
     
     # Convert inf/-inf to NaN
     causalA = xr.where(np.isinf(causalA), np.nan, causalA)
@@ -753,7 +753,7 @@ def plot_dicts_causality(r_nought_dict, spatial_dict, index_dict, seasons, fileo
       ds2 = xr.DataArray(ds2, dims=["time", "lat", "lon"])
       ds1 = xr.DataArray(ds1, dims=["time"])
 
-      causalA, causalsigA = causality1d3d(ds1, ds2, normalise = False, sig = 99)
+      causalA, causalsigA = causality1d3d(ds1, ds2, normalise = True, sig = 99)
       
       # Store causality and significance maps
       causality_maps[region][season] = causalA
@@ -874,7 +874,7 @@ def plot_dicts_causality_total(r_nought_dict, spatial_dict, index_dict, fileout_
     ds2 = xr.DataArray(ds2, dims=["time", "lat", "lon"])
     ds1 = xr.DataArray(ds1, dims=["time"])
 
-    causalA, causalsigA = causality1d3d(ds1, ds2, normalise = False, sig = 99)
+    causalA, causalsigA = causality1d3d(ds1, ds2, normalise = True, sig = 99)
     
     # Convert inf/-inf to NaN
     causalA = xr.where(np.isinf(causalA), np.nan, causalA)
@@ -958,7 +958,7 @@ def plot_dicts_causality_global(r_nought_dict, spatial_dict, index_dict, seasons
     ds2 = xr.DataArray(ds2, dims=["time", "lat", "lon"])
     ds1 = xr.DataArray(ds1, dims=["time"])
 
-    causalA, causalsigA = causality1d3d(ds1, ds2, normalise = False, sig = 99)
+    causalA, causalsigA = causality1d3d(ds1, ds2, normalise = True, sig = 99)
     
     # Store causality and significance maps
     causality_maps[region][season] = causalA
