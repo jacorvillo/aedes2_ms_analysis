@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import xarray as xr
 import scipy.stats as stats
+import pandas as pd
 
 def extract_seasonal_months(date_range, data_vector):
   """
@@ -38,6 +39,7 @@ def calc_conf_interval(slope, stderr, alpha=0.05):
   """
   Function to calculate the 95% confidence interval for the slope
   """
+  yr = np.arange(0, 123)
   t_val = stats.t.ppf(1 - alpha/2, df=len(yr) - 2)
   return slope - t_val * stderr, slope + t_val * stderr
 
@@ -429,7 +431,7 @@ def save_total_correlation_to_netcdf(correlation_dict, output_filename):
   # Save to NetCDF file
   ds.to_netcdf(output_filename)
 
-def plot_dicts_corr_global_total(r_nought_dict, spatial_dict, index_dict, fileout_name, levs, midpoint, colmap, title):
+def plot_dicts_causality_global_total(r_nought_dict, spatial_dict, index_dict, fileout_name, levs, midpoint, colmap, title):
   """
   Plots all maps in r_nought_dict for the first time dimension.
 
@@ -848,6 +850,45 @@ def save_causality_maps_to_netcdf(causality_dict, output_filename):
   # Save to NetCDF file
   ds.to_netcdf(output_filename)
 
+def save_total_causality_maps_to_netcdf(causality_dict, output_filename):
+  """
+  Saves causality maps from multiple climate indices into a single NetCDF file.
+  
+  Parameters:
+  - causality_dict: Dictionary containing causality maps for each climate index
+  - output_filename: String specifying the output NetCDF filename
+  """
+  # Get dimensions from the first map in the dictionary
+  first_index = list(causality_dict.keys())[0]
+  first_region = list(causality_dict[first_index].keys())[0]
+  sample_data = causality_dict[first_index][first_region]
+  
+  # Create dataset with dimensions
+  ds = xr.Dataset(
+    coords={
+      "lat": sample_data.shape[0],
+      "lon": sample_data.shape[1],
+      "index": list(causality_dict.keys())
+    }
+  )
+  
+  # Add causality data for each index, region, and season
+  for index in causality_dict.keys():
+    for region in causality_dict[index].keys():
+      var_name = f"causality_{index}_{region}".replace(" ", "_").replace(".", "")
+      data = causality_dict[index][region]
+      ds[var_name] = xr.DataArray(
+        data,
+        dims=["lat", "lon"],
+        coords={
+          "lat": range(data.shape[0]),
+          "lon": range(data.shape[1])
+        }
+      )
+  
+  # Save to NetCDF file
+  ds.to_netcdf(output_filename)
+
 def plot_dicts_causality_total(r_nought_dict, spatial_dict, index_dict, fileout_name, levs, midpoint, colmap, title):
   """
   Plots all maps in r_nought_dict for the first time dimension.
@@ -949,7 +990,7 @@ def plot_dicts_causality_global(r_nought_dict, spatial_dict, index_dict, seasons
   fig_width = subplot_width * 2
   fig_height = subplot_height * 2
 
-  fig, axs = plt.subplots(2, 2, figsize=(fig_width, fig_height), subplot_kw={"projection": ccrs.PlateCarree()})
+  fig, axs = plt.subplots(ncols = len(r_nought_dict), figsize=(fig_width, fig_height), subplot_kw={"projection": ccrs.PlateCarree()})
 
   # Define common color levels and colormap
   cmap = plt.get_cmap(colmap)
