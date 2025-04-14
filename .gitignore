@@ -370,3 +370,11 @@
 4_outputs/causality_total_global_tna.eps
 4_outputs/causality_total_global_tna.png
 4_outputs/data/correlation_and_causality/nh_causality_significance_total.nc
+4_outputs/figures/causality_final_global_DJF_merged.eps
+4_outputs/figures/causality_final_global_DJF_merged.png
+4_outputs/figures/causality_final_global_JJA_merged.eps
+4_outputs/figures/causality_final_global_JJA_merged.png
+4_outputs/figures/causality_final_global_MAM_merged.eps
+4_outputs/figures/causality_final_global_MAM_merged.png
+4_outputs/figures/causality_final_global_SON_merged.eps
+4_outputs/figures/causality_final_global_SON_merged.png
