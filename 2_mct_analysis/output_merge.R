@@ -12,23 +12,28 @@ library(ncdf4)
 library(s2dv)
 
 # Load correlation data:
-data <- load_correlation_data(
+data <- load_analysis_data(
   "4_outputs/data/correlation_and_causality/global_correlation_seasonal.nc",
-  "4_outputs/data/correlation_and_causality/global_correlation_significance_seasonal.nc"
+  "4_outputs/data/correlation_and_causality/global_correlation_significance_seasonal.nc",
+  "correlation"
 )
 
 # Obtain the maximum correlation index per grid point
-correlation_merge_djf <- max_correlation_index(data, 1)
-correlation_merge_mam <- max_correlation_index(data, 2)
-correlation_merge_jja <- max_correlation_index(data, 3)
-correlation_merge_son <- max_correlation_index(data, 4)
+correlation_merge_djf <- max_analysis_index(data, 1, "correlation")
+correlation_merge_mam <- max_analysis_index(data, 2, "correlation")
+correlation_merge_jja <- max_analysis_index(data, 3, "correlation")
+correlation_merge_son <- max_analysis_index(data, 4, "correlation")
 
 # Save the results to NetCDF files
-quicksave_merge(correlation_merge_djf, 
-  "4_outputs/data/correlation_and_causality/global_correlation_djf_merged.nc")
-quicksave_merge(correlation_merge_mam, 
-  "4_outputs/data/correlation_and_causality/global_correlation_mam_merged.nc")
-quicksave_merge(correlation_merge_jja, 
-  "4_outputs/data/correlation_and_causality/global_correlation_jja_merged.nc")
-quicksave_merge(correlation_merge_son, 
-  "4_outputs/data/correlation_and_causality/global_correlation_son_merged.nc")
+quicksave_analysis(correlation_merge_djf, 
+  "4_outputs/data/correlation_and_causality/global_correlation_djf_merged.nc",
+  "correlation", TRUE)
+quicksave_analysis(correlation_merge_mam, 
+  "4_outputs/data/correlation_and_causality/global_correlation_mam_merged.nc",
+  "correlation", TRUE)
+quicksave_analysis(correlation_merge_jja, 
+  "4_outputs/data/correlation_and_causality/global_correlation_jja_merged.nc",
+  "correlation", TRUE)
+quicksave_analysis(correlation_merge_son, 
+  "4_outputs/data/correlation_and_causality/global_correlation_son_merged.nc",
+  "correlation", TRUE)

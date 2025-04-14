@@ -171,12 +171,12 @@ atl3_region <- list(lat = c(-3, 3), lon = c(-20, 0))
 tna_region <- list(lat = c(5.5, 23.5), lon = c(-57.5, -15))
 iob_region <- list(lat = c(-30, 30), lon = c(30, 120))
 
-npmm <- calculate_temp_index(dtemps, npmm_region, std = TRUE)
-spmm <- calculate_temp_index(dtemps, spmm_region, std = TRUE)
-nino34 <- calculate_temp_index(dtemps, nino34_region, std = TRUE)
-atl3 <- calculate_temp_index(dtemps, atl3_region, std = TRUE)
-tna <- calculate_temp_index(dtemps, tna_region, std = TRUE)
-iob <- calculate_temp_index(dtemps, iob_region, std = TRUE)
+npmm <- calculate_climate_index(dtemps, npmm_region, std = TRUE, index_type = "temp")
+spmm <- calculate_climate_index(dtemps, spmm_region, std = TRUE, index_type = "temp")
+nino34 <- calculate_climate_index(dtemps, nino34_region, std = TRUE, index_type = "temp")
+atl3 <- calculate_climate_index(dtemps, atl3_region, std = TRUE, index_type = "temp")
+tna <- calculate_climate_index(dtemps, tna_region, std = TRUE, index_type = "temp")
+iob <- calculate_climate_index(dtemps, iob_region, std = TRUE, index_type = "temp")
 
 # Indices based on SST anomaly differences:
 
@@ -189,18 +189,18 @@ south_region <- list(lat = c(-40, -20), lon = c(-60, -20))
 west_region <- list(lat = c(-30, -10), lon = c(50, 70))
 east_region <- list(lat = c(-30, -10), lon = c(90, 110))
 
-iod_east <- calculate_temp_index(dtemps, iode_region, std = FALSE)
-iod_west <- calculate_temp_index(dtemps, iodw_region, std = FALSE)
+iod_east <- calculate_climate_index(dtemps, iode_region, std = FALSE, index_type = "temp")
+iod_west <- calculate_climate_index(dtemps, iodw_region, std = FALSE, index_type = "temp")
 
 iod <- iod_west - iod_east
 
-siod_west <- calculate_temp_index(dtemps, west_region, std = FALSE)
-siod_east <- calculate_temp_index(dtemps, east_region, std = FALSE)
+siod_west <- calculate_climate_index(dtemps, west_region, std = FALSE, index_type = "temp")
+siod_east <- calculate_climate_index(dtemps, east_region, std = FALSE, index_type = "temp")
 
 siod <- siod_west - siod_east
 
-sasd_north <- calculate_temp_index(dtemps, north_region, std = FALSE)
-sasd_south <- calculate_temp_index(dtemps, south_region, std = FALSE)
+sasd_north <- calculate_climate_index(dtemps, north_region, std = FALSE, index_type = "temp")
+  sasd_south <- calculate_climate_index(dtemps, south_region, std = FALSE, index_type = "temp")
 
 sasd1 <- sasd_north - sasd_south
 
