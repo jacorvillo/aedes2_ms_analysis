@@ -526,7 +526,7 @@ def plot_merged(dataset, season, fileout):
   overlap = np.array(dataset["overlap"])
 
   # First subplot with colorbar
-  cf1 = axs[0].contourf(lon, lat, overlap[:,:,0], cmap="RdYlBu_r", transform=ccrs.PlateCarree(), levels=np.linspace(-0.01, 0.01, 21), extend="both")
+  cf1 = axs[0].contourf(lon, lat, overlap[0,:,:], cmap="RdYlBu_r", transform=ccrs.PlateCarree(), levels=np.linspace(-0.5, 0.5, 21), extend="both")
   axs[0].set_title("Maximum Correlation Values", weight="bold")
   axs[0].coastlines()
   axs[0].set_global()
@@ -556,7 +556,7 @@ def plot_merged(dataset, season, fileout):
             "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22"]
   cmap = plt.cm.colors.ListedColormap(colors)
 
-  cf2 = axs[1].contourf(lon, lat, reordered_overlap_indices[:,:,0], cmap=cmap,
+  cf2 = axs[1].contourf(lon, lat, reordered_overlap_indices[0,:,:], cmap=cmap,
               levels=np.arange(0.5, 10.5),  # Creates 9 discrete bins
               transform=ccrs.PlateCarree())
   axs[1].set_title("Maximum Correlation ID", weight="bold")
@@ -568,25 +568,47 @@ def plot_merged(dataset, season, fileout):
   cbar2.ax.set_xticklabels(ordered_labels, rotation=45, ha="right")
 
   # Calculate frequencies for concentric pie chart
-  unique1, counts1 = np.unique(reordered_overlap_indices[:,:,0][~np.isnan(reordered_overlap_indices[:,:,0])], return_counts=True)
-  unique2, counts2 = np.unique(reordered_overlap_indices[:,:,1][~np.isnan(reordered_overlap_indices[:,:,1])], return_counts=True)
-  unique3, counts3 = np.unique(reordered_overlap_indices[:,:,2][~np.isnan(reordered_overlap_indices[:,:,2])], return_counts=True)
+  unique1, counts1 = np.unique(reordered_overlap_indices[0,:,:][~np.isnan(reordered_overlap_indices[0,:,:])], return_counts=True)
+  unique2, counts2 = np.unique(reordered_overlap_indices[1,:,:][~np.isnan(reordered_overlap_indices[1,:,:])], return_counts=True)
+  unique3, counts3 = np.unique(reordered_overlap_indices[2,:,:][~np.isnan(reordered_overlap_indices[2,:,:])], return_counts=True)
 
   percentages1 = counts1 / counts1.sum() * 100
   percentages2 = counts2 / counts2.sum() * 100
   percentages3 = counts3 / counts3.sum() * 100
 
-  # Create concentric pie chart
-  axs[2].pie(percentages3, radius=0.3, colors=colors, startangle=90)
-  axs[2].pie(percentages2, radius=0.6, colors=colors, startangle=90)
-  axs[2].pie(percentages1, radius=0.9, colors=colors, startangle=90)
-  
-  # Add labels
-  axs[2].text(0, 0, "3rd", ha="center", va="center", fontsize=8)
-  axs[2].text(0, 0.3, "2nd", ha="center", va="center", fontsize=8)
-  axs[2].text(0, 0.6, "1st", ha="center", va="center", fontsize=8)
-  
-  axs[2].set_title("Top 3 Correlation Distribution", weight="bold")
+  # Create pie chart with new code
+  size = 0.3
+
+  # Calculate average percentages for labels
+  avg_percentages = (percentages1 + percentages2 + percentages3) / 3
+
+  # Plot outer ring with percentages1 and average labels
+  wedges, _ = axs[2].pie(percentages1, radius=1, colors=colors[:len(percentages1)],
+                   wedgeprops=dict(width=size, edgecolor='w'), startangle=90)
+
+  # Add percentage labels on the outer ring
+  for i, wedge in enumerate(wedges):
+      # Get the angle at the center of the wedge
+      ang = (wedge.theta2 + wedge.theta1) / 2
+      # Convert angle to radians
+      ang_rad = np.deg2rad(ang)
+      # Calculate text position (slightly outside the outer ring)
+      x = 1.2 * np.cos(ang_rad)
+      y = 1.2 * np.sin(ang_rad)
+      # Add text with average percentage
+      axs[2].text(x, y, f'{avg_percentages[i]:.1f}%', 
+              ha='center', va='center')
+
+  # Plot middle ring with percentages2  
+  axs[2].pie(percentages2, radius=1-size, colors=colors[:len(percentages2)],
+         wedgeprops=dict(width=size, edgecolor='w'), startangle=90)
+
+  # Plot inner ring with percentages3
+  axs[2].pie(percentages3, radius=1-size*2, colors=colors[:len(percentages3)],
+         wedgeprops=dict(width=size, edgecolor='w'), startangle=90)
+
+  axs[2].set(aspect="equal")
+  axs[2].set_title('Top 3 Correlation Distribution (% = Sum / 3)', weight="bold")
   
   plt.suptitle("Global Correlation Analysis - " + season, fontsize=16, weight="bold")
   plt.savefig(fileout + season + "_merged.png", dpi=300)
@@ -1006,7 +1028,7 @@ def plot_merged_causality(dataset, season, fileout):
   overlap = np.array(dataset["overlap"])
 
   # First subplot with colorbar
-  cf1 = axs[0].contourf(lon, lat, overlap[:,:,0], cmap="RdYlBu_r", transform=ccrs.PlateCarree(), levels=np.linspace(-0.01, 0.01, 21), extend="both")
+  cf1 = axs[0].contourf(lon, lat, overlap[0,:,:], cmap="RdYlBu_r", transform=ccrs.PlateCarree(), levels=np.linspace(-0.01, 0.01, 21), extend="both")
   axs[0].set_title("Maximum Causality Values", weight="bold")
   axs[0].coastlines()
   axs[0].set_global()
@@ -1048,26 +1070,47 @@ def plot_merged_causality(dataset, season, fileout):
   cbar2.ax.set_xticklabels(ordered_labels, rotation=45, ha="right")
 
   # Calculate frequencies for concentric pie chart
-  unique1, counts1 = np.unique(reordered_overlap_indices[:,:,0][~np.isnan(reordered_overlap_indices[:,:,0])], return_counts=True)
-  unique2, counts2 = np.unique(reordered_overlap_indices[:,:,1][~np.isnan(reordered_overlap_indices[:,:,1])], return_counts=True)
-  unique3, counts3 = np.unique(reordered_overlap_indices[:,:,2][~np.isnan(reordered_overlap_indices[:,:,2])], return_counts=True)
+  unique1, counts1 = np.unique(reordered_overlap_indices[0,:,:][~np.isnan(reordered_overlap_indices[0,:,:])], return_counts=True)
+  unique2, counts2 = np.unique(reordered_overlap_indices[1,:,:][~np.isnan(reordered_overlap_indices[1,:,:])], return_counts=True)
+  unique3, counts3 = np.unique(reordered_overlap_indices[2,:,:][~np.isnan(reordered_overlap_indices[2,:,:])], return_counts=True)
 
   percentages1 = counts1 / counts1.sum() * 100
   percentages2 = counts2 / counts2.sum() * 100
   percentages3 = counts3 / counts3.sum() * 100
 
-  # Create concentric pie chart
-  axs[2].pie(percentages3, radius=0.3, colors=colors, startangle=90)
-  axs[2].pie(percentages2, radius=0.6, colors=colors, startangle=90)
-  axs[2].pie(percentages1, radius=0.9, colors=colors, startangle=90)
-  
-  # Add labels
-  axs[2].text(0, 0, "3rd", ha="center", va="center", fontsize=8)
-  axs[2].text(0, 0.3, "2nd", ha="center", va="center", fontsize=8)
-  axs[2].text(0, 0.6, "1st", ha="center", va="center", fontsize=8)
-  
-  axs[2].set_title("Top 3 Causality Distribution", weight="bold")
-  
+    # Create pie chart with new code
+  size = 0.3
+
+  # Calculate average percentages for labels
+  avg_percentages = (percentages1 + percentages2 + percentages3) / 3
+
+  # Plot outer ring with percentages1 and average labels
+  wedges, _ = axs[2].pie(percentages1, radius=1, colors=colors[:len(percentages1)],
+                   wedgeprops=dict(width=size, edgecolor='w'), startangle=90)
+
+  # Add percentage labels on the outer ring
+  for i, wedge in enumerate(wedges):
+      # Get the angle at the center of the wedge
+      ang = (wedge.theta2 + wedge.theta1) / 2
+      # Convert angle to radians
+      ang_rad = np.deg2rad(ang)
+      # Calculate text position (slightly outside the outer ring)
+      x = 1.2 * np.cos(ang_rad)
+      y = 1.2 * np.sin(ang_rad)
+      # Add text with average percentage
+      axs[2].text(x, y, f'{avg_percentages[i]:.1f}%', 
+              ha='center', va='center')
+
+  # Plot middle ring with percentages2  
+  axs[2].pie(percentages2, radius=1-size, colors=colors[:len(percentages2)],
+         wedgeprops=dict(width=size, edgecolor='w'), startangle=90)
+
+  # Plot inner ring with percentages3
+  axs[2].pie(percentages3, radius=1-size*2, colors=colors[:len(percentages3)],
+         wedgeprops=dict(width=size, edgecolor='w'), startangle=90)
+
+  axs[2].set(aspect="equal")
+  axs[2].set_title('Top 3 Causality Distribution (% = Sum / 3)', weight="bold")
   plt.suptitle("Global Causality Analysis - " + season, fontsize=16, weight="bold")
   plt.savefig(fileout + season + "_merged.png", dpi=300)
   plt.savefig(fileout + season + "_merged.eps", format="eps", dpi=300)
