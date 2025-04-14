@@ -229,3 +229,16 @@
 4_outputs/figures/index_seasons_spmm.eps
 4_outputs/figures/index_seasons_tna.eps
 4_outputs/figures/trends_indices.eps
+4_outputs/figures/correlation_seasonal_global_iob.eps
+4_outputs/figures/correlation_seasonal_global_iod.eps
+4_outputs/figures/correlation_seasonal_global_siod.eps
+4_outputs/figures/correlation_seasonal_global_tna.eps
+4_outputs/figures/correlation_final_global_DJF_merged.eps
+4_outputs/figures/correlation_final_global_DJF_merged.png
+4_outputs/figures/correlation_final_global_JJA_merged.eps
+4_outputs/figures/correlation_final_global_JJA_merged.png
+4_outputs/figures/correlation_final_global_MAM_merged.eps
+4_outputs/figures/correlation_final_global_MAM_merged.png
+4_outputs/figures/correlation_final_global_SON_merged.eps
+4_outputs/figures/correlation_final_global_SON_merged.png
+4_outputs/figures/correlation_seasonal_global_sasd1.eps

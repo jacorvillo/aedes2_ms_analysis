@@ -538,8 +538,8 @@ def plot_merged(dataset, season, fileout):
   overlap_indices = np.array(dataset["overlap_indices"])
 
   # Define index labels and ordered labels
-  index_labels = ["NPMM", "SPMM", "Niño 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
-  ordered_labels = ["NPMM", "SPMM", "Niño 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
+  index_labels = ["NPMM", "SPMM", "Nino 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
+  ordered_labels = ["NPMM", "SPMM", "Nino 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
 
   # Create mapping from original indices to new order
   label_to_index = {label: i+1 for i, label in enumerate(index_labels)}
@@ -552,8 +552,8 @@ def plot_merged(dataset, season, fileout):
     reordered_overlap_indices[overlap_indices == old_idx] = new_idx
 
   # Create discrete colormap with 9 distinct colors
-  colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", 
-            "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22"]
+  colors = ["#ef476f", "#f78c6b", "#ffd166", "#83d483", "#06d6a0", 
+            "#0cb0a9", "#118ab2", "#0c637f", "#073b4c"]
   cmap = plt.cm.colors.ListedColormap(colors)
 
   cf2 = axs[1].contourf(lon, lat, reordered_overlap_indices[0,:,:], cmap=cmap,
@@ -1040,8 +1040,8 @@ def plot_merged_causality(dataset, season, fileout):
   overlap_indices = np.array(dataset["overlap_indices"])
 
   # Define index labels and ordered labels
-  index_labels = ["NPMM", "SPMM", "Niño 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
-  ordered_labels = ["NPMM", "SPMM", "Niño 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
+  index_labels = ["NPMM", "SPMM", "Nino 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
+  ordered_labels = ["NPMM", "SPMM", "Nino 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
 
   # Create mapping from original indices to new order
   label_to_index = {label: i+1 for i, label in enumerate(index_labels)}
@@ -1054,8 +1054,8 @@ def plot_merged_causality(dataset, season, fileout):
     reordered_overlap_indices[overlap_indices == old_idx] = new_idx
 
   # Create discrete colormap with 9 distinct colors
-  colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", 
-            "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22"]
+  colors = ["#ef476f", "#f78c6b", "#ffd166", "#83d483", "#06d6a0", 
+            "#0cb0a9", "#118ab2", "#0c637f", "#073b4c"]
   cmap = plt.cm.colors.ListedColormap(colors)
 
   cf2 = axs[1].contourf(lon, lat, reordered_overlap_indices[:,:,0], cmap=cmap,
