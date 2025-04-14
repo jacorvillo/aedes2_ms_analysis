@@ -14,15 +14,15 @@ exec(open("0_data_and_functions/python_functions.py").read())
 
 # --- Climate Variability Modes (CVMs) Analysis ---
 
-npmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/npmm.dat", delim_whitespace=True).values, (503))[2:502]
-spmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/spmm.dat", delim_whitespace=True).values, (503))[2:502]
-nino = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/nino34.dat", delim_whitespace=True).values, (503))[2:502]
-atl3 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/atl3.dat", delim_whitespace=True).values, (503))[2:502]
-tna = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/tna.dat", delim_whitespace=True).values, (503))[2:502]
-iob = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/iob.dat", delim_whitespace=True).values, (503))[2:502]
-iod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/iod.dat", delim_whitespace=True).values, (503))[2:502]
-siod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/siod.dat", delim_whitespace=True).values, (503))[2:502]
-sasd1 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/sasd.dat", delim_whitespace=True).values, (503))[2:502]
+npmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/npmm.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+spmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/spmm.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+nino = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/nino34.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+atl3 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/atl3.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+tna = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/tna.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+iob = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/iob.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+iod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/iod.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+siod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/siod.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+sasd1 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/computed_batch/sasd.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
 
 # Obtain seasonal data for each variable, knowing that the arrays go from Mar 1980 to Nov 2021
 start_date = '1980-03-01'
@@ -198,7 +198,7 @@ sh_sig_maps = {}
 for idx in indices:
   nh_causality_maps[idx], nh_sig_maps[idx] = plot_dicts_causality(
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/causality_nh_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/causality_nh_{idx.lower().replace(' ', '_').replace('.', '')}",
     title=f"Seasonal R0 vs {idx} Causality (Detrended, dots = ssig of 99%)",
     **nh_params
   )
@@ -207,7 +207,7 @@ for idx in indices:
 for idx in indices:
   sh_causality_maps[idx], sh_sig_maps[idx] = plot_dicts_causality(
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/causality_sh_{idx.lower().replace(' ', '_').replace('.', '')}.png", 
+    fileout_name=f"4_outputs/causality_sh_{idx.lower().replace(' ', '_').replace('.', '')}", 
     title=f"Seasonal R0 vs {idx} Causality (Detrended, dots = ssig of 99%)",
     **sh_params
   )
@@ -246,7 +246,7 @@ sh_params = {
 for idx in indices:
    nh_causality_maps_total[idx], nh_sig_maps_total[idx] = plot_dicts_causality_total(
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/causality_total_nh_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/causality_total_nh_{idx.lower().replace(' ', '_').replace('.', '')}",
     title=f"Full R0 Time Series vs {idx} Causality (Detrended, dots = ssig of 99%)",
     **nh_params
   )
@@ -255,7 +255,7 @@ for idx in indices:
 for idx in indices:
   sh_causality_maps_total[idx], sh_sig_maps_total[idx] = plot_dicts_causality_total(
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/causality_total_sh_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/causality_total_sh_{idx.lower().replace(' ', '_').replace('.', '')}",
     title=f"Full R0 Time Series vs {idx} Causality (Detrended, dots = ssig of 99%)",
     **sh_params
   )
@@ -268,36 +268,27 @@ save_total_causality_maps_to_netcdf(nh_sig_maps_total, '4_outputs/data/correlati
 
 # -- Global data --
 
-# Load Global data:
-global_data = xr.open_dataset("4_outputs/data/sssrs/global.nc")
 
-# Dictionary of datasets
+global_data = xr.open_dataset("4_outputs/data/detrended_vars/detrended_r_nought_data.nc")
 datasets = {
-  'Global': global_data
+  "Global": global_data,
 }
 
 # Dictionary to store processed data
-processed_data = {}
 processed_detrended_data = {}
 
 # Process each dataset
 for region, dataset in datasets.items():
-  processed_data[region] = {
-    season: process_seasonal(dataset, season)
-    for season in ['DJF', 'MAM', 'JJA', 'SON']
-  }
   processed_detrended_data[region] = {
-    season: process_seasonal(dataset, season)
-    for season in ['DJF', 'MAM', 'JJA', 'SON']
+    season: process_seasonal(global_data, season)
+    for season in ["DJF", "MAM", "JJA", "SON"]
   }
 
-global_dict = {'Global': processed_data['Global']}
-global_detrended_dict = {'Global': processed_detrended_data['Global']}
+global_detrended_dict = {"Global": processed_detrended_data["Global"]}
 
-# Create dictionaries to store spatial and total data for each region
 regions = {
-  'global': {
-    'Global': global_data
+  "global": {
+    "Global": global_data
   }
 }
 
@@ -307,20 +298,19 @@ total_dicts = {}
 
 for region_type, region_data in regions.items():
   # Create spatial dictionary
-  spatial_dicts[f'{region_type}_spatial_dict'] = {
-    name: {'lat': data.lat, 'lon': data.lon}
+  spatial_dicts[f"{region_type}_spatial_dict"] = {
+    name: {"lat": data.lat, "lon": data.lon}
     for name, data in region_data.items()
   }
   
   # Create total data dictionary
-  total_dicts[f'{region_type}_total_dict'] = {
+  total_dicts[f"{region_type}_total_dict"] = {
     name: np.array(data.detrended_data)
     for name, data in region_data.items()
   }
 
-# Unpack dictionaries into individual variables to maintain compatibility
-global_spatial_dict = spatial_dicts['global_spatial_dict']
-global_total_dict = total_dicts['global_total_dict']
+global_spatial_dict = spatial_dicts["global_spatial_dict"]
+global_total_dict = total_dicts["global_total_dict"]
 
 # Global data
 global_causality_maps = {}
@@ -340,7 +330,7 @@ params = {
 for idx in indices:
   global_causality_maps[idx], global_sig_maps[idx] = plot_dicts_causality_global(
     index_dict=index_dict_seasonal[idx],
-    fileout_name=f"4_outputs/causality_global_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/causality_global_{idx.lower().replace(' ', '_').replace('.', '')}",
     title=f"Seasonal R0 Time Series vs {idx} Causality (Detrended, dots = ssig of 99%)",
     **params
   )
@@ -364,7 +354,7 @@ params = {
 for idx in indices:
   global_causality_maps_total[idx], global_sig_maps_total[idx] = plot_dicts_causality_global_total(
     index_dict=index_dict_total[idx],
-    fileout_name=f"4_outputs/causality_total_global_{idx.lower().replace(' ', '_').replace('.', '')}.png",
+    fileout_name=f"4_outputs/causality_total_global_{idx.lower().replace(' ', '_').replace('.', '')}",
     title=f"Full R0 Time Series vs {idx} Causality (Detrended, dots = ssig of 99%)",
     **params
   )
