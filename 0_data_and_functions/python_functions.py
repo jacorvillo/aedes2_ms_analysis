@@ -15,6 +15,13 @@ import xarray as xr
 import scipy.stats as stats
 
 def extract_seasonal_months(date_range, data_vector):
+  """
+  Extracts seasonal data from a vector of data.
+
+  Parameters:
+  - date_range: pandas.DatetimeIndex object
+  - data_vector: numpy.ndarray object  
+  """
   seasons = {
     'MAM': date_range.month.isin([3, 4, 5]),
     'JJA': date_range.month.isin([6, 7, 8]),
@@ -36,6 +43,13 @@ def calc_conf_interval(slope, stderr, alpha=0.05):
   return slope - t_val * stderr, slope + t_val * stderr
 
 def process_seasonal(dataset, season):
+  """
+  Processes data from a dataset for a specific season.
+
+  Parameters:
+  - dataset: xarray.Dataset object
+  - season: str
+  """
   data = dataset.sel(time=dataset.time.dt.season == season).detrended_data
   return np.array(data)
 
@@ -172,7 +186,8 @@ def plot_dicts_corr(r_nought_dict, spatial_dict, index_dict, seasons, levs, file
 
   plt.suptitle(title, fontsize=22, weight = "bold")
   plt.tight_layout(rect=[0, 0.1, 1, 0.96])
-  plt.savefig(fileout_name)
+  plt.savefig(fileout_name + '.png', dpi=300)
+  plt.savefig(fileout_name + '.eps', format='eps', dpi=300)
   plt.close()
   
   return corr_maps, sig_maps
@@ -258,22 +273,22 @@ def plot_dicts_corr_total(r_nought_dict, spatial_dict, index_dict, levs, fileout
   for i, (region) in enumerate(r_nought_dict.keys()):
     lat = spatial_dict[region]['lat']
     lon = spatial_dict[region]['lon']
-    nlat, nlon = len(lat), len(lon)
     ax = axs[i]
     ax.set_title(f'{region}', fontsize=14, weight = "bold")
+    # Convert to numpy array before reshaping
     A = r_nought_dict[region]
     A = np.transpose(A)
     A = np.array(A).reshape(np.array(A).shape[0], np.array(A).shape[1]*np.array(A).shape[2])
-    B = np.array(index_dict)
+    B = index_dict
     corA, PvalueA, cor_sigA, regA, regA_sig = IndexRegrCorr(np.transpose(A),np.transpose(B), 0.01, 'MonteCarlo', 100)
-    corA = np.reshape(corA,(nlat,nlon))
-    cor_sigA = np.reshape(cor_sigA,(nlat,nlon))
+    corA = np.reshape(corA,(len(lat),len(lon)))
+    cor_sigA = np.reshape(cor_sigA,(len(lat),len(lon)))
     
     # Store correlation and significance maps
     corr_maps[region] = corA.reshape(len(lat),len(lon))
     sig_maps[region] = cor_sigA.reshape(len(lat),len(lon))
 
-    cf = ax.contourf(lon, lat, corA.reshape(len(lat),len(lon)), cmap=cmap, levels=levs, norm=norm, extend='both', transform=ccrs.PlateCarree())
+    cf = ax.contourf(lon, lat, corA.reshape(len(lat),len(lon)), levels=levs, cmap=cmap, norm=norm, extend='both', transform=ccrs.PlateCarree())
     ax.contourf(lon,lat,cor_sigA.reshape(len(lat),len(lon)), extend='both', hatches='.',cmap=cmap, alpha=0, transform = ccrs.PlateCarree())
     ax.coastlines()
     gl = ax.gridlines(draw_labels=True)
@@ -282,57 +297,15 @@ def plot_dicts_corr_total(r_nought_dict, spatial_dict, index_dict, levs, fileout
 
   # Add a common colorbar at the bottom
   cbar_ax = fig.add_axes([0.2, 0.05, 0.6, 0.02])
-  fig.colorbar(cf, cax=cbar_ax, orientation='horizontal', label='Correlation Value')
+  fig.colorbar(cf, cax=cbar_ax, orientation='horizontal', norm=norm, label='Correlation Value')
 
   plt.suptitle(title, fontsize=22, weight = "bold")
   plt.tight_layout(rect=[0, 0.1, 1, 0.96])
-  plt.savefig(fileout_name)
+  plt.savefig(fileout_name + '.png', dpi=300)
+  plt.savefig(fileout_name + '.eps', format='eps', dpi=300)
   plt.close()
-
+  
   return corr_maps, sig_maps
-
-
-def save_total_correlation_to_netcdf(correlation_dict, output_filename):
-  """
-  Saves correlation maps from multiple climate indices into a single NetCDF file.
-
-  Parameters:
-  - correlation_dict: Dictionary containing correlation maps for each climate index
-  - output_filename: String specifying the output NetCDF filename
-  """
-  # Get dimensions from the first map in the dictionary
-  first_index = list(correlation_dict.keys())[0]
-  first_region = list(correlation_dict[first_index].keys())[0]
-  # first_season = list(correlation_dict[first_index][first_region].keys())[0]
-  sample_data = correlation_dict[first_index][first_region]
-
-  # Create dataset with dimensions
-  ds = xr.Dataset(
-    coords={
-      'lat': sample_data.shape[0],
-      'lon': sample_data.shape[1],
-      # 'season': ['DJF', 'MAM', 'JJA', 'SON'],
-      'index': list(correlation_dict.keys())
-    }
-  )
-
-  # Add correlation data for each index, region, and season
-  for index in correlation_dict.keys():
-    for region in correlation_dict[index].keys():
-      var_name = f'correlation_{index}_{region}'.replace(' ', '_').replace('.', '')
-      data = correlation_dict[index][region]
-      ds[var_name] = xr.DataArray(
-        data,
-        dims=['lat', 'lon'],
-        coords={
-          # 'season': ['DJF', 'MAM', 'JJA', 'SON'],
-          'lat': range(data.shape[0]),
-          'lon': range(data.shape[1])
-        }
-      )
-
-  # Save to NetCDF file
-  ds.to_netcdf(output_filename)
 
 def plot_dicts_corr_global(r_nought_dict, spatial_dict, index_dict, seasons, levs, fileout_name, midpoint, colmap, title):
   """
@@ -409,12 +382,55 @@ def plot_dicts_corr_global(r_nought_dict, spatial_dict, index_dict, seasons, lev
 
   plt.suptitle(title, fontsize=22, weight = "bold")
   plt.tight_layout(rect=[0, 0.1, 1, 0.96])
-  plt.savefig(fileout_name)
+  plt.savefig(fileout_name + '.png', dpi=300)
+  plt.savefig(fileout_name + '.eps', format='eps', dpi=300)
   plt.close()
   
   return corr_maps, sig_maps
-  
-def plot_dicts_corr_global_total(r_nought_dict, spatial_dict, index_dict, levs, fileout_name, midpoint, colmap, title):
+
+def save_total_correlation_to_netcdf(correlation_dict, output_filename):
+  """
+  Saves correlation maps from multiple climate indices into a single NetCDF file.
+
+  Parameters:
+  - correlation_dict: Dictionary containing correlation maps for each climate index
+  - output_filename: String specifying the output NetCDF filename
+  """
+  # Get dimensions from the first map in the dictionary
+  first_index = list(correlation_dict.keys())[0]
+  first_region = list(correlation_dict[first_index].keys())[0]
+  # first_season = list(correlation_dict[first_index][first_region].keys())[0]
+  sample_data = correlation_dict[first_index][first_region]
+
+  # Create dataset with dimensions
+  ds = xr.Dataset(
+    coords={
+      'lat': sample_data.shape[0],
+      'lon': sample_data.shape[1],
+      # 'season': ['DJF', 'MAM', 'JJA', 'SON'],
+      'index': list(correlation_dict.keys())
+    }
+  )
+
+  # Add correlation data for each index, region, and season
+  for index in correlation_dict.keys():
+    for region in correlation_dict[index].keys():
+      var_name = f'correlation_{index}_{region}'.replace(' ', '_').replace('.', '')
+      data = correlation_dict[index][region]
+      ds[var_name] = xr.DataArray(
+        data,
+        dims=['lat', 'lon'],
+        coords={
+          # 'season': ['DJF', 'MAM', 'JJA', 'SON'],
+          'lat': range(data.shape[0]),
+          'lon': range(data.shape[1])
+        }
+      )
+
+  # Save to NetCDF file
+  ds.to_netcdf(output_filename)
+
+def plot_dicts_corr_global_total(r_nought_dict, spatial_dict, index_dict, fileout_name, levs, midpoint, colmap, title):
   """
   Plots all maps in r_nought_dict for the first time dimension.
 
@@ -422,65 +438,78 @@ def plot_dicts_corr_global_total(r_nought_dict, spatial_dict, index_dict, levs, 
   - r_nought_dict: Dictionary where keys are region names and values are dictionaries with seasonal data.
   - spatial_dict: Dictionary with spatial information (lat, lon) for each region.
   - seasons: List of seasons to plot.
+  - fileout_name: Output file name for the plot. 
   - levs: Levels for contour plots.
-  - fileout_name: Output file name for the plot.
   - midpoint: Midpoint for the colormap normalization (optional).
   """
 
-  # Initialize dictionaries to store correlations and significance
-  corr_maps = {region: None for region in r_nought_dict.keys()}
-  sig_maps = {region: None for region in r_nought_dict.keys()}
+  # Initialize dictionaries to store causality and significance
+  causality_maps = {region: None for region in r_nought_dict.keys()}
+  causality_sig = {region: None for region in r_nought_dict.keys()}
 
-  # Define the figure size
-  fig_width = 10
-  fig_height = 8
+  # Define the size of each subplot
+  subplot_width = 5
+  subplot_height = 4
 
-  # Create single figure and axis
-  fig = plt.figure(figsize=(fig_width, fig_height))
-  ax = plt.axes(projection=ccrs.PlateCarree())
+  # Calculate the overall figure size
+  fig_width = subplot_width * 2
+  fig_height = subplot_height * 2
 
-  # Define common color levels and colormap 
+  fig, axs = plt.subplots(1, 1, figsize=(fig_width, fig_height), subplot_kw={'projection': ccrs.PlateCarree()})
+
+  # Define common color levels and colormap
   cmap = plt.get_cmap(colmap)
 
   # Normalize the colormap to set the midpoint if provided
   if midpoint is not None:
-    norm = mc.TwoSlopeNorm(vmin=np.min(levs), vcenter=midpoint, vmax=np.max(levs))
+    norm = mc.TwoSlopeNorm(vmin=min(levs), vcenter=midpoint, vmax=max(levs))
   else:
-    norm = plt.Normalize(vmin=np.min(levs), vmax=np.max(levs))
-
-  for i, (region) in enumerate(r_nought_dict.keys()):
+    norm = plt.Normalize(vmin=min(levs), vmax=max(levs))
+  
+  for (region) in enumerate(r_nought_dict.keys()):
     # Assuming r_nought_dict has only one region
     region = list(r_nought_dict.keys())[0]
     lat = spatial_dict[region]['lat']
     lon = spatial_dict[region]['lon']
-    nlat, nlon = len(lat), len(lon)
-    A = r_nought_dict[region]
-    A = np.transpose(A)
-    A = np.array(A).reshape(np.array(A).shape[0], np.array(A).shape[1]*np.array(A).shape[2])
-    B = index_dict
-    corA, PvalueA, cor_sigA, regA, regA_sig = IndexRegrCorr(np.transpose(A),np.transpose(B), 0.01, 'MonteCarlo', 100)
-    corA = np.reshape(corA,(nlat,nlon))
-    cor_sigA = np.reshape(cor_sigA,(nlat,nlon))
+    ax = axs
+    # Convert to numpy array before reshaping
+    ds2 = np.transpose(r_nought_dict[region])
+    ds1 = np.array(index_dict)
+    
+    # Convert arrays to xarray DataArrays with 'time' dimension
+    ds2 = xr.DataArray(ds2, dims=["time", 'lat', 'lon'])
+    ds1 = xr.DataArray(ds1, dims=['time'])
 
-    # Store correlation and significance maps
-    corr_maps[region] = corA.reshape(len(lat),len(lon))
-    sig_maps[region] = cor_sigA.reshape(len(lat),len(lon))
+    causalA, causalsigA = causality1d3d(ds1, ds2, normalise = False, sig = 99)
+    
+    # Convert inf/-inf to NaN
+    causalA = xr.where(np.isinf(causalA), np.nan, causalA)
+    causalsigA = xr.where(np.isinf(causalsigA), np.nan, causalsigA)
+    
+    # Store causality and significance maps
+    causality_maps[region] = causalA
+    causality_sig[region] = causalsigA
 
-    cf = ax.contourf(lon, lat, corA.reshape(len(lat),len(lon)), cmap=cmap, levels=levs, norm=norm, extend='both', transform=ccrs.PlateCarree())
-    ax.contourf(lon,lat,cor_sigA.reshape(len(lat),len(lon)), extend='both', hatches='.',cmap=cmap, alpha=0, transform = ccrs.PlateCarree())
+    cf = ax.contourf(lon, lat, causalA, levels=levs, cmap=cmap, norm=norm, extend='both', transform=ccrs.PlateCarree())
+    ax.contourf(lon,lat,causalsigA, extend='both', hatches='.',cmap=cmap, alpha=0, transform = ccrs.PlateCarree())
     ax.coastlines()
     gl = ax.gridlines(draw_labels=True)
     gl.ylabels_right = False
     gl.xlabels_top = False
 
-  # Add colorbar
-  fig.colorbar(cf, orientation='horizontal', label='Correlation Value')
+  # Add a common colorbar at the bottom
+  cbar_ax = fig.add_axes([0.2, 0.05, 0.6, 0.02])
+  fig.colorbar(cf, cax=cbar_ax, orientation='horizontal', norm=norm, label='Causality Value')
 
-  plt.suptitle(title, fontsize=18, weight = "bold")
-  plt.savefig(fileout_name)
+  plt.suptitle(title, fontsize=22, weight = "bold")
+  plt.tight_layout(rect=[0, 0.1, 1, 0.96])
+  plt.savefig(fileout_name + '.png', dpi=300)
+  plt.savefig(fileout_name + '.eps', format='eps', dpi=300)
   plt.close()
+  
+  return causality_maps, causality_sig
 
-def plot_merged(dataset, season, fileout):
+def plot_merged_causality(dataset, season, fileout):
 
   lat = np.array(dataset['lat'])
   lon = np.array(dataset['lon'])
@@ -495,13 +524,13 @@ def plot_merged(dataset, season, fileout):
   overlap = np.array(dataset['overlap'])
 
   # First subplot with colorbar
-  cf1 = axs[0].contourf(lon, lat, overlap, cmap='Spectral_r', transform=ccrs.PlateCarree(), levels=np.linspace(-1, 1, 21), extend='neither')
-  axs[0].set_title('Maximum Correlation Values', weight='bold')
+  cf1 = axs[0].contourf(lon, lat, overlap, cmap='RdYlBu_r', transform=ccrs.PlateCarree(), levels=np.linspace(-0.01, 0.01, 21), extend='both')
+  axs[0].set_title('Maximum Causality Values', weight='bold')
   axs[0].coastlines()
   axs[0].set_global()
   axs[0].gridlines()
   plt.colorbar(cf1, ax=axs[0], orientation='horizontal', pad=0.1)
-  axs[0].text(0.5, -0.2, 'Correlation Value', transform=axs[0].transAxes, ha='center', va='center')
+  axs[0].text(0.5, -0.2, 'Causality Value', transform=axs[0].transAxes, ha='center', va='center')
 
   # Load the plotting components for 2nd plot
   overlap_indices = np.array(dataset['overlap_indices'])
@@ -530,7 +559,7 @@ def plot_merged(dataset, season, fileout):
   cf2 = axs[1].contourf(lon, lat, reordered_overlap_indices, cmap=cmap,
               levels=np.arange(0.5, 17.5),  # Creates 16 discrete bins
               transform=ccrs.PlateCarree())
-  axs[1].set_title('Maximum Correlation ID', weight='bold')
+  axs[1].set_title('Maximum Causality ID', weight='bold')
   axs[1].coastlines()
   axs[1].set_global()
   axs[1].gridlines()
@@ -546,8 +575,9 @@ def plot_merged(dataset, season, fileout):
   axs[2].pie(percentages, labels=[f'{p:.1f}%' for i, p in zip(unique, percentages)],
       colors=colors, startangle=90)
   axs[2].set_title('Frequency Distribution', weight='bold')
-  plt.suptitle('Global Correlation Analysis - ' + season, fontsize=16, weight='bold')
+  plt.suptitle('Global Causality Analysis - ' + season, fontsize=16, weight='bold')
   plt.savefig(fileout + season + '_merged.png', dpi=300)
+  plt.savefig(fileout + season + '_merged.eps', format='eps', dpi=300)
   plt.close("all")
 
 def causality1d3d(ds1,ds2,normalise=False,sig=95):
@@ -734,7 +764,8 @@ def plot_dicts_causality(r_nought_dict, spatial_dict, index_dict, seasons, fileo
 
   plt.suptitle(title, fontsize=22, weight = "bold")
   plt.tight_layout(rect=[0, 0.1, 1, 0.96])
-  plt.savefig(fileout_name)
+  plt.savefig(fileout_name + '.png', dpi=300)
+  plt.savefig(fileout_name + '.eps', format='eps', dpi=300)
   plt.close()
   
   return causality_maps, causality_sig
@@ -853,51 +884,11 @@ def plot_dicts_causality_total(r_nought_dict, spatial_dict, index_dict, fileout_
 
   plt.suptitle(title, fontsize=22, weight = "bold")
   plt.tight_layout(rect=[0, 0.1, 1, 0.96])
-  plt.savefig(fileout_name)
+  plt.savefig(fileout_name + '.png', dpi=300)
+  plt.savefig(fileout_name + '.eps', format='eps', dpi=300)
   plt.close()
   
   return causality_maps, causality_sig
-
-def save_total_causality_maps_to_netcdf(causality_dict, output_filename):
-  """
-  Saves causality maps from multiple climate indices into a single NetCDF file.
-
-  Parameters:
-  - causality_dict: Dictionary containing causality maps for each climate index
-  - output_filename: String specifying the output NetCDF filename
-  """
-  # Get dimensions from the first map in the dictionary
-  first_index = list(causality_dict.keys())[0]
-  first_region = list(causality_dict[first_index].keys())[0]
-  # first_season = list(causality_dict[first_index][first_region].keys())[0]
-  sample_data = causality_dict[first_index][first_region]
-
-  # Create dataset with dimensions
-  ds = xr.Dataset(
-    coords={
-      'lat': sample_data.shape[0],
-      'lon': sample_data.shape[1],
-      # 'season': ['DJF', 'MAM', 'JJA', 'SON'],
-      'index': list(causality_dict.keys())
-    }
-  )
-
-  # Add causality data for each index, region, and season
-  for index in causality_dict.keys():
-    for region in causality_dict[index].keys():
-      var_name = f'causality_{index}_{region}'.replace(' ', '_').replace('.', '')
-      data = causality_dict[index][region]
-      ds[var_name] = xr.DataArray(
-        data,
-        dims=['lat', 'lon'],
-        coords={
-          'lat': range(data.shape[0]),
-          'lon': range(data.shape[1])
-        }
-      )
-
-  # Save to NetCDF file
-  ds.to_netcdf(output_filename)
 
 def plot_dicts_causality_global(r_nought_dict, spatial_dict, index_dict, seasons, fileout_name, levs, midpoint, colmap, title):
   """
@@ -978,156 +969,8 @@ def plot_dicts_causality_global(r_nought_dict, spatial_dict, index_dict, seasons
 
   plt.suptitle(title, fontsize=22, weight = "bold")
   plt.tight_layout(rect=[0, 0.1, 1, 0.96])
-  plt.savefig(fileout_name)
+  plt.savefig(fileout_name + '.png', dpi=300)
+  plt.savefig(fileout_name + '.eps', format='eps', dpi=300)
   plt.close()
   
   return causality_maps, causality_sig
-
-def plot_dicts_causality_global_total(r_nought_dict, spatial_dict, index_dict, fileout_name, levs, midpoint, colmap, title):
-  """
-  Plots all maps in r_nought_dict for the first time dimension.
-
-  Parameters:
-  - r_nought_dict: Dictionary where keys are region names and values are dictionaries with seasonal data.
-  - spatial_dict: Dictionary with spatial information (lat, lon) for each region.
-  - seasons: List of seasons to plot.
-  - fileout_name: Output file name for the plot. 
-  - levs: Levels for contour plots.
-  - midpoint: Midpoint for the colormap normalization (optional).
-  """
-
-  # Initialize dictionaries to store causality and significance
-  causality_maps = {region: None for region in r_nought_dict.keys()}
-  causality_sig = {region: None for region in r_nought_dict.keys()}
-
-  # Define the size of each subplot
-  subplot_width = 5
-  subplot_height = 4
-
-  # Calculate the overall figure size
-  fig_width = subplot_width * 2
-  fig_height = subplot_height * 2
-
-  fig, axs = plt.subplots(1, 1, figsize=(fig_width, fig_height), subplot_kw={'projection': ccrs.PlateCarree()})
-
-  # Define common color levels and colormap
-  cmap = plt.get_cmap(colmap)
-
-  # Normalize the colormap to set the midpoint if provided
-  if midpoint is not None:
-    norm = mc.TwoSlopeNorm(vmin=min(levs), vcenter=midpoint, vmax=max(levs))
-  else:
-    norm = plt.Normalize(vmin=min(levs), vmax=max(levs))
-  
-  for (region) in enumerate(r_nought_dict.keys()):
-    # Assuming r_nought_dict has only one region
-    region = list(r_nought_dict.keys())[0]
-    lat = spatial_dict[region]['lat']
-    lon = spatial_dict[region]['lon']
-    ax = axs
-    # Convert to numpy array before reshaping
-    ds2 = np.transpose(r_nought_dict[region])
-    ds1 = np.array(index_dict)
-    
-    # Convert arrays to xarray DataArrays with 'time' dimension
-    ds2 = xr.DataArray(ds2, dims=["time", 'lat', 'lon'])
-    ds1 = xr.DataArray(ds1, dims=['time'])
-
-    causalA, causalsigA = causality1d3d(ds1, ds2, normalise = False, sig = 99)
-    
-    # Convert inf/-inf to NaN
-    causalA = xr.where(np.isinf(causalA), np.nan, causalA)
-    causalsigA = xr.where(np.isinf(causalsigA), np.nan, causalsigA)
-    
-    # Store causality and significance maps
-    causality_maps[region] = causalA
-    causality_sig[region] = causalsigA
-
-    cf = ax.contourf(lon, lat, causalA, levels=levs, cmap=cmap, norm=norm, extend='both', transform=ccrs.PlateCarree())
-    ax.contourf(lon,lat,causalsigA, extend='both', hatches='.',cmap=cmap, alpha=0, transform = ccrs.PlateCarree())
-    ax.coastlines()
-    gl = ax.gridlines(draw_labels=True)
-    gl.ylabels_right = False
-    gl.xlabels_top = False
-
-  # Add a common colorbar at the bottom
-  cbar_ax = fig.add_axes([0.2, 0.05, 0.6, 0.02])
-  fig.colorbar(cf, cax=cbar_ax, orientation='horizontal', norm=norm, label='Causality Value')
-
-  plt.suptitle(title, fontsize=22, weight = "bold")
-  plt.tight_layout(rect=[0, 0.1, 1, 0.96])
-  plt.savefig(fileout_name)
-  plt.close()
-  
-  return causality_maps, causality_sig
-
-
-def plot_merged_causality(dataset, season, fileout):
-
-  lat = np.array(dataset['lat'])
-  lon = np.array(dataset['lon'])
-
-  fig, axs = plt.subplots(1, 3, figsize=(20, 5), 
-        subplot_kw={'projection': ccrs.PlateCarree()}, 
-        gridspec_kw={'width_ratios': [1, 1, 0.8]})
-  axs[2].remove()  # Remove the map projection from third subplot
-  axs[2] = fig.add_subplot(1, 3, 3)  # Add regular subplot for pie chart
-
-  # Load the plotting components for 1st plot  
-  overlap = np.array(dataset['overlap'])
-
-  # First subplot with colorbar
-  cf1 = axs[0].contourf(lon, lat, overlap, cmap='RdYlBu_r', transform=ccrs.PlateCarree(), levels=np.linspace(-0.01, 0.01, 21), extend='both')
-  axs[0].set_title('Maximum Causality Values', weight='bold')
-  axs[0].coastlines()
-  axs[0].set_global()
-  axs[0].gridlines()
-  plt.colorbar(cf1, ax=axs[0], orientation='horizontal', pad=0.1)
-  axs[0].text(0.5, -0.2, 'Causality Value', transform=axs[0].transAxes, ha='center', va='center')
-
-  # Load the plotting components for 2nd plot
-  overlap_indices = np.array(dataset['overlap_indices'])
-
-  # Define index labels and ordered labels
-  index_labels = ['AMO', 'AO', 'NAO', 'Nino 3.4', 'PDO', 'PNA', 'QBO', 'SOI', 'NPMM', 'SPMM', 'IOB', 'IOD', 'SIOD', 'TNA', 'ATL3', 'SASD1']
-
-  ordered_labels = ["AO", "QBO", "NAO", "NPMM", "PNA", "SPMM", "AMO", "ATL3", "IOB", "IOD", "Nino 3.4", "PDO", "SASD1", "SIOD", "TNA", "SOI"]
-
-  # Create mapping from original indices to new order
-  label_to_index = {label: i+1 for i, label in enumerate(index_labels)}
-  new_order = [label_to_index[label] for label in ordered_labels]
-  index_to_newindex = {old: new+1 for new, old in enumerate(new_order)}
-
-  # Reorder overlap_indices according to new mapping
-  reordered_overlap_indices = np.copy(overlap_indices)
-  for old_idx, new_idx in index_to_newindex.items():
-    reordered_overlap_indices[overlap_indices == old_idx] = new_idx
-
-  # Create discrete colormap with 16 distinct colors
-  colors = ['#6B2C39', '#A12A31', '#D62828', '#DF3E1E', '#E75414', '#F77F00',  
-    '#184E77', '#1E6091', '#1A759F', '#168AAD', '#34A0A4', '#52B69A', '#76C893', '#99D98C', '#B5E48C', 
-    '#908863']
-  cmap = plt.cm.colors.ListedColormap(colors)
-
-  cf2 = axs[1].contourf(lon, lat, reordered_overlap_indices, cmap=cmap,
-              levels=np.arange(0.5, 17.5),  # Creates 16 discrete bins
-              transform=ccrs.PlateCarree())
-  axs[1].set_title('Maximum Causality ID', weight='bold')
-  axs[1].coastlines()
-  axs[1].set_global()
-  axs[1].gridlines()
-  cbar2 = plt.colorbar(cf2, ax=axs[1], orientation='horizontal', pad=0.1,
-            ticks=np.arange(1, 17))  # Center ticks on each color
-  cbar2.ax.set_xticklabels(ordered_labels, rotation=45, ha='right')
-
-  # Calculate frequencies for pie chart using reordered indices
-  unique, counts = np.unique(reordered_overlap_indices[~np.isnan(reordered_overlap_indices)], return_counts=True)
-  percentages = counts / counts.sum() * 100
-
-  # Third subplot - pie chart with sorted data and new labels
-  axs[2].pie(percentages, labels=[f'{p:.1f}%' for i, p in zip(unique, percentages)],
-      colors=colors, startangle=90)
-  axs[2].set_title('Frequency Distribution', weight='bold')
-  plt.suptitle('Global Causality Analysis - ' + season, fontsize=16, weight='bold')
-  plt.savefig(fileout + season + '_merged.png', dpi=300)
-  plt.close("all")
