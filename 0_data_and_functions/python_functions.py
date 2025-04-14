@@ -617,7 +617,7 @@ def plot_merged(dataset, season, fileout):
   plt.savefig(fileout + season + "_merged.eps", format="eps", dpi=300)
   plt.close("all")
 
-def causality1d3d(ds1,ds2,normalise=False,sig=95):
+def causality1d3d(ds1,ds2,normalise,sig=95):
   """
   Computes information flow from 1D data array ds1 to 3D data array ds2. Normalisation is False by 
   default. See San Liang (2014, 2015) for details.
@@ -1069,7 +1069,7 @@ def plot_merged_causality(dataset, season, fileout):
   overlap = np.array(dataset["overlap"])
 
   # First subplot with colorbar
-  cf1 = axs[0].contourf(lon, lat, overlap[0,:,:], cmap="RdYlBu_r", transform=ccrs.PlateCarree(), levels=np.linspace(-0.01, 0.01, 21), extend="both")
+  cf1 = axs[0].contourf(lon, lat, overlap[0,:,:], cmap="RdYlBu_r", transform=ccrs.PlateCarree(), levels=np.linspace(-0.5, 0.5, 21), extend="both")
   axs[0].set_title("Maximum Causality Values", weight="bold")
   axs[0].coastlines()
   axs[0].set_global()
@@ -1099,7 +1099,7 @@ def plot_merged_causality(dataset, season, fileout):
             "#0cb0a9", "#118ab2", "#0c637f", "#073b4c"]
   cmap = plt.cm.colors.ListedColormap(colors)
 
-  cf2 = axs[1].contourf(lon, lat, reordered_overlap_indices[:,:,0], cmap=cmap,
+  cf2 = axs[1].contourf(lon, lat, reordered_overlap_indices[0,:,:], cmap=cmap,
               levels=np.arange(0.5, 10.5),  # Creates 9 discrete bins
               transform=ccrs.PlateCarree())
   axs[1].set_title("Maximum Causality ID", weight="bold")
