@@ -1,32 +1,8 @@
 # AeDES2's Monitoring System Analysis
 
-## Overview
-This repository contains code for analyzing the relationship between climate variability modes and the basic reproduction number ($R_0$) of Aedes-borne diseases across different regions and the whole globe. The analysis utilizes the climate component of disease transmission in AeDES2's Monitoring System, presented and described in Corvillo et al., 2025, and focuses on correlation and causality between climate indices and its $R_0$ values, with time series decomposition to separate different components (trend, seasonal, decadal, and remainder).
-
+This repository contains code for analyzing the relationship between climate variability modes and the basic reproduction number ($R_0$) of Aedes-borne diseases across different regions and the whole globe. The analysis utilizes the climate component of disease transmission in AeDES2's Monitoring System, described in Corvillo et al., 2025, and focuses on correlation and causality between climate indices and its $R_0$ values, with time series decomposition to separate different components (trend, seasonal, decadal, and remainder).
 
 ## Setup and Requirements
-
-### Dependencies
-- R (>= 3.6)
-  - s2dv
-  - ncdf4
-  - viridis
-  - dplyr
-  - zoo
-  - signal
-  - ggplot2
-  - cowplot
-  - tidyr
-  - purrr
-  - reshape2
-- Python (>= 3.7)
-  - numpy
-  - scipy
-  - matplotlib
-  - xarray
-  - cartopy
-
-### Installation
 
 1. Clone this repository
 2. Install required R packages if needed:
@@ -37,17 +13,27 @@ This repository contains code for analyzing the relationship between climate var
   ```bash
   pip install numpy scipy matplotlib xarray cartopy
   ```
-
-
-## Analysis Workflow
-
-The complete analysis can be run using the provided shell script:
+4. The complete analysis can be run using the provided shell script:
 
 ```bash
 ./execute_analysis.sh
 ```
+## Analysis Workflow
 
-The analysis consists of three main steps:
+The analysis is based on three main data sources:
+1. **$R_0$ data**: The basic reproduction number for vector-borne diseases, obtained from the AeDES2 Monitoring System.
+2. **Temperature data**: Surface temperature from AeDES2's observational datasets (Era5 + Era5Land + CPC Unified Global + GHCN-CAMS).
+3. **Climate variability indices**: Various climate variability indices generated with the temperature data, including:
+  - El Niño 3.4
+  - North and South Pacific Meridional Modes (NPMM, SPMM)
+  - Indian Ocean Basin Mode (IOB)
+  - Indian Ocean Dipole (IOD)
+  - South Indian Ocean Dipole (SIOD)
+  - Tropical North Atlantic (TNA)
+  - Atlantic 3 (ATL3)
+  - South Atlantic Subtropical Dipole (SASD1)
+
+And the analysis consists of three main steps:
 
 1. **Timescale Decomposition**: 
   - Detrend temperature data
@@ -68,35 +54,17 @@ The analysis consists of three main steps:
 The analysis generates various outputs in the `4_outputs/` directory:
 
 1. **Data files**:
-  - Detrended temperature and $R_0$ data (NetCDF format)
-  - Climate indices data (DAT files)
-  - Correlation and causality maps (NetCDF format)
-  - Regional SSSR data (NetCDF format)
+  - Detrended temperature and $R_0$ data (.nc)
+  - Climate indices data (.dat)
+  - Correlation and causality maps (.nc)
+  - Regional SSSR data (.nc)
 
-2. **Figures**:
+2. **Figures** (.png, .eps):
   - Temperature trend plots
   - Time series decomposition plots
   - Correlation maps for different regions and seasons
   - Causality maps for different regions and seasons
   - Summary visualizations
-
-## Data Overview
-
-The analysis is based on two main data sources:
-1. **$R_0$ data**: The basic reproduction number for vector-borne diseases, obtained from the AeDES2 Monitoring System.
-2. **Temperature data**: Surface temperature from observational datasets (Era5, Era5Land, CPC Unified Global, GHCN-CAMS).
-
-
-3. **Climate variability indices**: Various climate variability indices generated with the temperature data, including:
-  - El Niño 3.4
-  - North and South Pacific Meridional Modes (NPMM, SPMM)
-  - Indian Ocean Basin Mode (IOB)
-  - Indian Ocean Dipole (IOD)
-  - South Indian Ocean Dipole (SIOD)
-  - Tropical North Atlantic (TNA)
-  - Atlantic 3 (ATL3)
-  - South Atlantic Subtropical Dipole (SASD1)
-
 
 ## Repository Structure
 
