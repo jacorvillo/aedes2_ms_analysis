@@ -24,6 +24,47 @@ if [ ! -f "execute_analysis.sh" ]; then
 else
   echo "Running the analysis..."
   
+  # Create output directory if it doesn't exist
+  mkdir -p "4_outputs"
+  
+  # Check for required dependencies
+  echo "Checking dependencies..."
+  
+  # Check R installation
+  if ! command -v Rscript &> /dev/null; then
+    echo "Error: R is not installed!"
+    exit 1
+  fi
+  
+  # Check Python installation
+  if ! command -v python &> /dev/null; then
+    echo "Error: Python is not installed!"
+    exit 1
+  fi
+  
+  # Check required R packages
+  Rscript -e '
+    required_packages <- c("s2dv", "ncdf4", "viridis", "dplyr", "zoo", 
+                         "signal", "ggplot2", "cowplot", "tidyr", "purrr", "reshape2")
+    missing_packages <- required_packages[!sapply(required_packages, require, character.only = TRUE)]
+    if (length(missing_packages) > 0) {
+      stop(paste("Missing R packages:", paste(missing_packages, collapse = ", ")))
+    }
+  ' &> /dev/null
+  if [ $? -ne 0 ]; then
+    echo "Error: Some required R packages are not installed. Please install them using:"
+    echo "install.packages(c('ncdf4', 'viridis', 'dplyr', 'zoo', 'signal', 'ggplot2', 'cowplot', 'tidyr', 'purrr', 'reshape2'))"
+    exit 1
+  fi
+  
+  # Check required Python packages
+  python -c "import numpy, matplotlib, cartopy, scipy, xarray" &> /dev/null
+  if [ $? -ne 0 ]; then
+    echo "Error: Required Python packages are not installed. Please install them using:"
+    echo "pip install numpy matplotlib cartopy scipy xarray"
+    exit 1
+  fi
+  
   # Function to check if last command was successful
   check_status() {
     if [ $? -ne 0 ]; then
@@ -32,8 +73,8 @@ else
     fi
   }
 
-  echo "1. Timescale decomposition in progress..."
   # Timescale decomposition
+  echo "1. Timescale decomposition in progress..."
   Rscript "1_timescale_decomposition/temp_detrend.R"
   update_progress
   Rscript "1_timescale_decomposition/timescale_decomposition.R"
@@ -41,8 +82,8 @@ else
   check_status "Timescale decomposition"
   echo "Done!"
 
-  echo "2. Correlation analysis in progress..."
   # Correlation Analysis
+  echo "2. Correlation analysis in progress..."
   Rscript "2_correlation_analysis/data_handling.R"
   update_progress
   check_status "Correlation data handling"
@@ -57,8 +98,8 @@ else
   check_status "Correlation plotting"
   echo "Done!"
 
-  echo "3. Causality analysis in progress..."
   # Causality Analysis
+  echo "3. Causality analysis in progress..."
   python "3_causality/causality_4_r0.py"
   update_progress
   check_status "Causality analysis"
