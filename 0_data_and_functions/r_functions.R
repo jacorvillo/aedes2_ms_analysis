@@ -46,8 +46,8 @@ load_analysis_data <- function(nc_file, nc_sig_file, analysis_type = "correlatio
   nc <- nc_open(nc_file)
   nc_sig <- nc_open(nc_sig_file)
 
-  # List of climate indices
-  indices <- c("NPMM", "SPMM", "Niño_34", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1")
+  # List of climate indices in alphabetical order
+  indices <- c("ATL3", "IOD", "IOB", "Niño_34", "NPMM", "SASD1", "SIOD", "SPMM", "TNA")
   
   # Initialize results lists
   seasons <- list(djf = 1, mam = 2, jja = 3, son = 4)

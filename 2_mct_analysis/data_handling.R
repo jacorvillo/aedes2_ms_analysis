@@ -22,6 +22,7 @@ library(s2dv)
 # Load monthly data and trim it from 1980:2021
 
 years <- 1980:2021
+months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 # Create latitude and longitude values
 lat <- seq(-89.75, 89.75, by = 0.5)
@@ -164,19 +165,19 @@ nc_file <- nc_open("4_outputs/data/detrended_vars/detrended_tas_3d.nc")
 # Load temperature data
 dtemps <- ncvar_get(nc_file, "detrended_temps")
 
+atl3_region <- list(lat = c(-3, 3), lon = c(-20, 0))
+iob_region <- list(lat = c(-30, 30), lon = c(30, 120))
+nino34_region <- list(lat = c(-5, 5), lon = c(-170, -120))
 npmm_region <- list(lat = c(20, 40), lon = c(150, -180 + 210))
 spmm_region <- list(lat = c(-20, -40), lon = c(-180 + 180, -180 + 210))
-nino34_region <- list(lat = c(-5, 5), lon = c(-170, -120))
-atl3_region <- list(lat = c(-3, 3), lon = c(-20, 0))
 tna_region <- list(lat = c(5.5, 23.5), lon = c(-57.5, -15))
-iob_region <- list(lat = c(-30, 30), lon = c(30, 120))
 
+atl3 <- calculate_climate_index(dtemps, atl3_region, std = TRUE, index_type = "temp")
+iob <- calculate_climate_index(dtemps, iob_region, std = TRUE, index_type = "temp")
+nino34 <- calculate_climate_index(dtemps, nino34_region, std = TRUE, index_type = "temp")
 npmm <- calculate_climate_index(dtemps, npmm_region, std = TRUE, index_type = "temp")
 spmm <- calculate_climate_index(dtemps, spmm_region, std = TRUE, index_type = "temp")
-nino34 <- calculate_climate_index(dtemps, nino34_region, std = TRUE, index_type = "temp")
-atl3 <- calculate_climate_index(dtemps, atl3_region, std = TRUE, index_type = "temp")
 tna <- calculate_climate_index(dtemps, tna_region, std = TRUE, index_type = "temp")
-iob <- calculate_climate_index(dtemps, iob_region, std = TRUE, index_type = "temp")
 
 # Indices based on SST anomaly differences:
 
@@ -191,22 +192,18 @@ east_region <- list(lat = c(-30, -10), lon = c(90, 110))
 
 iod_east <- calculate_climate_index(dtemps, iode_region, std = FALSE, index_type = "temp")
 iod_west <- calculate_climate_index(dtemps, iodw_region, std = FALSE, index_type = "temp")
-
 iod <- iod_west - iod_east
+
+sasd_north <- calculate_climate_index(dtemps, north_region, std = FALSE, index_type = "temp")
+sasd_south <- calculate_climate_index(dtemps, south_region, std = FALSE, index_type = "temp")
+sasd1 <- sasd_north - sasd_south
 
 siod_west <- calculate_climate_index(dtemps, west_region, std = FALSE, index_type = "temp")
 siod_east <- calculate_climate_index(dtemps, east_region, std = FALSE, index_type = "temp")
-
 siod <- siod_west - siod_east
-
-sasd_north <- calculate_climate_index(dtemps, north_region, std = FALSE, index_type = "temp")
-  sasd_south <- calculate_climate_index(dtemps, south_region, std = FALSE, index_type = "temp")
-
-sasd1 <- sasd_north - sasd_south
 
 # Standardize the IOD, SIOD and SASD indices
 iod <- (iod - mean(iod, na.rm = TRUE)) / sd(iod, na.rm = TRUE)
-siod <- (siod - mean(siod, na.rm = TRUE)) / sd(siod, na.rm = TRUE)
 sasd1 <- (sasd1 - mean(sasd1, na.rm = TRUE)) / sd(sasd1, na.rm = TRUE)
 siod <- (siod - mean(siod, na.rm = TRUE)) / sd(siod, na.rm = TRUE)
 
@@ -222,12 +219,12 @@ spmm_df <- format_index_data(spmm, years, months)
 tna_df <- format_index_data(tna, years, months)
 
 # Save each index with proper formatting
-write_formatted_index(npmm_df, "4_outputs/data/climate_indices/npmm.dat")
-write_formatted_index(spmm_df, "4_outputs/data/climate_indices/spmm.dat")
-write_formatted_index(nino34_df, "4_outputs/data/climate_indices/nino34.dat")
 write_formatted_index(atl3_df, "4_outputs/data/climate_indices/atl3.dat")
-write_formatted_index(tna_df, "4_outputs/data/climate_indices/tna.dat")
 write_formatted_index(iob_df, "4_outputs/data/climate_indices/iob.dat")
 write_formatted_index(iod_df, "4_outputs/data/climate_indices/iod.dat")
+write_formatted_index(nino34_df, "4_outputs/data/climate_indices/nino34.dat")
+write_formatted_index(npmm_df, "4_outputs/data/climate_indices/npmm.dat")
+write_formatted_index(spmm_df, "4_outputs/data/climate_indices/spmm.dat")
 write_formatted_index(siod_df, "4_outputs/data/climate_indices/siod.dat")
 write_formatted_index(sasd_df, "4_outputs/data/climate_indices/sasd.dat")
+write_formatted_index(tna_df, "4_outputs/data/climate_indices/tna.dat")

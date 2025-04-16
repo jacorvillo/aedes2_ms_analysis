@@ -24,14 +24,15 @@ The analysis is based on three main data sources:
 1. **$R_0$ data**: The basic reproduction number for vector-borne diseases, obtained from the AeDES2 Monitoring System.
 2. **Temperature data**: Surface temperature from AeDES2's observational datasets (Era5 + Era5Land + CPC Unified Global + GHCN-CAMS).
 3. **Climate variability indices**: Various climate variability indices generated with the temperature data, including:
-  - El Niño 3.4
-  - North and South Pacific Meridional Modes (NPMM, SPMM)
+  - Atlantic 3 (ATL3)
   - Indian Ocean Basin Mode (IOB)
   - Indian Ocean Dipole (IOD)
-  - South Indian Ocean Dipole (SIOD)
-  - Tropical North Atlantic (TNA)
-  - Atlantic 3 (ATL3)
+  - El Niño 3.4
+  - North Pacific Meridional Mode (NPMM)
   - South Atlantic Subtropical Dipole (SASD1)
+  - South Indian Ocean Dipole (SIOD)
+  - South Pacific Meridional Mode (SPMM)
+  - Tropical North Atlantic (TNA)
 
 And the analysis consists of three main steps:
 

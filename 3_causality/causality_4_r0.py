@@ -12,59 +12,58 @@ import pandas as pd
 # Source the python functions
 exec(open("0_data_and_functions/python_functions.py").read())
 
-# --- Climate Variability Modes (CVMs) Analysis ---
+# --- Climate Variability Modes Loading ---
 
-npmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/npmm.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-spmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/spmm.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-nino = np.reshape(pd.read_csv("4_outputs/data/climate_indices/nino34.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
 atl3 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/atl3.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-tna = np.reshape(pd.read_csv("4_outputs/data/climate_indices/tna.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
 iob = np.reshape(pd.read_csv("4_outputs/data/climate_indices/iob.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
 iod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/iod.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-siod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/siod.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+nino = np.reshape(pd.read_csv("4_outputs/data/climate_indices/nino34.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+npmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/npmm.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
 sasd1 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/sasd.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+siod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/siod.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+spmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/spmm.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+tna = np.reshape(pd.read_csv("4_outputs/data/climate_indices/tna.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
 
 # Obtain seasonal data for each variable, knowing that the arrays go from Mar 1980 to Nov 2021
-start_date = '1980-03-01'
-end_date = '2021-11-30'
-date_range = pd.date_range(start=start_date, end=end_date, freq='MS')
+start_date = "1980-03-01"
+end_date = "2021-11-30"
+date_range = pd.date_range(start=start_date, end=end_date, freq="MS")
 
 # Extract seasonal data for each climate index
-npmm_seasonal = extract_seasonal_months(date_range, npmm)
-spmm_seasonal = extract_seasonal_months(date_range, spmm)
-nino_seasonal = extract_seasonal_months(date_range, nino)
 atl3_seasonal = extract_seasonal_months(date_range, atl3)
-tna_seasonal = extract_seasonal_months(date_range, tna)
 iob_seasonal = extract_seasonal_months(date_range, iob)
 iod_seasonal = extract_seasonal_months(date_range, iod)
-siod_seasonal = extract_seasonal_months(date_range, siod)
+nino_seasonal = extract_seasonal_months(date_range, nino)
+npmm_seasonal = extract_seasonal_months(date_range, npmm)
 sasd1_seasonal = extract_seasonal_months(date_range, sasd1)
+siod_seasonal = extract_seasonal_months(date_range, siod)
+spmm_seasonal = extract_seasonal_months(date_range, spmm)
+tna_seasonal = extract_seasonal_months(date_range, tna)
 
 # Save seasonal indexes in a dictionary
-
 index_dict_seasonal = {
-  "NPMM": {"DJF": npmm_seasonal['DJF'], "MAM": npmm_seasonal['MAM'], "JJA": npmm_seasonal['JJA'], "SON": npmm_seasonal['SON']},
-  "SPMM": {"DJF": spmm_seasonal['DJF'], "MAM": spmm_seasonal['MAM'], "JJA": spmm_seasonal['JJA'], "SON": spmm_seasonal['SON']},
-  "Niño 3.4": {"DJF": nino_seasonal['DJF'], "MAM": nino_seasonal['MAM'], "JJA": nino_seasonal['JJA'], "SON": nino_seasonal['SON']},
-  "ATL3": {"DJF": atl3_seasonal['DJF'], "MAM": atl3_seasonal['MAM'], "JJA": atl3_seasonal['JJA'], "SON": atl3_seasonal['SON']},
-  "TNA": {"DJF": tna_seasonal['DJF'], "MAM": tna_seasonal['MAM'], "JJA": tna_seasonal['JJA'], "SON": tna_seasonal['SON']},
-  "IOB": {"DJF": iob_seasonal['DJF'], "MAM": iob_seasonal['MAM'], "JJA": iob_seasonal['JJA'], "SON": iob_seasonal['SON']},
-  "IOD": {"DJF": iod_seasonal['DJF'], "MAM": iod_seasonal['MAM'], "JJA": iod_seasonal['JJA'], "SON": iod_seasonal['SON']},
-  "SIOD": {"DJF": siod_seasonal['DJF'], "MAM": siod_seasonal['MAM'], "JJA": siod_seasonal['JJA'], "SON": siod_seasonal['SON']},
-  "SASD1": {"DJF": sasd1_seasonal['DJF'], "MAM": sasd1_seasonal['MAM'], "JJA": sasd1_seasonal['JJA'], "SON": sasd1_seasonal['SON']}
+  "ATL3": {"DJF": atl3_seasonal["DJF"], "MAM": atl3_seasonal["MAM"], "JJA": atl3_seasonal["JJA"], "SON": atl3_seasonal["SON"]},
+  "IOB": {"DJF": iob_seasonal["DJF"], "MAM": iob_seasonal["MAM"], "JJA": iob_seasonal["JJA"], "SON": iob_seasonal["SON"]},
+  "IOD": {"DJF": iod_seasonal["DJF"], "MAM": iod_seasonal["MAM"], "JJA": iod_seasonal["JJA"], "SON": iod_seasonal["SON"]},
+  "Niño 3.4": {"DJF": nino_seasonal["DJF"], "MAM": nino_seasonal["MAM"], "JJA": nino_seasonal["JJA"], "SON": nino_seasonal["SON"]},
+  "NPMM": {"DJF": npmm_seasonal["DJF"], "MAM": npmm_seasonal["MAM"], "JJA": npmm_seasonal["JJA"], "SON": npmm_seasonal["SON"]},
+  "SASD1": {"DJF": sasd1_seasonal["DJF"], "MAM": sasd1_seasonal["MAM"], "JJA": sasd1_seasonal["JJA"], "SON": sasd1_seasonal["SON"]},
+  "SIOD": {"DJF": siod_seasonal["DJF"], "MAM": siod_seasonal["MAM"], "JJA": siod_seasonal["JJA"], "SON": siod_seasonal["SON"]},
+  "SPMM": {"DJF": spmm_seasonal["DJF"], "MAM": spmm_seasonal["MAM"], "JJA": spmm_seasonal["JJA"], "SON": spmm_seasonal["SON"]},
+  "TNA": {"DJF": tna_seasonal["DJF"], "MAM": tna_seasonal["MAM"], "JJA": tna_seasonal["JJA"], "SON": tna_seasonal["SON"]}
 }
 
 # Full time series:
 index_dict_total = {
-  "NPMM": npmm,
-  "SPMM": spmm,
-  "Niño 3.4": nino,
   "ATL3": atl3,
-  "TNA": tna,
   "IOB": iob,
   "IOD": iod,
+  "Niño 3.4": nino,
+  "NPMM": npmm,
+  "SASD1": sasd1,
   "SIOD": siod,
-  "SASD1": sasd1
+  "SPMM": spmm,
+  "TNA": tna
 }
 
 # -- Load and prepare R0 data (SSSRs) --
@@ -170,7 +169,7 @@ sh_total_dict = total_dicts['sh_total_dict']
 # -- For seasonal data --
 
 # Define common parameters for plotting
-indices = ["NPMM", "SPMM", "Niño 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
+indices = ["ATL3", "IOD", "IOB", "Niño 3.4", "NPMM", "SASD1", "SIOD", "SPMM", "TNA"]
 nh_params = {
   'r_nought_dict': nh_detrended_dict,
   'spatial_dict': nh_spatial_dict,

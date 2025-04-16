@@ -442,8 +442,8 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   overlap_indices = np.array(dataset["overlap_indices"])
 
   # Define index labels and ordered labels
-  index_labels = ["NPMM", "SPMM", "Nino 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
-  ordered_labels = ["NPMM", "SPMM", "Nino 3.4", "ATL3", "TNA", "IOB", "IOD", "SIOD", "SASD1"]
+  index_labels = ["ATL3", "IOD", "IOB", "Niño 3.4", "NPMM", "SASD1", "SIOD", "SPMM", "TNA"]
+  ordered_labels = ["ATL3", "IOD", "IOB", "Niño 3.4", "NPMM", "SASD1", "SIOD", "SPMM", "TNA"]
 
   # Create mapping from original indices to new order
   label_to_index = {label: i+1 for i, label in enumerate(index_labels)}
