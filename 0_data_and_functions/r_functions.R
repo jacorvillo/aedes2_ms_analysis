@@ -289,6 +289,14 @@ quicksave <- function(var, box, lon, lat, filename) {
   quicksave_analysis(var, filename, "correlation", FALSE)
 }
 
+format_index_data <- function(index_data, years, months) {
+  # Reshape data into year-month format
+  matrix_data <- matrix(index_data, ncol = 12, byrow = TRUE)
+  df <- data.frame(Year = years, matrix_data)
+  names(df)[2:13] <- months
+  return(df)
+}
+
 write_formatted_index <- function(df, filename) {
   # Create a header line with proper spacing
   header <- paste("Year", paste(sprintf("%6s", months), collapse = ""))

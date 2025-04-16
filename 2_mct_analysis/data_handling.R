@@ -208,29 +208,18 @@ sasd1 <- sasd_north - sasd_south
 iod <- (iod - mean(iod, na.rm = TRUE)) / sd(iod, na.rm = TRUE)
 siod <- (siod - mean(siod, na.rm = TRUE)) / sd(siod, na.rm = TRUE)
 sasd1 <- (sasd1 - mean(sasd1, na.rm = TRUE)) / sd(sasd1, na.rm = TRUE)
-
-# Format climate indices to match AMO data structure
-years <- 1980:2021
-months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-
-format_index_data <- function(index_data) {
-  # Reshape data into year-month format
-  matrix_data <- matrix(index_data, ncol = 12, byrow = TRUE)
-  df <- data.frame(Year = years, matrix_data)
-  names(df)[2:13] <- months
-  return(df)
-}
+siod <- (siod - mean(siod, na.rm = TRUE)) / sd(siod, na.rm = TRUE)
 
 # Format each index
-npmm_df <- format_index_data(npmm)
-spmm_df <- format_index_data(spmm)
-nino34_df <- format_index_data(nino34)
-atl3_df <- format_index_data(atl3)
-tna_df <- format_index_data(tna)
-iob_df <- format_index_data(iob)
-iod_df <- format_index_data(iod)
-siod_df <- format_index_data(siod)
-sasd_df <- format_index_data(sasd1)
+atl3_df <- format_index_data(atl3, years, months)
+iob_df <- format_index_data(iob, years, months)
+iod_df <- format_index_data(iod, years, months)
+nino34_df <- format_index_data(nino34, years, months)
+npmm_df <- format_index_data(npmm, years, months)
+sasd_df <- format_index_data(sasd1, years, months)
+siod_df <- format_index_data(siod, years, months)
+spmm_df <- format_index_data(spmm, years, months)
+tna_df <- format_index_data(tna, years, months)
 
 # Save each index with proper formatting
 write_formatted_index(npmm_df, "4_outputs/data/climate_indices/npmm.dat")
