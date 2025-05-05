@@ -170,22 +170,6 @@ sh_total_dict = total_dicts['sh_total_dict']
 
 # Define common parameters for plotting
 indices = ["ATL3", "IOD", "IOB", "Niño 3.4", "NPMM", "SASD1", "SIOD", "SPMM", "TNA"]
-nh_params = {
-  'r_nought_dict': nh_detrended_dict,
-  'spatial_dict': nh_spatial_dict,
-  "seasons": ['DJF', 'MAM', 'JJA', 'SON'],
-  'levs': np.linspace(-0.01, 0.01, 20),
-  'colmap': "RdYlBu_r",
-  'midpoint': 0
-}
-sh_params = {
-  'r_nought_dict': sh_detrended_dict,
-  'spatial_dict': sh_spatial_dict,
-  "seasons": ['DJF', 'MAM', 'JJA', 'SON'],
-  'levs': np.linspace(-0.01, 0.01, 20),
-  'colmap': "RdYlBu_r",
-  'midpoint': 0
-}
 
 # Dictionaries to store causality and significance maps
 nh_causality_maps = {}
@@ -201,7 +185,7 @@ for idx in indices:
     index_dict=index_dict_seasonal[idx],
     seasons=["DJF", "MAM", "JJA", "SON"],
     fileout_name=f"4_outputs/figures/causality_nh_{idx.lower().replace(' ', '_').replace('.', '')}",
-    levs=np.linspace(-0.01, 0.01, 20),
+    levs=np.linspace(-0.5, 0.5, 20),
     midpoint=0,
     colmap="RdYlBu_r",
     title=f"Seasonal R0 vs {idx} Causality (Detrended, dots = ssig of 99%)",
@@ -217,7 +201,7 @@ for idx in indices:
     index_dict=index_dict_seasonal[idx],
     seasons=["DJF", "MAM", "JJA", "SON"],
     fileout_name=f"4_outputs/figures/causality_sh_{idx.lower().replace(' ', '_').replace('.', '')}",
-    levs=np.linspace(-0.01, 0.01, 20),
+    levs=np.linspace(-0.5, 0.5, 20),
     midpoint=0,
     colmap="RdYlBu_r",
     title=f"Seasonal R0 vs {idx} Causality (Detrended, dots = ssig of 99%)",
@@ -239,22 +223,6 @@ nh_sig_maps_total = {}
 sh_causality_maps_total = {}
 sh_sig_maps_total = {}
 
-# Define common parameters
-nh_params = {
-  'r_nought_dict': nh_total_dict,
-  'spatial_dict': nh_spatial_dict,
-  'levs': np.linspace(-0.01, 0.01, 20),
-  'midpoint': 0,
-  'colmap': "RdYlBu_r"
-}
-sh_params = {
-  'r_nought_dict': sh_total_dict,
-  'spatial_dict': sh_spatial_dict,
-  'levs': np.linspace(-0.01, 0.01, 20),
-  'midpoint': 0,
-  'colmap': "RdYlBu_r"
-}
-
 # Generate plots for Northern Hemisphere
 for idx in indices:
    nh_causality_maps_total[idx], nh_sig_maps_total[idx] = plot_dicts_analysis(
@@ -263,12 +231,12 @@ for idx in indices:
     index_dict=index_dict_total[idx],
     seasons=None,
     fileout_name=f"4_outputs/figures/causality_total_nh_{idx.lower().replace(' ', '_').replace('.', '')}",
-    levs=np.linspace(-0.01, 0.01, 20),
+    levs=np.linspace(-0.5, 0.5, 20),
     midpoint=0,
     colmap="RdYlBu_r",
     title=f"Full R0 Time Series vs {idx} Causality (Detrended, dots = ssig of 99%)",
     analysis_type="causality",
-    is_global=False
+    is_global=True
   )
 
 # Generate plots for Southern Hemisphere    
@@ -279,12 +247,12 @@ for idx in indices:
     index_dict=index_dict_total[idx],
     seasons=None,
     fileout_name=f"4_outputs/figures/causality_total_sh_{idx.lower().replace(' ', '_').replace('.', '')}",
-    levs=np.linspace(-0.01, 0.01, 20),
+    levs=np.linspace(-0.5, 0.5, 20),
     midpoint=0,
     colmap="RdYlBu_r",
     title=f"Full R0 Time Series vs {idx} Causality (Detrended, dots = ssig of 99%)",
     analysis_type="causality",
-    is_global=False
+    is_global=True
   )
 
 # Save the causality and significance maps
@@ -343,16 +311,6 @@ global_total_dict = total_dicts["global_total_dict"]
 global_causality_maps = {}
 global_sig_maps = {}
 
-# Define common parameters
-params = {
-  'r_nought_dict': global_detrended_dict,
-  'spatial_dict': global_spatial_dict,
-  'midpoint': 0,
-  "seasons": ['DJF', 'MAM', 'JJA', 'SON'],
-  'levs': np.linspace(-0.01, 0.01, 20),
-  'colmap': "RdYlBu_r"
-}
-
 # Generate plots for each index
 for idx in indices:
   global_causality_maps[idx], global_sig_maps[idx] = plot_dicts_analysis(
@@ -361,7 +319,7 @@ for idx in indices:
     index_dict=index_dict_seasonal[idx],
     seasons=["DJF", "MAM", "JJA", "SON"],
     fileout_name=f"4_outputs/figures/causality_global_{idx.lower().replace(' ', '_').replace('.', '')}",
-    levs=np.linspace(-0.01, 0.01, 20),
+    levs=np.linspace(-0.5, 0.5, 20),
     midpoint=0,
     colmap="RdYlBu_r",
     title=f"Seasonal R0 vs {idx} Causality (Detrended, dots = ssig of 99%)",
@@ -374,15 +332,6 @@ save_analysis_to_netcdf(global_sig_maps, '4_outputs/data/correlation_and_causali
 
 global_causality_maps_total = {}
 global_sig_maps_total = {}
-
-# Define common parameters
-params = {
-  'r_nought_dict': global_total_dict,
-  'spatial_dict': global_spatial_dict,
-  'levs': np.linspace(-0.01, 0.01, 20),
-  'midpoint': 0,
-  'colmap': "RdYlBu_r"
-}
 
 # Generate plots for each index
 for idx in indices:
