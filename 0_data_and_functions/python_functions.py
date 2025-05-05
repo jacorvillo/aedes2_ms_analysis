@@ -425,7 +425,7 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
     levels = np.linspace(-0.5, 0.5, 21)
     value_label = "Correlation Value"
   else:  # causality
-    levels = np.linspace(-0.01, 0.01, 21)
+    levels = np.linspace(-0.5, 0.5, 21)
     value_label = "Causality Value"
 
   # First subplot with colorbar
