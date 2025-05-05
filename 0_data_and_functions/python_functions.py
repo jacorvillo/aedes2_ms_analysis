@@ -438,6 +438,12 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   plt.colorbar(cf1, ax=axs[0], orientation="horizontal", pad=0.1)
   axs[0].text(0.5, -0.2, value_label, transform=axs[0].transAxes, ha="center", va="center")
 
+  if analysis_type == "causality":
+    # Load statistical significance data
+    max_indices_sig = np.array(dataset["max_indices_sig"])
+    # Overlap the significance values over the maximum values
+    axs[0].contourf(lon, lat, max_indices_sig[0,:,:], extend="both", hatches=".", alpha=0, transform=ccrs.PlateCarree())
+
   # Load the plotting components for 2nd plot
   overlap_indices = np.array(dataset["overlap_indices"])
 
@@ -514,7 +520,7 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   axs[2].set(aspect="equal")
   axs[2].set_title(f'Top 3 {analysis_type.capitalize()} Distribution (% = Sum / 3)', weight="bold")
   
-  plt.suptitle(f"Global {analysis_type.capitalize()} Analysis - {season}", fontsize=16, weight="bold")
+  plt.suptitle(f"Global SSig {analysis_type.capitalize()} Analysis - {season}", fontsize=16, weight="bold")
   plt.savefig(fileout + season + "_merged.png", dpi=300)
   plt.savefig(fileout + season + "_merged.eps", format="eps", dpi=300)
   plt.close("all")
