@@ -292,7 +292,7 @@ def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileou
             ax.set_title(f"{region} - {season}", fontsize=14, weight="bold")
             
             # Convert to numpy array before reshaping
-            ds2 = np.transpose(nh_detrended_dict[region][season])
+            ds2 = np.transpose(r_nought_dict[region][season])
             ds1 = np.array(index_dict[season])
             
 
