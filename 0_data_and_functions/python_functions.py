@@ -117,114 +117,111 @@ def IndexRegrCorr(Data, Index, alfa, sig, pp):
 
   return cor,Pvalue,cor_sig,reg,reg_sig
 
-def causality1d3d(ds1,ds2,normalise,sig=95):
-  """
-  Computes information flow from 1D data array ds1 to 3D data array ds2. Normalisation is False by 
-  default. See San Liang (2014, 2015) for details.
+def causality1d3d(ds1,ds2,normalise=False,sig=95):
+    
+    hycov=np.vectorize(np.cov, signature='(i),(i)->(m,n)') #vectorise the calculation of the cross-variance matrix
+    
+    N = ds1.time.size
+    Dt = 1 #time step ---maybe this should be an argument of the function (AGMS, Jun 2021)
+    
+    numer = xr.cov(ds1,ds1,dim='time')*xr.cov(ds1,ds2,dim='time')*xr.cov(ds2,ds1.differentiate("time"),dim='time') - (xr.cov(ds1,ds2)**2)*xr.cov(ds1,ds1.differentiate("time"),dim='time')
+    
+    denom = (xr.cov(ds1,ds1,dim='time')**2)*xr.cov(ds2,ds2,dim='time') - xr.cov(ds1,ds1,dim='time')*(xr.cov(ds1,ds2,dim='time')**2)
+    
+    #the determinant of the cross-variance matrix cov(ds1,ds2) requires some thought, it cannot be written simply as:
+    #detC = np.linalg.det(np.cov(ds1,ds2))
+    hc=hycov(ds1,ds2.transpose()) #compute the cross-variance matrix. Output is a nlon x nlat x (2 x 2) hypercube, i.e. a 2 x 2 matrix for each gridbox
+    
+    detC=np.linalg.det(hc).T #determinant of the cross-variance matrix
+    
 
-  Returns both raw and statistically significant information flows.
+    p = xr.cov(ds2,ds2,dim='time')*xr.cov(ds1,ds1.differentiate("time"),dim='time') - xr.cov(ds1,ds2,dim='time')*xr.cov(ds2,ds1.differentiate("time"),dim='time')
+    p = p/detC #eq 16 and 18 in Liang (2015) --this is dH_1^*/dt
+    
+    q = xr.cov(ds1,ds1,dim='time')*xr.cov(ds2,ds1.differentiate("time"),dim='time') - xr.cov(ds1,ds2,dim='time')*xr.cov(ds1,ds1.differentiate("time"),dim='time')
+    q = q/detC #eq 17 in Liang (2015)
+    infflow = numer/denom  #eq 1 in Liang (2015)
+    
+    
+    #Mask not stat significant values, via the calculation of Fisher's Information Matrix.
+    #See San Liang (2014), p. 4 for details
 
-  Arguments
-  ----------
-    ds1 : DataArray (xarray)
-      1D array, source of the information
-    ds2 : DataArray (xarray) 
-      3D array, target of the information
-    normalise: Bool, optional
-      Whether to normalize the causality measure
-    sig : int, optional
-      Significance level for masking (default 95)
+    #First, let's compute a few more stuff
+    f1 = ds1.differentiate("time").mean() - p * ds1.mean() - q * ds1.mean()
+    R1 = ds1.differentiate("time") - (f1 + p*ds1 + q*ds2)
+    Q1 = np.sum(np.multiply(R1, R1))
+    b1 = np.sqrt(Q1*Dt/N)
+    
+    
+    #Now compute N*I, where I is the Fisher's Information Matrix. Each element is written down explicitely
+    NI = pd.DataFrame(np.zeros((4, 4)))
+    NI.at[0,0] = N*Dt/np.power(b1, 2)
+    NI.at[1,1] = Dt/np.power(b1, 2) * np.sum(np.multiply(ds1,ds1))
+    NI.at[2,2] = Dt/np.power(b1, 2) * np.sum(np.multiply(ds2,ds2))
+    NI.at[3,3] = 3*Dt/np.power(b1, 4) * np.sum(np.multiply(R1,R1)) - N/np.power(b1, 2)
+    NI.at[0,1] = Dt/np.power(b1, 2) * np.sum(ds1)
+    NI.at[0,2] = Dt/np.power(b1, 2) * np.sum(ds2)
+    NI.at[0,3] = 2*Dt/np.power(b1, 3) * np.sum(R1)
+    NI.at[1,2] = Dt/np.power(b1, 2) * np.sum(np.multiply(ds1,ds2))
+    NI.at[1,3] = 2*Dt/np.power(b1, 3) * np.sum(np.multiply(R1,ds1))
+    NI.at[2,3] = 2*Dt/np.power(b1, 3) * np.sum(np.multiply(R1,ds2))
+    NI.at[1,0] = NI.at[0,1]
+    NI.at[2,0] = NI.at[0,2]    
+    NI.at[2,1] = NI.at[1,2]
+    NI.at[3,0] = NI.at[0,3]    
+    NI.at[3,1] = NI.at[1,3]   
+    NI.at[3,2] = NI.at[2,3]
+    
+    
+    #Inverting the Fisher Information Matrix to find the variance:
+    invNI = np.linalg.inv(NI)
+    var_a12 = abs(invNI[2,2]) #this is the key component we need, although we needed the entire matrix for the inverse.
+    #Variance (uncertainty in the information flow)
+    varinfflow=var_a12 * np.power(xr.cov(ds1,ds2,dim='time')/xr.cov(ds1,ds1,dim='time'),2)
 
-  Returns
-  -------
-  infflow_raw : DataArray
-    Raw Liang-Kleeman causality without significance masking
-  infflow_sig : DataArray  
-    Liang-Kleeman causality masked by statistical significance
-  """
-  hycov=np.vectorize(np.cov, signature="(i),(i)->(m,n)")
-  N = ds1.time.size
-  Dt = 1
+    
+    #Now, which p-value?
+    if sig==90:
+        SS=np.sqrt(varinfflow) * 1.65 
+    elif sig==95:
+        SS=np.sqrt(varinfflow) * 1.96 #z 5%, or 97.5th perfectile (2-tailed)
+    elif sig==99:
+        SS=np.sqrt(varinfflow) * 2.56 
+    else:
+        print("Only 0.90, 0.95 and 0.99 p-values")
+        
+    #Apply masking. Not significant values are going to be NaN!   
+    #print(SS)
+    infflow_sig = infflow.where(((infflow<SS) | (infflow>-SS)) )#| ((infflow>=-1e-1) | (infflow<=1e-1)))
+    #infflow = infflow.where((infflow>SS) | (infflow<-SS),infflow,0) 
+    
+    #Normalisation (or not)
+    
+    if normalise==True:
+        dH1noisedt = Dt/(2*xr.cov(ds1,ds1,dim='time')) * (xr.cov(ds1.differentiate("time"),ds1.differentiate("time"),dim='time') 
+                                               + p**2*xr.cov(ds1,ds1,dim='time') 
+                                               + q**2*xr.cov(ds2,ds2,dim='time')
+                                               - 2*p*xr.cov(ds1.differentiate("time"),ds1,dim='time')
+                                               - 2*q*xr.cov(ds1.differentiate("time"),ds2,dim='time')
+                                               + 2*p*q*xr.cov(ds1,ds2,dim='time') 
+                                              )
+        
+        norm = abs(infflow) + abs(p) + abs(dH1noisedt) #eq 20 in Liang (2015) 
+        #masking=abs(infflow)
+        infflow=infflow/norm#*masking
+        infflow_sig=infflow_sig/norm
+        infflow.name = "Liang-Kleeman causality" + "\n" +"(normalised)"
+        infflow_sig.name = "Liang-Kleeman causality" + "\n" +"(normalised, significant)"
+        
+    else:
+        norm = 1
+        infflow=infflow/norm
+        infflow_sig=infflow_sig/norm
+        infflow.name = "Liang-Kleeman causality" + "\n" +"     (not normalised)"
+        infflow_sig.name = "Liang-Kleeman causality" + "\n" +"     (not normalised, significant)"
+        
 
-  numer = xr.cov(ds1, ds1, dim="time") * xr.cov(ds1, ds2, dim="time") * xr.cov(ds2, ds1.differentiate("time"), dim="time") - (xr.cov
-  (ds1, ds2)**2) * xr.cov(ds1, ds1.differentiate("time"), dim="time")
-  denom = (xr.cov(ds1,ds1,dim="time")**2)*xr.cov(ds2,ds2,dim="time") - xr.cov(ds1,ds1,dim="time")*(xr.cov(ds1,ds2,dim="time")**2)
-
-  # Remove nans from ds2 by creating a masked array and filling with 0s 
-  ds2_filled = ds2.fillna(0)
-
-  hc = hycov(ds1, ds2.transpose())
-  detc = np.linalg.det(hc).T
-
-  p = xr.cov(ds2,ds2,dim="time")*xr.cov(ds1,ds1.differentiate("time"),dim="time") - xr.cov(ds1,ds2,dim="time")*xr.cov(ds2,ds1.
-  differentiate("time"),dim="time")
-  p = p/detc
-  q = xr.cov(ds1,ds1,dim="time")*xr.cov(ds2,ds1.differentiate("time"),dim="time") - xr.cov(ds1,ds2,dim="time")*xr.cov(ds1,ds1.
-  differentiate("time"),dim="time")
-  q = q/detc
-  infflow = numer/denom
-
-  # Significance calculations
-  f1 = ds1.differentiate("time").mean() - p * ds1.mean() - q * ds1.mean()
-  r1 = ds1.differentiate("time") - (f1 + p*ds1 + q*ds2)
-  q1 = np.sum(np.multiply(r1, r1))
-  b1 = np.sqrt(q1*Dt/N)
-
-  ni = pd.DataFrame(np.zeros((4, 4)))
-  ni.at[0,0] = N*Dt/np.power(b1, 2)
-  ni.at[1,1] = Dt/np.power(b1, 2) * np.sum(np.multiply(ds1,ds1))
-  ni.at[2,2] = Dt/np.power(b1, 2) * np.sum(np.multiply(ds2,ds2))
-  ni.at[3,3] = 3*Dt/np.power(b1, 4) * np.sum(np.multiply(r1,r1)) - N/np.power(b1, 2)
-
-  ni.at[0,1] = Dt/np.power(b1, 2) * np.sum(ds1)
-  ni.at[0,2] = Dt/np.power(b1, 2) * np.sum(ds2)
-  ni.at[0,3] = 2*Dt/np.power(b1, 3) * np.sum(r1)
-  ni.at[1,2] = Dt/np.power(b1, 2) * np.sum(np.multiply(ds1,ds2))
-  ni.at[1,3] = 2*Dt/np.power(b1, 3) * np.sum(np.multiply(r1,ds1))
-  ni.at[2,3] = 2*Dt/np.power(b1, 3) * np.sum(np.multiply(r1,ds2))
-
-  ni.at[1,0] = ni.at[0,1]
-  ni.at[2,0] = ni.at[0,2]    
-  ni.at[2,1] = ni.at[1,2]
-  ni.at[3,0] = ni.at[0,3]    
-  ni.at[3,1] = ni.at[1,3]   
-  ni.at[3,2] = ni.at[2,3]
-
-  invni = np.linalg.inv(ni)
-  var_a12 = invni[2,2]
-  varinfflow = var_a12 * np.power(xr.cov(ds1,ds2,dim="time")/xr.cov(ds1,ds1,dim="time"),2)
-
-  if sig==90:
-    ss = np.sqrt(varinfflow) * 1.65 
-    infflow_sig = infflow.where((infflow>ss) | (infflow<-ss))
-  elif sig==95:
-    ss = np.sqrt(varinfflow) * 1.96
-    infflow_sig = infflow.where((infflow>ss) | (infflow<-ss))
-  elif sig==99:
-    ss = np.sqrt(varinfflow) * 2.56 
-    infflow_sig = infflow.where((infflow>ss) | (infflow<-ss))
-  elif sig==None:
-    infflow_sig = infflow
-
-  if normalise:
-    dH1noisedt = Dt/(2*xr.cov(ds1,ds1,dim="time")) * (xr.cov(ds1.differentiate("time"),ds1.differentiate("time"),dim="time") 
-      + p**2*xr.cov(ds1,ds1,dim="time") 
-      + q**2*xr.cov(ds2,ds2,dim="time")
-      - 2*p*xr.cov(ds1.differentiate("time"),ds1,dim="time")
-      - 2*q*xr.cov(ds1.differentiate("time"),ds2,dim="time")
-      + 2*p*q*xr.cov(ds1,ds2,dim="time") 
-    )
-    norm = abs(infflow) + abs(p) + abs(dH1noisedt)
-    infflow = infflow/norm
-    infflow_sig = infflow_sig/norm
-
-    infflow.name = "Liang-Kleeman causality (normalised)"
-    infflow_sig.name = "Liang-Kleeman causality (normalised, significant)"
-  else:
-    infflow.name = "Liang-Kleeman causality (not normalised)"
-    infflow_sig.name = "Liang-Kleeman causality (not normalised, significant)"
-
-  return infflow, infflow_sig
+    return infflow, infflow_sig
 
 def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileout_name, levs, midpoint, colmap, title, analysis_type="correlation", is_global=False):
     """
@@ -438,11 +435,12 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   plt.colorbar(cf1, ax=axs[0], orientation="horizontal", pad=0.1)
   axs[0].text(0.5, -0.2, value_label, transform=axs[0].transAxes, ha="center", va="center")
 
-  if analysis_type == "causality":
-    # Load statistical significance data
-    max_indices_sig = np.array(dataset["max_indices_sig"])
-    # Overlap the significance values over the maximum values
-    axs[0].contourf(lon, lat, max_indices_sig[0,:,:], extend="both", hatches=".", alpha=0, transform=ccrs.PlateCarree())
+  # Load statistical significance data for both correlation and causality
+  max_indices_sig = np.array(dataset["max_indices_sig"])
+  density = 11
+  # Overlap the significance values over the maximum values with fine diagonal hatches
+  axs[0].contourf(lon, lat, max_indices_sig[0,:,:], extend="both", hatches=[density*'/',density*'/'], alpha=0, 
+                 transform=ccrs.PlateCarree(), linewidths=0.5)
 
   # Load the plotting components for 2nd plot
   overlap_indices = np.array(dataset["overlap_indices"])
