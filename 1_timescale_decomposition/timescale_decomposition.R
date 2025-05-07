@@ -714,6 +714,9 @@ nc_file <- nc_create(
   "4_outputs/data/detrended_vars/detrended_r_nought_data.nc", 
 var)
 
+# For the detrended data, add back the NAs that were removed in the detrending process
+detrended_signal[is.na(combined_data)] <- NA
+
 # Write the data to the NetCDF file (Trimming to account for incomplete seasons)
 ncvar_put(nc_file, var, detrended_signal[3:503, , ])
 
