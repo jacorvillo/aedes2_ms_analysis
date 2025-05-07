@@ -447,16 +447,6 @@ global_total_dict = total_dicts["global_total_dict"]
 global_corr_maps = {}
 global_sig_maps = {}
 
-# Define common parameters
-params = {
-  "r_nought_dict": global_detrended_dict,
-  "spatial_dict": global_spatial_dict,
-  "levs": np.linspace(-0.5, 0.5, 20),
-  "midpoint": 0,
-  "seasons": ["DJF", "MAM", "JJA", "SON"],
-  "colmap": "Spectral_r"
-}
-
 # Generate plots for each index
 for idx in indices:
   global_corr_maps[idx], global_sig_maps[idx] = plot_dicts_analysis(
