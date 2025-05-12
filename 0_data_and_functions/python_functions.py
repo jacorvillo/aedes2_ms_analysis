@@ -435,19 +435,19 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   plt.colorbar(cf1, ax=axs[0], orientation="horizontal", pad=0.1)
   axs[0].text(0.5, -0.2, value_label, transform=axs[0].transAxes, ha="center", va="center")
 
-  # Load statistical significance data for both correlation and causality
-  max_indices_sig = np.array(dataset["max_indices_sig"])
-  density = 11
-  # Overlap the significance values over the maximum values with fine diagonal hatches
-  axs[0].contourf(lon, lat, max_indices_sig[0,:,:], extend="both", hatches=[density*'/',density*'/'], alpha=0, 
-                 transform=ccrs.PlateCarree(), linewidths=0.5)
+  # # Load statistical significance data for both correlation and causality
+  # max_indices_sig = np.array(dataset["max_indices_sig"])
+  # density = 11
+  # # Overlap the significance values over the maximum values with fine diagonal hatches
+  # axs[0].contourf(lon, lat, max_indices_sig[0,:,:], extend="both", hatches=[density*'/',density*'/'], alpha=0, 
+  #                transform=ccrs.PlateCarree(), linewidths=0.5)
 
   # Load the plotting components for 2nd plot
   overlap_indices = np.array(dataset["overlap_indices"])
 
   # Define index labels and ordered labels
-  index_labels = ["ATL3", "IOD", "IOB", "Niño 3.4", "NPMM", "SASD1", "SIOD", "SPMM", "TNA"]
-  ordered_labels = ["ATL3", "IOD", "IOB", "Niño 3.4", "NPMM", "SASD1", "SIOD", "SPMM", "TNA"]
+  index_labels = ["ATL3", "IOD", "IOB", "Nino 3.4", "NPMM", "SASD1", "SIOD", "SPMM", "TNA"]
+  ordered_labels = ["ATL3", "IOD", "IOB", "Nino 3.4", "NPMM", "SASD1", "SIOD", "SPMM", "TNA"]
 
   # Create mapping from original indices to new order
   label_to_index = {label: i+1 for i, label in enumerate(index_labels)}
