@@ -3,7 +3,7 @@
 
 # Start time tracking
 start_time=$(date +%s)
-total_scripts=9
+total_scripts=7
 completed=0
 
 # Function to update progress
@@ -73,42 +73,33 @@ else
     fi
   }
 
-  # Timescale decomposition
-  echo "1. Timescale decomposition in progress..."
+  # Timescale decomposition  echo "1. Timescale decomposition in progress..."
   Rscript "1_timescale_decomposition/temp_detrend.R"
   update_progress
   Rscript "1_timescale_decomposition/timescale_decomposition.R"
   update_progress
-  check_status "Timescale decomposition"
+  Rscript "1_timescale_decomposition/write_indices.R"
+  update_progress
+  check_status "Timescale decomposition and climate indices"
   echo "Done!"
-
-  # Correlation Analysis
-  echo "2. Correlation analysis in progress..."
-  Rscript "2_correlation_analysis/data_handling.R"
+  # Correlation and Causality Analysis
+  echo "2. Correlation and causality analysis in progress..."
+  python "2_correlation_and_causality/correlation_4_r0.py"
   update_progress
-  check_status "Correlation data handling"
-  python "2_correlation_analysis/mcts_4_r0.py"
-  update_progress
-  check_status "Correlation MCTS analysis"
-  Rscript "2_correlation_analysis/output_merge.R"
-  update_progress
-  check_status "Correlation output merge"
-  python "2_correlation_analysis/output_plotting.py"
-  update_progress
-  check_status "Correlation plotting"
-  echo "Done!"
-
-  # Causality Analysis
-  echo "3. Causality analysis in progress..."
-  python "3_causality/causality_4_r0.py"
+  check_status "Correlation analysis"
+  python "2_correlation_and_causality/causality_4_r0.py"
   update_progress
   check_status "Causality analysis"
-  Rscript "3_causality/output_merge.R"
+  echo "Done!"
+  
+  # Merge and Plot Results
+  echo "3. Merging and plotting results..."
+  Rscript "3_merge_and_plot/output_merge.R"
   update_progress
-  check_status "Causality output merge"
-  python "3_causality/output_plotting.py"
+  check_status "Output merge"
+  python "3_merge_and_plot/output_plotting.py"
   update_progress
-  check_status "Causality plotting"
+  check_status "Visualization"
   echo "Done!"
 
   # Final elapsed time
