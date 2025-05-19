@@ -23,9 +23,14 @@ if [ ! -f "execute_analysis.sh" ]; then
   exit 1
 else
   echo "Running the analysis..."
-  
-  # Create output directory if it doesn't exist
+  # Create output directory and subdirectories if they don't exist
   mkdir -p "4_outputs"
+  echo "Creating output directories..."
+  mkdir -p "4_outputs/data/climate_indices"
+  mkdir -p "4_outputs/data/correlation_and_causality"
+  mkdir -p "4_outputs/data/detrended_vars"
+  mkdir -p "4_outputs/data/sssrs"
+  mkdir -p "4_outputs/figures"
   
   # Check for required dependencies
   echo "Checking dependencies..."
@@ -73,7 +78,8 @@ else
     fi
   }
 
-  # Timescale decomposition  echo "1. Timescale decomposition in progress..."
+  # Timescale decomposition
+  echo "1. Timescale decomposition in progress..."
   Rscript "1_timescale_decomposition/temp_detrend.R"
   update_progress
   Rscript "1_timescale_decomposition/timescale_decomposition.R"
