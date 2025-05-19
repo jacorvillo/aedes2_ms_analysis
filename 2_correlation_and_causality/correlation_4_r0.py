@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Source the python functions
-exec(open("0_data_and_functions/python_functions.py").read())
+exec(open("0_data_and_functions/functions/python_functions.py").read())
 
 # Climate Variability Modes (CVMs) Analysis-------------------------------------------------------
 

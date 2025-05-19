@@ -1,20 +1,20 @@
 # timescale_decomposition.R
 
-#' @description This script reads the R0 monthly data from the AeDES2's Monitoring System and 
-#' decomposes each individual grid point's time series into trend, seasonal, and decadal 
-#' components, calculating the variance explained by each component and plotting the results on 
+#' @description This script reads the R0 monthly data from the AeDES2's Monitoring System and
+#' decomposes each individual grid point's time series into trend, seasonal, and decadal
+#' components, calculating the variance explained by each component and plotting the results on
 #' maps. The timescale decomposition is done in two different ways:
-#' 
-#' 1. Time-based: Assumes that the rate of changee of the R0 signal is related to the passage of 
+#'
+#' 1. Time-based: Assumes that the rate of changee of the R0 signal is related to the passage of
 #' time. A quick LOESS analysis is performed to find the optimal span for the LOESS smoothing of
 #' R0 data before decomposing the time series into trend, seasonal, and decadal components.
-#' 
+#'
 #' 2. Temperature-based: Assumes that the rate of change of the R0 signal is related to the
 #' warming of the planet. A quick LOESS analysis is performed to find the optimal span for the LOESS
-#' for the R0 vs temperature regression, using the 1D detrended temperature obtained in 
-#' temp_detrend.R. 
-#' 
-#' The obtained R0 vs temperature is later transformed into the time dimension, which, following 
+#' for the R0 vs temperature regression, using the 1D detrended temperature obtained in
+#' temp_detrend.R.
+#'
+#' The obtained R0 vs temperature is later transformed into the time dimension, which, following
 #' the  methodology of Greene et al., 2011, consitutes the temperature-based trend. The seasonal and
 #' decadal components are obtained from the detrended data, with a 120-month frequency Butterworth
 #' filter.
@@ -54,7 +54,7 @@ for (month in 1:12) {
   } else {
     month_data <- month_data[2:43, , ] # Adjust the number of years if needed
   }
-  
+
   month_indices <- seq(month, 42 * 12, by = 12)
   combined_data[month_indices, , ] <- month_data
 }
@@ -82,19 +82,21 @@ rsq_values <- numeric(length(span_choices))
 # Evaluate each span choice
 for (i in seq_along(span_choices)) {
   span_choice <- span_choices[i]
-  
+
   # Fit LOESS model
-  model <- loess(r_nought ~ time, data = r_nought_vs_time_df, 
-                span = span_choice / length(median_data))
-  
+  model <- loess(r_nought ~ time,
+    data = r_nought_vs_time_df,
+    span = span_choice / length(median_data)
+  )
+
   # Calculate GCV (Generalized Cross-Validation)
   n <- length(model$residuals)
   gcv_values[i] <- mean(model$residuals^2) / (1 - model$enp / n)^2
-  
+
   # Calculate AIC
   sigma2 <- sum(model$residuals^2) / n
   aic_values[i] <- n * log(sigma2) + 2 * model$enp
-  
+
   # Calculate R-squared
   ss_total <- sum((r_nought_vs_time_df$r_nought - mean(r_nought_vs_time_df$r_nought))^2)
   ss_residual <- sum(model$residuals^2)
@@ -124,7 +126,7 @@ percentage_seasonal_time <- array(NA, dim = c(length(lat), length(lon)))
 percentage_decadal_time <- array(NA, dim = c(length(lat), length(lon)))
 percentage_remaining_time <- array(NA, dim = c(length(lat), length(lon)))
 
-# Loop through each grid point and decompose the time series into trend, seasonal, 
+# Loop through each grid point and decompose the time series into trend, seasonal,
 # and decadal components
 
 for (nlat in seq_along(lat)) {
@@ -140,16 +142,15 @@ for (nlat in seq_along(lat)) {
       percentage_seasonal_time[nlat, nlon] <- NA
       percentage_decadal_time[nlat, nlon] <- NA
       percentage_remaining_time[nlat, nlon] <- NA
-
     } else { # If there are some NA values, set those to 0
-      
+
       signal[is.na(signal)] <- 0
 
       # Decompose the time series with the ideal span
       components <- stl(signal, s.window = "per", t.window = optimal_span)
 
       # STL mingles the decadal signal with the interannual and interdecadal signals. To filter
-      # it out, we use a 120-month frequency Butterworth filter of order 2: 
+      # it out, we use a 120-month frequency Butterworth filter of order 2:
 
       # Apply Butterworth filter to extract decadal component
       bf <- butter(2, 1 / 120, type = "low")
@@ -165,22 +166,20 @@ for (nlat in seq_along(lat)) {
       decadal_var <- var(decadal, na.rm = TRUE)
       remainder_var <- var(remainder, na.rm = TRUE)
       total_var <- var(combined_data[, nlat, nlon], na.rm = TRUE)
-      
+
       # Calculate percentages
       percentage_trend_time[nlat, nlon] <- trend_var / total_var * 100
       percentage_seasonal_time[nlat, nlon] <- seasonal_var / total_var * 100
       percentage_decadal_time[nlat, nlon] <- decadal_var / total_var * 100
       percentage_remaining_time[nlat, nlon] <- remainder_var / total_var * 100
-    
     }
-    if (is.infinite(percentage_trend_time[nlat, nlon])) { 
+    if (is.infinite(percentage_trend_time[nlat, nlon])) {
       # If the percentage is infinite, set it to NA
-      
+
       percentage_trend_time[nlat, nlon] <- NA
       percentage_seasonal_time[nlat, nlon] <- NA
       percentage_decadal_time[nlat, nlon] <- NA
       percentage_remaining_time[nlat, nlon] <- NA
-    
     }
     if (nlat == 150 && nlon == 230) {
       timeseries_time_seasonal <- components$time.series[, 1]
@@ -316,19 +315,21 @@ rsq_values <- numeric(length(span_choices))
 # Evaluate each span choice
 for (i in seq_along(span_choices)) {
   span_choice <- span_choices[i]
-  
+
   # Fit LOESS model
-  model <- loess(r_nought ~ temperature, data = r_nought_vs_temp_df, 
-                span = span_choice / length(median_data))
-  
+  model <- loess(r_nought ~ temperature,
+    data = r_nought_vs_temp_df,
+    span = span_choice / length(median_data)
+  )
+
   # Calculate GCV (Generalized Cross-Validation)
   n <- length(model$residuals)
   gcv_values[i] <- mean(model$residuals^2) / (1 - model$enp / n)^2
-  
+
   # Calculate AIC
   sigma2 <- sum(model$residuals^2) / n
   aic_values[i] <- n * log(sigma2) + 2 * model$enp
-  
+
   # Calculate R-squared
   ss_total <- sum((r_nought_vs_temp_df$r_nought - mean(r_nought_vs_temp_df$r_nought))^2)
   ss_residual <- sum(model$residuals^2)
@@ -359,33 +360,30 @@ percentage_seasonal_temp <- array(NA, dim = c(length(lat), length(lon)))
 percentage_decadal_temp <- array(NA, dim = c(length(lat), length(lon)))
 percentage_remaining_temp <- array(NA, dim = c(length(lat), length(lon)))
 
-# Loop through each grid point and decompose the time series into trend, seasonal, 
+# Loop through each grid point and decompose the time series into trend, seasonal,
 # and decadal components according to the temperature-based approach
 
 for (nlat in seq_along(lat)) {
   for (nlon in seq_along(lon)) {
     cat("Processing grid point:", nlat, nlon, "for temperature-based TD\n")
 
-    if (all(is.na(combined_data[, nlat, nlon]))) { 
-
+    if (all(is.na(combined_data[, nlat, nlon]))) {
       percentage_trend_temp[nlat, nlon] <- NA
       percentage_seasonal_temp[nlat, nlon] <- NA
       percentage_decadal_temp[nlat, nlon] <- NA
       percentage_remaining_temp[nlat, nlon] <- NA
 
       detrended_signal[, nlat, nlon] <- NA
-
-    } else { 
-      
+    } else {
       signal <- combined_data[, nlat, nlon]
       signal[is.na(signal)] <- 0
 
       # Fit a LOESS model to the data with the ideal span
-      model <- loess(signal ~ detrended_temps, span = optimal_span / 504) 
+      model <- loess(signal ~ detrended_temps, span = optimal_span / 504)
       trend <- predict(model) # Predict the trend using the LOESS model
 
       detrended_signal[, nlat, nlon] <- signal - trend # Detrend the signal
-      
+
       # Apply Butterworth filter to extract decadal component
       bf <- butter(2, 1 / 120, type = "low")
       decadal <- filtfilt(bf, detrended_signal[, nlat, nlon])
@@ -401,21 +399,18 @@ for (nlat in seq_along(lat)) {
       # Calculate variance explained by each component
       trend_variance <- var(trend, na.rm = TRUE)
       signal_variance <- var(signal, na.rm = TRUE)
-      
+
       # Calculate percentages for each component
       percentage_trend_temp[nlat, nlon] <- trend_variance / signal_variance * 100
       percentage_seasonal_temp[nlat, nlon] <- var(seasonal, na.rm = TRUE) / signal_variance * 100
       percentage_decadal_temp[nlat, nlon] <- var(decadal, na.rm = TRUE) / signal_variance * 100
       percentage_remaining_temp[nlat, nlon] <- var(remainder, na.rm = TRUE) / signal_variance * 100
-    
     }
     if (is.infinite(percentage_trend_temp[nlat, nlon])) {
-      
       percentage_trend_temp[nlat, nlon] <- NA
       percentage_seasonal_temp[nlat, nlon] <- NA
       percentage_decadal_temp[nlat, nlon] <- NA
       percentage_remaining_temp[nlat, nlon] <- NA
-    
     }
     if (nlat == 150 && nlon == 230) {
       timeseries_temp_seasonal <- seasonal
@@ -645,9 +640,11 @@ time_plot <- ggplot() +
   geom_line(data = time_df, aes(x = Date, y = Remainder), color = "purple", size = 0.8) +
   geom_line(data = time_df, aes(x = Date, y = Seasonal), color = "blue", size = 0.8) +
   geom_line(data = time_df, aes(x = Date, y = Trend), color = "red", size = 1) +
-  labs(title = "Time-based Decomposition [150, 230]",
-       x = "Date",
-       y = "R0 Value") +
+  labs(
+    title = "Time-based Decomposition [150, 230]",
+    x = "Date",
+    y = "R0 Value"
+  ) +
   theme_minimal() +
   theme(legend.position = "right")
 
@@ -658,9 +655,11 @@ temp_plot <- ggplot() +
   geom_line(data = temp_df, aes(x = Date, y = Remainder), color = "purple", size = 0.8) +
   geom_line(data = temp_df, aes(x = Date, y = Seasonal), color = "blue", size = 0.8) +
   geom_line(data = temp_df, aes(x = Date, y = Trend), color = "red", size = 1) +
-  labs(title = "Temperature-based Decomposition [150, 230]",
-       x = "Date",
-       y = "R0 Value") +
+  labs(
+    title = "Temperature-based Decomposition [150, 230]",
+    x = "Date",
+    y = "R0 Value"
+  ) +
   theme_minimal() +
   theme(legend.position = "right")
 
@@ -673,12 +672,13 @@ legend_data <- data.frame(
 
 legend_plot <- ggplot(legend_data, aes(x = Date, y = Value, color = Component)) +
   geom_point() +
-  scale_color_manual(values = c("Decadal" = "green", 
-                               "Original" = "black", 
-                               "Remainder" = "purple",
-                               "Seasonal" = "blue", 
-                               "Trend" = "red"
-                              )) +
+  scale_color_manual(values = c(
+    "Decadal" = "green",
+    "Original" = "black",
+    "Remainder" = "purple",
+    "Seasonal" = "blue",
+    "Trend" = "red"
+  )) +
   theme_minimal() +
   theme(legend.position = "bottom")
 
@@ -706,13 +706,15 @@ dim_lon <- ncdim_def("lon", "degrees_east", lon)
 
 # Define the variable
 var <- ncvar_def("detrended_data", "units", list(dim_time, dim_lat, dim_lon),
-  -9999, longname = "Detrended R0 Values", prec = "double"  
+  -9999,
+  longname = "Detrended R0 Values", prec = "double"
 )
 
 # Create the NetCDF file
 nc_file <- nc_create(
-  "4_outputs/data/detrended_vars/detrended_r_nought_data.nc", 
-var)
+  "4_outputs/data/detrended_vars/detrended_r_nought_data.nc",
+  var
+)
 
 # For the detrended data, add back the NAs that were removed in the detrending process
 detrended_signal[is.na(combined_data)] <- NA

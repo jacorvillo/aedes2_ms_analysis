@@ -9,7 +9,7 @@
 import xarray as xr
 
 # Source the python functions
-exec(open("0_data_and_functions/python_functions.py").read())
+exec(open("0_data_and_functions/functions/python_functions.py").read())
 
 # Load the netcdf files:
 global_djf_correlation = xr.open_dataset("4_outputs/data/correlation_and_causality/global_correlation_djf_merged.nc")

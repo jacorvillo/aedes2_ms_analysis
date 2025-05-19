@@ -8,7 +8,7 @@
 #' analysis by following the methodology from Green et al., 2011.
 
 # Source R functions:
-source("0_data_and_functions/r_functions.R")
+source("0_data_and_functions/functions/r_functions.r")
 
 # Load necessary libraries
 library(ncdf4)

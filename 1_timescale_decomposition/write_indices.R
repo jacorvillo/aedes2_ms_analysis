@@ -8,7 +8,7 @@
 #' data in .dat files for the subsequent correlation and causality analysis.
 
 # Source R functions:
-source("0_data_and_functions/r_functions.R")
+source("0_data_and_functions/functions/r_functions.r")
 
 # Necessary packages for the script:
 library(dplyr)

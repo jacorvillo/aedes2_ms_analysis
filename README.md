@@ -74,10 +74,12 @@ The analysis generates various outputs in the `4_outputs/` directory:
 ```
 aedes2_ms_analysis/
 ├── 0_data_and_functions/                # Core data and functions used across analyses
-│   ├── r_functions.R                       # Utility functions for R scripts
-│   ├── python_functions.py                 # Utility functions for Python scripts
-│   ├── r_nought/                           # $R_0$ data files from AeDES2
-│   └── tas/                                # Temperature data files from AeDES2's climate datasets
+│   ├── data/                               # Input data for analysis
+│   │   ├── r_nought/                          # $R_0$ data files from AeDES2
+│   │   └── tas/                               # Temperature data files from AeDES2's climate datasets
+│   └── functions/                          # Utility functions
+│       ├── r_functions.R                      # Utility functions for R scripts
+│       └── python_functions.py                # Utility functions for Python scripts
 ├── 1_timescale_decomposition/           # Analysis of time components
 │   ├── temp_detrend.R                      # For detrending of temperature values
 │   ├── timescale_decomposition.R           # $R_0$ time series decomposition
