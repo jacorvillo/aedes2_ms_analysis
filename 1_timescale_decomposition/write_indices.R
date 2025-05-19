@@ -1,10 +1,10 @@
-# data_handling.R
+# write_indices.R
 
-#' @description This script reads the detrended R0 monthly data from the AeDES2's Monitoring 
-#' System,  as computed in the temperature-based timescale decomposition analysis, and trims 
-#' it to the SSSRs detected in the aforementioned script, with the boxes defined by 
+#' @description This script reads the detrended R0 monthly data from the AeDES2's Monitoring
+#' System,  as computed in the temperature-based timescale decomposition analysis, and trims
+#' it to the SSSRs detected in the aforementioned script, with the boxes defined by
 #' Iturbide et al., 2020. Additionally, this script also computes temperature-dependent Climate
-#' Variability indices with the detrended temperature data obtained in temp_detrend.R, saving the 
+#' Variability indices with the detrended temperature data obtained in temp_detrend.R, saving the
 #' data in .dat files for the subsequent correlation and causality analysis.
 
 # Source R functions:
@@ -34,10 +34,10 @@ r_nought_data <- ncvar_get(nc_file, "detrended_r_nought")
 
 # Lists with all the detected SSSRs:
 nca <- list(
-  c(-90, 25.0),  # Vertex 1
-  c(-104.5, 16.0),  # Vertex 2
-  c(-122.5, 34),  # Vertex 3
-  c(-105.0, 34)   # Vertex 4
+  c(-90, 25.0), # Vertex 1
+  c(-104.5, 16.0), # Vertex 2
+  c(-122.5, 34), # Vertex 3
+  c(-105.0, 34) # Vertex 4
 )
 
 cna <- list(
