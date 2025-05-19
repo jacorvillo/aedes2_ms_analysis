@@ -40,17 +40,19 @@ And the analysis consists of three main steps:
   - Detrend temperature data
   - Decompose $R_0$ time series into trend, seasonal, decadal, and remainder components
   - Compare time-based vs temperature-based decomposition approaches
-  - Detect Strongest Seasonal Signal Regions (SSSRs) for $R_0$ data. Remove $R_0$ trend component for correlation and causality analyses
+  - Detect Strongest Seasonal Signal Regions (SSSRs) for $R_0$ data
+  - Generate climate indices for correlation and causality analyses
 
-2. **Correlation Analysis**:
+2. **Correlation and Causality Analyses**:
   - Analyze relationships between climate variability modes and $R_0$
-  - Generate correlation maps for the globe and for the detected SSSRs
+  - Determine causal relationships between climate indices and $R_0$
+  - Generate correlation and causality maps for the globe and for the detected SSSRs
   - Identify the dominant climate modes affecting each region
 
-3. **Causality Analysis**:
-  - Determine causal relationships between climate indices and $R_0$
-  - Generate causality maps for the globe and for the detected SSSRs
-  - Identify the most influential climate modes for vector-borne disease dynamics
+3. **Output Processing and Visualization**:
+  - Merge correlation and causality outputs
+  - Generate visualizations for different regions and seasons
+  - Create summary maps and plots of relationships between climate indices and disease dynamics
 
 The analysis generates various outputs in the `4_outputs/` directory:
 
@@ -70,24 +72,22 @@ The analysis generates various outputs in the `4_outputs/` directory:
 ## Repository Structure
 
 ```
-monitoring_system_analysis/
+aedes2_ms_analysis/
 ├── 0_data_and_functions/                # Core data and functions used across analyses
 │   ├── r_functions.R                       # Utility functions for R scripts
 │   ├── python_functions.py                 # Utility functions for Python scripts
 │   ├── r_nought/                           # $R_0$ data files from AeDES2
 │   └── tas/                                # Temperature data files from AeDES2's climate datasets
 ├── 1_timescale_decomposition/           # Analysis of time components
-│   ├── temp_detrend.R                      # For detrending of temperature values detrending analysis
-│   └── timescale_decomposition.R           # $R_0$ time series decomposition
-├── 2_mct_analysis/                      # Correlation analysis between $R_0$ and climate variability indices
-│   ├── data_handling.R                     # Data preparation for correlation analysis
-│   ├── mcts_4_$R_0$.py                     # Correlation analysis script
-│   ├── output_merge.R                      # Preparation of correlation outputs for comparison plotting
-│   └── output_plotting.py                  # Plot correlation results
-├── 3_causality/                         # Causality analysis
-│   ├── causality_4_$R_0$.py                # Causality analysis script
-│   ├── output_merge.R                      # Merge causality outputs
-│   └── output_plotting.py                  # Plot causality results
+│   ├── temp_detrend.R                      # For detrending of temperature values
+│   ├── timescale_decomposition.R           # $R_0$ time series decomposition
+│   └── write_indices.R                     # Generation of climate indices
+├── 2_correlation_and_causality/         # Correlation and causality analyses
+│   ├── correlation_4_r0.py                 # Correlation analysis script
+│   └── causality_4_r0.py                   # Causality analysis script
+├── 3_merge_and_plot/                    # Output processing and visualization
+│   ├── output_merge.R                      # Merge analysis outputs
+│   └── output_plotting.py                  # Generate visualizations
 ├── 4_outputs/                           # Analysis outputs
 │   ├── data/                               # Generated data files
 │   │   ├── climate_indices/                # Climate indices data
