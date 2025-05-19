@@ -1,4 +1,4 @@
-# mcts_4_r0.py
+# correlation_4_r0.py
 
 # This script analyzes the different climate variability modes and their relationship with the SSSR 
 # R0 data, in the form correlation maps with statistical significance. The script briefly generates
