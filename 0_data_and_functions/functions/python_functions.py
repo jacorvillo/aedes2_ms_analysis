@@ -224,112 +224,148 @@ def causality1d3d(ds1,ds2,normalise=False,sig=95):
     return infflow, infflow_sig
 
 def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileout_name, levs, midpoint, colmap, title, analysis_type="correlation", is_global=False):
-    """
-    Unified function to plot correlation or causality maps for regional or global data.
-    
-    Parameters:
-    - r_nought_dict: Dictionary where keys are region names and values are dictionaries with seasonal data
-    - spatial_dict: Dictionary with spatial information (lat, lon) for each region
-    - index_dict: Dictionary containing index data for each season
-    - seasons: List of seasons to plot
-    - fileout_name: Output file name for the plot
-    - levs: Levels for contour plots
-    - midpoint: Midpoint for the colormap normalization
-    - colmap: Colormap to use
-    - title: Title for the plot
-    - analysis_type: Either "correlation" or "causality"
-    - is_global: Whether to plot global data (affects subplot layout)
-    
-    Returns:
-    - analysis_maps: Dictionary containing analysis maps for each region/season
-    - sig_maps: Dictionary containing significance masks for each region/season
-    """
-    # Initialize dictionaries to store analysis and significance maps
+  """
+  Unified function to plot correlation or causality maps for regional or global data.
+  
+  Parameters:
+  - r_nought_dict: Dictionary where keys are region names and values are dictionaries with seasonal data
+  - spatial_dict: Dictionary with spatial information (lat, lon) for each region
+  - index_dict: Dictionary containing index data for each season
+  - seasons: List of seasons to plot, or None for non-seasonal data
+  - fileout_name: Output file name for the plot
+  - levs: Levels for contour plots
+  - midpoint: Midpoint for the colormap normalization
+  - colmap: Colormap to use
+  - title: Title for the plot
+  - analysis_type: Either "correlation" or "causality"
+  - is_global: Whether to plot global data (affects subplot layout)
+  
+  Returns:
+  - analysis_maps: Dictionary containing analysis maps for each region/season
+  - sig_maps: Dictionary containing significance masks for each region/season
+  """
+  # Initialize dictionaries to store analysis and significance maps
+  is_seasonal = seasons is not None
+  
+  if is_seasonal:
     analysis_maps = {region: {season: None for season in seasons} for region in r_nought_dict.keys()}
     sig_maps = {region: {season: None for season in seasons} for region in r_nought_dict.keys()}
+  else:
+    # Non-seasonal case
+    analysis_maps = {region: None for region in r_nought_dict.keys()}
+    sig_maps = {region: None for region in r_nought_dict.keys()}
+    # Create a dummy list with one element for plotting
+    seasons = [None]
 
-    # Define subplot layout based on whether it's global or regional
-    if is_global:
-        subplot_width = 10
-        subplot_height = 8
-        fig_width = subplot_width * 2
-        fig_height = subplot_height * 2
-        fig, axs = plt.subplots(2, 2, figsize=(fig_width, fig_height), subplot_kw={"projection": ccrs.PlateCarree()})
-    else:
-        subplot_width = 5
-        subplot_height = 4
-        fig_width = subplot_width * len(r_nought_dict)
-        fig_height = subplot_height * len(seasons)
-        fig, axs = plt.subplots(len(seasons), len(r_nought_dict), figsize=(fig_width, fig_height), subplot_kw={"projection": ccrs.PlateCarree()})
-        axs = axs.reshape(len(seasons), len(r_nought_dict))
+  # Define subplot layout based on whether it's global or regional
+  if is_global:
+    subplot_width = 10
+    subplot_height = 8
+    fig_width = subplot_width * 2
+    fig_height = subplot_height * 2
+    fig, axs = plt.subplots(2, 2, figsize=(fig_width, fig_height), subplot_kw={"projection": ccrs.PlateCarree()})
+  else:
+    subplot_width = 5
+    subplot_height = 4
+    fig_width = subplot_width * len(r_nought_dict)
+    fig_height = subplot_height * len(seasons)
+    fig, axs = plt.subplots(len(seasons), len(r_nought_dict), figsize=(fig_width, fig_height), subplot_kw={"projection": ccrs.PlateCarree()})
+    if len(seasons) == 1 and len(r_nought_dict) == 1:
+      axs = np.array([[axs]])
+    elif len(seasons) == 1 or len(r_nought_dict) == 1:
+      axs = axs.reshape(len(seasons), len(r_nought_dict))
 
-    # Define common color levels and colormap
-    cmap = plt.get_cmap(colmap)
+  # Define common color levels and colormap
+  cmap = plt.get_cmap(colmap)
 
-    # Normalize the colormap to set the midpoint if provided
-    if midpoint is not None and levs is not None:
-        norm = mc.TwoSlopeNorm(vmin=min(levs), vcenter=midpoint, vmax=max(levs))
-    elif levs is not None:
-        norm = plt.Normalize(vmin=min(levs), vmax=max(levs))
-    else:
-        norm = None
+  # Normalize the colormap to set the midpoint if provided
+  if midpoint is not None and levs is not None:
+    norm = mc.TwoSlopeNorm(vmin=min(levs), vcenter=midpoint, vmax=max(levs))
+  elif levs is not None:
+    norm = plt.Normalize(vmin=min(levs), vmax=max(levs))
+  else:
+    norm = None
 
-    for i, region in enumerate(r_nought_dict.keys()):
-        lat = spatial_dict[region]["lat"]
-        lon = spatial_dict[region]["lon"]
-        
-        for j, season in enumerate(seasons):
-            if is_global:
-                row = j // 2
-                col = j % 2
-                ax = axs[row, col]
-            else:
-                ax = axs[j, i]
-                
-            ax.set_title(f"{region} - {season}", fontsize=14, weight="bold")
-            
-            # Convert to numpy array before reshaping
-            ds2 = np.transpose(r_nought_dict[region][season])
-            ds1 = np.array(index_dict[season])
-            
-
-            if analysis_type == "correlation":
-                # Transpose the data arrays before passing them to IndexRegrCorr
-                ds2 = np.array(ds2).reshape(np.array(ds2).shape[0], np.array(ds2).shape[1]*np.array(ds2).shape[2])
-                corA, PvalueA, cor_sigA, regA, regA_sig = IndexRegrCorr(np.transpose(ds2), np.transpose(ds1), 0.01, "MonteCarlo", 100)
-                analysis_maps[region][season] = corA.reshape(len(lat), len(lon))
-                sig_maps[region][season] = cor_sigA.reshape(len(lat), len(lon))
-            else:  # causality
-                # Convert arrays to xarray DataArrays with "time" dimension
-                ds2 = xr.DataArray(ds2, dims=["time", "lat", "lon"])
-                ds1 = xr.DataArray(ds1, dims=["time"])
-                causalA, causalsigA = causality1d3d(ds1, ds2, normalise=True, sig=99)
-                analysis_maps[region][season] = causalA
-                sig_maps[region][season] = causalsigA
-
-            # Create contourf with or without levels
-            if levs is not None:
-                cf = ax.contourf(lon, lat, analysis_maps[region][season], levels=levs, cmap=cmap, norm=norm, extend="both", transform=ccrs.PlateCarree())
-            else:
-                cf = ax.contourf(lon, lat, analysis_maps[region][season], cmap=cmap, transform=ccrs.PlateCarree())
-
-            ax.contourf(lon, lat, sig_maps[region][season], extend="both", hatches=".", cmap=cmap, alpha=0, transform=ccrs.PlateCarree())
-            ax.coastlines()
-            gl = ax.gridlines(draw_labels=True)
-            gl.ylabels_right = False
-            gl.xlabels_top = False
-
-    # Add a common colorbar at the bottom
-    cbar_ax = fig.add_axes([0.2, 0.05, 0.6, 0.02])
-    fig.colorbar(cf, cax=cbar_ax, orientation="horizontal", norm=norm, label=f"{analysis_type.capitalize()} Value")
-
-    plt.suptitle(title, fontsize=22, weight="bold")
-    plt.tight_layout(rect=[0, 0.1, 1, 0.96])
-    plt.savefig(fileout_name + ".png", dpi=300)
-    plt.savefig(fileout_name + ".eps", format="eps", dpi=300)
-    plt.close()
+  for i, region in enumerate(r_nought_dict.keys()):
+    lat = spatial_dict[region]["lat"]
+    lon = spatial_dict[region]["lon"]
     
-    return analysis_maps, sig_maps
+    for j, season in enumerate(seasons):
+      if is_global:
+        row = j // 2
+        col = j % 2
+        ax = axs[row, col]
+      else:
+        ax = axs[j, i]
+        
+      # Set title based on whether data is seasonal
+      if is_seasonal:
+        ax.set_title(f"{region} - {season}", fontsize=14, weight="bold")
+        # Get seasonal data
+        ds2 = np.transpose(r_nought_dict[region][season])
+        ds1 = np.array(index_dict[season])
+      else:
+        ax.set_title(f"{region}", fontsize=14, weight="bold")
+        # Get non-seasonal data
+        ds2 = np.transpose(r_nought_dict[region])
+        ds1 = np.array(index_dict)
+
+      if analysis_type == "correlation":
+        # Transpose the data arrays before passing them to IndexRegrCorr
+        ds2 = np.array(ds2).reshape(np.array(ds2).shape[0], np.array(ds2).shape[1]*np.array(ds2).shape[2])
+        corA, PvalueA, cor_sigA, regA, regA_sig = IndexRegrCorr(np.transpose(ds2), np.transpose(ds1), 0.01, "MonteCarlo", 100)
+        
+        if is_seasonal:
+          analysis_maps[region][season] = corA.reshape(len(lat), len(lon))
+          sig_maps[region][season] = cor_sigA.reshape(len(lat), len(lon))
+        else:
+          analysis_maps[region] = corA.reshape(len(lat), len(lon))
+          sig_maps[region] = cor_sigA.reshape(len(lat), len(lon))
+          
+      else:  # causality
+        # Convert arrays to xarray DataArrays with "time" dimension
+        ds2 = xr.DataArray(ds2, dims=["time", "lat", "lon"])
+        ds1 = xr.DataArray(ds1, dims=["time"])
+        causalA, causalsigA = causality1d3d(ds1, ds2, normalise=True, sig=99)
+        
+        if is_seasonal:
+          analysis_maps[region][season] = causalA
+          sig_maps[region][season] = causalsigA
+        else:
+          analysis_maps[region] = causalA
+          sig_maps[region] = causalsigA
+
+      # Get the appropriate analysis map for plotting
+      if is_seasonal:
+        plot_data = analysis_maps[region][season]
+        sig_data = sig_maps[region][season]
+      else:
+        plot_data = analysis_maps[region]
+        sig_data = sig_maps[region]
+
+      # Create contourf with or without levels
+      if levs is not None:
+        cf = ax.contourf(lon, lat, plot_data, levels=levs, cmap=cmap, norm=norm, extend="both", transform=ccrs.PlateCarree())
+      else:
+        cf = ax.contourf(lon, lat, plot_data, cmap=cmap, transform=ccrs.PlateCarree())
+
+      ax.contourf(lon, lat, sig_data, extend="both", hatches=".", cmap=cmap, alpha=0, transform=ccrs.PlateCarree())
+      ax.coastlines()
+      gl = ax.gridlines(draw_labels=True)
+      gl.ylabels_right = False
+      gl.xlabels_top = False
+
+  # Add a common colorbar at the bottom
+  cbar_ax = fig.add_axes([0.2, 0.05, 0.6, 0.02])
+  fig.colorbar(cf, cax=cbar_ax, orientation="horizontal", norm=norm, label=f"{analysis_type.capitalize()} Value")
+
+  plt.suptitle(title, fontsize=22, weight="bold")
+  plt.tight_layout(rect=[0, 0.1, 1, 0.96])
+  plt.savefig(fileout_name + ".png", dpi=300)
+  plt.savefig(fileout_name + ".eps", format="eps", dpi=300)
+  plt.close()
+  
+  return analysis_maps, sig_maps
 
 def save_analysis_to_netcdf(analysis_dict, output_filename, analysis_type="correlation", is_seasonal=True):
     """
