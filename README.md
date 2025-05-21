@@ -13,7 +13,8 @@ This repository contains code for analyzing the relationship between climate var
   ```bash
   pip install numpy scipy matplotlib xarray cartopy
   ```
-4. The complete analysis can be run using the provided shell script:
+4. Download the data sources from [this link](https://drive.google.com/file/d/1x_bf9V2BU2MERkb4fgYKVA7PkxVLaV-C/view?usp=sharing), and extract the two folders in "0_data_and_functions/data/"
+5. The complete analysis can be run using the provided shell script:
 
 ```bash
 ./execute_analysis.sh
