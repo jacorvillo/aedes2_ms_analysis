@@ -287,6 +287,10 @@ def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileou
   # Define common color levels and colormap
   cmap = plt.get_cmap(colmap)
 
+  # Round levels to two significant digits if provided
+  if levs is not None:
+    levs = [round(level, 2) for level in levs]
+
   # Normalize the colormap to set the midpoint if provided
   if midpoint is not None and levs is not None:
     norm = mc.TwoSlopeNorm(vmin=min(levs), vcenter=midpoint, vmax=max(levs))
