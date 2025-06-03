@@ -339,68 +339,6 @@ save_analysis_to_netcdf(sh_corr_maps, "4_outputs/data/correlation_and_causality/
 save_analysis_to_netcdf(nh_sig_maps, "4_outputs/data/correlation_and_causality/nh_correlation_significance_seasonal.nc", analysis_type="correlation", is_seasonal=True)
 save_analysis_to_netcdf(sh_sig_maps, "4_outputs/data/correlation_and_causality/sh_correlation_significance_seasonal.nc", analysis_type="correlation", is_seasonal=True)
 
-# --- Total Correlation Analysis ---
-
-# Dictionaries to store correlation and significance maps
-nh_corr_maps_total = {}
-nh_sig_maps_total = {}
-sh_corr_maps_total = {}
-sh_sig_maps_total = {}
-
-# Define common parameters
-nh_params = {
-  "r_nought_dict": nh_total_dict,
-  "spatial_dict": nh_spatial_dict,
-  "levs": np.linspace(-0.5, 0.5, 20), 
-  "midpoint": 0,
-  "colmap": "Spectral_r"
-}
-sh_params = {
-  "r_nought_dict": sh_total_dict,
-  "spatial_dict": sh_spatial_dict,
-  "levs": np.linspace(-0.5, 0.5, 20),
-  "midpoint": 0, 
-  "colmap": "Spectral_r"
-}
-
-# Generate plots for Northern Hemisphere
-for idx in indices:
-   nh_corr_maps_total[idx], nh_sig_maps_total[idx] = plot_dicts_analysis(
-    r_nought_dict=nh_total_dict,
-    spatial_dict=nh_spatial_dict,
-    index_dict=index_dict_total[idx],
-    seasons=None,
-    fileout_name=f"4_outputs/figures/correlation_total_nh_{idx.lower().replace(' ', '_').replace('.', '')}",
-    levs=np.linspace(-0.5, 0.5, 20),
-    midpoint=0,
-    colmap="Spectral_r",
-    title=f"Full R0 Time Series vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
-    analysis_type="correlation",
-    is_global=False
-  )
-
-# Generate plots for Southern Hemisphere    
-for idx in indices:
-  sh_corr_maps_total[idx], sh_sig_maps_total[idx] = plot_dicts_analysis(
-    r_nought_dict=sh_total_dict,
-    spatial_dict=sh_spatial_dict,
-    index_dict=index_dict_total[idx],
-    seasons=None,
-    fileout_name=f"4_outputs/figures/correlation_total_sh_{idx.lower().replace(' ', '_').replace('.', '')}",
-    levs=np.linspace(-0.5, 0.5, 20),
-    midpoint=0,
-    colmap="Spectral_r",
-    title=f"Full R0 Time Series vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
-    analysis_type="correlation",
-    is_global=False
-  )
-
-# Save the correlation and significance maps
-save_analysis_to_netcdf(nh_corr_maps_total, "4_outputs/data/correlation_and_causality/nh_correlation_total.nc", analysis_type="correlation", is_seasonal=False)
-save_analysis_to_netcdf(nh_sig_maps_total, "4_outputs/data/correlation_and_causality/sh_correlation_total.nc", analysis_type="correlation", is_seasonal=False)
-save_analysis_to_netcdf(sh_corr_maps_total, "4_outputs/data/correlation_and_causality/nh_correlation_significance_total.nc", analysis_type="correlation", is_seasonal=False)
-save_analysis_to_netcdf(sh_sig_maps_total, "4_outputs/data/correlation_and_causality/sh_correlation_significance_total.nc", analysis_type="correlation", is_seasonal=False)
-
 global_data = xr.open_dataset("4_outputs/data/detrended_vars/detrended_r_nought_data.nc")
 datasets = {
   "Global": global_data,
@@ -466,35 +404,3 @@ for idx in indices:
 # Save the correlation and significance maps
 save_analysis_to_netcdf(global_corr_maps, "4_outputs/data/correlation_and_causality/global_correlation_seasonal.nc", analysis_type="correlation", is_seasonal=True)
 save_analysis_to_netcdf(global_sig_maps, "4_outputs/data/correlation_and_causality/global_correlation_significance_seasonal.nc", analysis_type="correlation", is_seasonal=True)
-
-# Dictionaries to store correlation and significance maps
-global_corr_maps_total = {}
-global_sig_maps_total = {}
-
-# Define common parameters
-params = {
-  "r_nought_dict": global_total_dict,
-  "spatial_dict": global_spatial_dict,
-  "levs": np.linspace(-0.5, 0.5, 20),
-  "midpoint": 0,
-  "colmap": "Spectral_r"
-}
-
-# Generate plots for each index
-for idx in indices:
-  global_corr_maps_total[idx], global_sig_maps_total[idx] = plot_dicts_analysis(
-    r_nought_dict=global_total_dict,
-    spatial_dict=global_spatial_dict,
-    index_dict=index_dict_total[idx],
-    seasons=None,
-    fileout_name=f"4_outputs/figures/correlation_total_global_{idx.lower().replace(' ', '_').replace('.', '')}",
-    levs=np.linspace(-0.5, 0.5, 20),
-    midpoint=0,
-    colmap="Spectral_r",
-    title=f"Full R0 Time Series vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
-    analysis_type="correlation",
-    is_global=True
-  )
-
-save_analysis_to_netcdf(global_corr_maps_total, "4_outputs/data/correlation_and_causality/sh_correlation_total.nc", analysis_type="correlation", is_seasonal=False)
-save_analysis_to_netcdf(global_sig_maps_total, "4_outputs/data/correlation_and_causality/nh_correlation_significance_total.nc", analysis_type="correlation", is_seasonal=False)
