@@ -286,7 +286,55 @@ calculate_climate_index <- function(data, region, std = TRUE, index_type = "temp
 }
 
 quicksave <- function(var, box, lon, lat, filename) {
-  quicksave_analysis(var, filename, "correlation", FALSE)
+  # Get bounding box coordinates
+  box_coords <- return_box_data(lon, lat, box)
+  lon_min <- box_coords[1]
+  lon_max <- box_coords[2]
+  lat_min <- box_coords[3]
+  lat_max <- box_coords[4]
+
+  # Find indices for the bounding box
+  lon_indices <- which(lon >= lon_min & lon <= lon_max)
+  lat_indices <- which(lat >= lat_min & lat <= lat_max)
+
+  # Trim the data to the box region
+  # Assuming var dimensions are [time, lat, lon]
+  trimmed_data <- var[, lat_indices, lon_indices]
+
+  # Create trimmed coordinate vectors
+  trimmed_lon <- lon[lon_indices]
+  trimmed_lat <- lat[lat_indices]
+
+  # Define time dimension (assuming 1951-03-01 to 2024-11-01)
+  time_dates <- seq(as.Date("1951-03-01"), as.Date("2024-11-01"), by = "month")
+  dim_time <- ncdim_def(
+    "time", "days since 1951-03-01",
+    as.numeric(time_dates - as.Date("1951-03-01"))
+  )
+
+  # Define spatial dimensions using trimmed coordinates
+  dim_lat <- ncdim_def("lat", "degrees_north", trimmed_lat)
+  dim_lon <- ncdim_def("lon", "degrees_east", trimmed_lon)
+
+  # Define the variable for R0 data
+  var_r0 <- ncvar_def("r_nought", "dimensionless", list(dim_time, dim_lat, dim_lon),
+    -9999,
+    longname = "Basic Reproduction Number (R0)", prec = "double"
+  )
+
+  # Create the NetCDF file
+  nc_file <- nc_create(filename, list(var_r0))
+
+  # Write the trimmed data to the NetCDF file
+  ncvar_put(nc_file, var_r0, trimmed_data)
+
+  # Add global attributes
+  ncatt_put(nc_file, 0, "title", "Trimmed R0 data for specified region")
+  ncatt_put(nc_file, 0, "source", "AeDES2 Monitoring System")
+  ncatt_put(nc_file, 0, "bounding_box", paste(lon_min, lon_max, lat_min, lat_max, sep = ","))
+
+  # Close the NetCDF file
+  nc_close(nc_file)
 }
 
 format_index_data <- function(index_data, years, months) {
