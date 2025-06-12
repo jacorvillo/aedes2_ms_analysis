@@ -21,7 +21,7 @@ lat <- seq(-89.75, 89.75, by = 0.5)
 lon <- seq(-179.75, 179.75, by = 0.5)
 
 # Initialize array to store the monthly median data
-combined_data <- array(NA, dim = c(42 * 12, length(lat), length(lon)))
+combined_data <- array(NA, dim = c(74 * 12, length(lat), length(lon)))
 
 dimnames(combined_data) <- list(
   sdate = NULL,
@@ -30,14 +30,13 @@ dimnames(combined_data) <- list(
 )
 
 # Prepare file paths for all months
-file_paths <- paste0("0_data_and_functions/tas/median_global_", 1:12, ".RDS")
+file_paths <- paste0("0_data_and_functions/data/tas/median_global_", 1:12, ".RDS")
 
 # Read all data and organize directly into the combined array
 for (month in 1:12) {
-  # Load month data
-  month_data <- readRDS(file_paths[month])
+  month_data <- readRDS(file_paths[month])[2:75, , ]
 
-  month_indices <- seq(month, 42 * 12, by = 12)
+  month_indices <- seq(month, 74 * 12, by = 12)
   combined_data[month_indices, , ] <- month_data
 }
 
@@ -62,7 +61,7 @@ monthly_data_df <- data.frame(
 )
 
 # Define a range of span values to evaluate in months
-span_choices_monthly <- seq(1, 504, by = 1)
+span_choices_monthly <- seq(1, 888, by = 1)
 
 # To evaluate the performance of the LOESS model, we will use three verification metrics, with
 # GCV taking precedence over AIC and R2:
@@ -72,7 +71,7 @@ monthly_rsq <- numeric(length(span_choices_monthly))
 monthly_gcv <- numeric(length(span_choices_monthly))
 
 for (i in seq_along(span_choices_monthly)) {
-  span_choice <- span_choices_monthly[i] / 504 # Normalize span by dividing by total months
+  span_choice <- span_choices_monthly[i] / 888 # Normalize span by dividing by total months
 
   # Fit LOESS model with span normalized by dividing by total months
   model <- loess(
@@ -118,7 +117,7 @@ cat(
 )
 
 # Fit the model with the optimal span parameter (using GCV as criterion)
-optimal_span_monthly <- span_choices_monthly[optimal_monthly_gcv_idx] / 504
+optimal_span_monthly <- span_choices_monthly[optimal_monthly_gcv_idx] / 888
 
 # Generate the trend predictions
 
@@ -144,11 +143,11 @@ for (i in 1:(length(median_data) / 12)) {
 yearly_data <- apply(yearly_data, 1, median, na.rm = TRUE)
 
 yearly_data_df <- data.frame(
-  year = 1:42,
+  year = 1:74,
   temperature = yearly_data
 )
 
-span_choices_yearly <- seq(1, 42, by = 1)
+span_choices_yearly <- seq(1, 74, by = 1)
 yearly_aic <- numeric(length(span_choices_yearly))
 yearly_rsq <- numeric(length(span_choices_yearly))
 yearly_gcv <- numeric(length(span_choices_yearly))
@@ -159,7 +158,7 @@ for (i in seq_along(span_choices_yearly)) {
   model <- loess(
     temperature ~ year,
     data = yearly_data_df,
-    span = span_choice / 42
+    span = span_choice / 74
   )
 
 
@@ -198,7 +197,7 @@ cat(
 )
 
 
-optimal_span_yearly <- span_choices_yearly[optimal_yearly_gcv_idx] / 42
+optimal_span_yearly <- span_choices_yearly[optimal_yearly_gcv_idx] / 74
 
 optimal_model_yearly <- loess(
   temperature ~ year,
@@ -214,13 +213,13 @@ detrended_yearly_data <- predict(optimal_model_yearly)
 # Create data frames
 
 monthly_df <- data.frame(
-  time = seq(1, 504, by = 1),
+  time = seq(1, 888, by = 1),
   median_data = median_data,
   smoothed_data = detrended_monthly_data
 )
 
 yearly_df <- data.frame(
-  time = seq(1, 42, by = 1),
+  time = seq(1, 74, by = 1),
   median_data = yearly_data,
   smoothed_data = detrended_yearly_data
 )
@@ -236,7 +235,7 @@ p1 <- ggplot(data = monthly_df, aes(x = time, y = median_data)) +
     color = "red", size = 1
   ) +
   labs(
-    title = "Land & Ocean Temperature Median (1980-2021)",
+    title = "Land & Ocean Temperature Median (1951-2024)",
     y = "Montly Global Temperature (Cº)",
     x = "Year"
   ) +
@@ -250,7 +249,7 @@ p1 <- ggplot(data = monthly_df, aes(x = time, y = median_data)) +
     legend.position = "none" # Remove legend from p1
   ) +
   # scale_x_continuous(breaks = seq(13, length(time_ticks), by = 60),
-  #                   labels = seq(1981, 2021, by = 5)) +
+  #                   labels = seq(1981, 2024, by = 5)) +
   scale_linetype_manual(values = c("solid", "solid"))
 
 # Plotting the yearly data
@@ -280,8 +279,8 @@ p2 <- ggplot(data = yearly_df, aes(x = time, y = median_data)) +
     legend.title = element_text(face = "bold")
   ) +
   scale_x_continuous(
-    breaks = seq(2, 42, by = 5),
-    labels = seq(1981, 2021, by = 5)
+    breaks = seq(2, 74, by = 5),
+    labels = seq(1951, 2024, by = 5)
   ) +
   # scale_y_continuous(limits = c(-2, 2)) +
   scale_linetype_manual(values = c("solid", "solid"))
@@ -301,7 +300,7 @@ ggsave("4_outputs/figures/temperature_trends.eps", g, width = 15, height = 10, u
 # Save the detrended monthly data (1D) to a NetCDF file -------------------------------------------
 
 # Define the dimensions
-dim_time <- ncdim_def("time", "days since 1980-01-01", 1:(42 * 12))
+dim_time <- ncdim_def("time", "days since 1951-01-01", 1:(74 * 12))
 
 # Define the variable
 var_detrended_data_data <- ncvar_def("detrended_temps", "units", list(dim_time),
@@ -325,36 +324,41 @@ nc_close(nc_file)
 
 # (This one takes a while...)
 
-detrended_data_3d <- array(NA, dim = c(42 * 12, length(lat), length(lon)))
+detrended_data_3d <- array(NA, dim = c(74 * 12, length(lat), length(lon)))
 
 for (nlat in seq_along(lat)) {
   for (nlon in seq_along(lon)) {
     cat("Processing grid point (", nlat, ",", nlon, ")\n") # Print the progress
 
     monthly_data_df_3d <- data.frame(
-      month = 1:504,
+      month = 1:888,
       temperature = combined_data[, nlat, nlon]
     )
 
-    # Fit the model with the optimal parameters
-    optimal_model_monthly_3d <- loess(
-      temperature ~ month,
-      data = monthly_data_df_3d,
-      span = optimal_span_monthly,
-      family = "gaussian"
-    )
+    if (all(is.na(monthly_data_df_3d$temperature))) {
+      detrended_data_3d[, nlat, nlon] <- NA # If all values are NA, keep it as NA
+    } else {
+      # Fit the model with the optimal parameters
+      optimal_model_monthly_3d <- loess(
+        temperature ~ month,
+        data = monthly_data_df_3d,
+        span = optimal_span_monthly,
+        family = "gaussian",
+        na.action = na.exclude
+      )
 
-    # Detrended data for the specific lat/lon
-    detrended_data_3d[, nlat, nlon] <- predict(optimal_model_monthly_3d)
+      # Detrended data for the specific lat/lon
+      detrended_data_3d[, nlat, nlon] <- predict(optimal_model_monthly_3d)
+    }
   }
 }
 
 # Define the dimensions
-time_dates <- seq(as.Date("1980-01-01"), as.Date("2021-12-01"), by = "month")
+time_dates <- seq(as.Date("1951-01-01"), as.Date("2024-12-01"), by = "month")
 
 dim_time <- ncdim_def(
-  "time", "days since 1980-01-01",
-  as.numeric(time_dates - as.Date("1980-01-01"))
+  "time", "days since 1951-01-01",
+  as.numeric(time_dates - as.Date("1951-01-01"))
 )
 
 dim_lat <- ncdim_def("lat", "degrees_north", lat)

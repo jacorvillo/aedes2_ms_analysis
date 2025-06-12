@@ -18,19 +18,19 @@ exec(open("0_data_and_functions/functions/python_functions.py").read())
 
 # Climate Variability Modes (CVMs) Analysis-------------------------------------------------------
 
-atl3 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/atl3.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-iob = np.reshape(pd.read_csv("4_outputs/data/climate_indices/iob.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-iod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/iod.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-nino = np.reshape(pd.read_csv("4_outputs/data/climate_indices/nino34.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-npmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/npmm.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-sasd1 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/sasd.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-siod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/siod.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-spmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/spmm.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
-tna = np.reshape(pd.read_csv("4_outputs/data/climate_indices/tna.dat", delim_whitespace=True).iloc[:, 1:].values, (504))[2:503]
+atl3 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/atl3.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
+iob = np.reshape(pd.read_csv("4_outputs/data/climate_indices/iob.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
+iod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/iod.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
+nino = np.reshape(pd.read_csv("4_outputs/data/climate_indices/nino34.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
+npmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/npmm.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
+sasd1 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/sasd.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
+siod = np.reshape(pd.read_csv("4_outputs/data/climate_indices/siod.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
+spmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/spmm.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
+tna = np.reshape(pd.read_csv("4_outputs/data/climate_indices/tna.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
 
 # Obtain seasonal data for each variable, knowing that the arrays go from Mar 1980 to Nov 2021
-start_date = "1980-03-01"
-end_date = "2021-11-30"
+start_date = "1951-03-01"
+end_date = "2024-11-30"
 date_range = pd.date_range(start=start_date, end=end_date, freq="MS")
 
 # Extract seasonal data for each climate index
@@ -85,7 +85,7 @@ index_tna = np.column_stack((np.array(tna_seasonal["DJF"]), np.array(tna_seasona
 
 # Current evolution of the CVMs and associated linear trends:
 
-yr = np.arange(0, 123)
+yr = np.arange(0, 219)
 
 # Store all indexes in a list to iterate over them
 
@@ -130,8 +130,14 @@ for select in range(9):
     else:
         axs[ss].set_title(f"{selected_title_string} - {season}", fontsize=14)
     axs[ss].set_ylabel("Index", fontsize=12)
+    axs[ss].set_xlabel("Year", fontsize=12)
     axs[ss].set_ylim(np.nanmax(selected_index), np.nanmin(selected_index))
-  
+    # Set x-axis ticks to show every 10 years, accounting for 3 elements per year
+    year_positions = np.arange(0, len(yr), 30)  # Every 10 years * 3 elements per year
+    year_labels = np.arange(1951, 2025, 10)
+    axs[ss].set_xticks(year_positions)
+    axs[ss].set_xticklabels(year_labels)
+
   plt.tight_layout()
   plt.savefig(f"4_outputs/figures/{fileout_cmvs[select]}.eps")
   plt.savefig(f"4_outputs/figures/{fileout_cmvs[select]}.png")
@@ -261,7 +267,7 @@ for region_type, region_data in regions.items():
   
   # Create total data dictionary
   total_dicts[f"{region_type}_total_dict"] = {
-    name: np.array(data.detrended_data)
+    name: np.array(data.r_nought)
     for name, data in region_data.items()
   }
 

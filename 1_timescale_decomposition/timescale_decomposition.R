@@ -30,7 +30,7 @@ library(ggplot2)
 library(cowplot)
 
 # Source R functions:
-source("0_data_and_functions/r_functions.R")
+source("0_data_and_functions/functions/r_functions.R")
 
 # Define main parameters
 months <- 1:12
@@ -38,24 +38,24 @@ lat <- seq(-89.75, 89.75, by = 0.5)
 lon <- seq(-179.75, 179.75, by = 0.5)
 
 # Initialize the arrays to store the data
-combined_data <- array(NA, dim = c(42 * 12, length(lat), length(lon)))
+combined_data <- array(NA, dim = c(74 * 12, length(lat), length(lon)))
 dimnames(combined_data) <- list(sdate = NULL, latitude = NULL, longitude = NULL)
 
 # Prepare file paths for all months
-file_paths <- paste0("0_data_and_functions/r_nought/median_global_", 1:12, ".RDS")
+file_paths <- paste0("0_data_and_functions/data/r_nought/median_global_", 1:12, ".RDS")
 
 # Read all data and organize directly into the combined array
 for (month in 1:12) {
   # Load month data
-  month_data <- readRDS(file_paths[month])
-
   if (month < 5) {
-    month_data <- month_data[1:42, , ]
+    # For months 1 to 4, we use the first year of data (1951)
+    month_data <- readRDS(file_paths[month])
   } else {
-    month_data <- month_data[2:43, , ] # Adjust the number of years if needed
+    # For months 5 to 12, we use the second year of data (1951)
+    month_data <- readRDS(file_paths[month])[2:75, , ]
   }
 
-  month_indices <- seq(month, 42 * 12, by = 12)
+  month_indices <- seq(month, 74 * 12, by = 12)
   combined_data[month_indices, , ] <- month_data
 }
 
@@ -134,7 +134,7 @@ for (nlat in seq_along(lat)) {
     cat("Processing grid point:", nlat, nlon, "for time-based TD\n")
 
     # Extract the time series for the current grid point
-    signal <- ts(combined_data[, nlat, nlon], frequency = 12, start = c(1980, 1))
+    signal <- ts(combined_data[, nlat, nlon], frequency = 12, start = c(1951, 1))
 
     if (all(is.na(combined_data[, nlat, nlon]))) { # If all values are NA, set the values to NA
 
@@ -354,7 +354,7 @@ cat("  R-squared optimal span:", optimal_rsq_span, "months\n")
 # Initialize the arrays to store total variance and the percentage of variance explained by each
 # component
 
-detrended_signal <- array(NA, dim = c(42 * 12, length(lat), length(lon)))
+detrended_signal <- array(NA, dim = c(74 * 12, length(lat), length(lon)))
 percentage_trend_temp <- array(NA, dim = c(length(lat), length(lon)))
 percentage_seasonal_temp <- array(NA, dim = c(length(lat), length(lon)))
 percentage_decadal_temp <- array(NA, dim = c(length(lat), length(lon)))
@@ -611,7 +611,7 @@ original_signal <- combined_data[, 150, 230]
 
 # Create time series data frames for plotting
 time_index <- seq_along(original_signal)
-dates <- seq(as.Date("1980-01-01"), by = "month", length.out = length(original_signal))
+dates <- seq(as.Date("1951-01-01"), by = "month", length.out = length(original_signal))
 
 # Time-based decomposition data frame
 time_df <- data.frame(
@@ -699,8 +699,8 @@ ggsave("4_outputs/figures/timeseries_decomposition.eps", g, width = 10, height =
 ########### Save detrended R0 data through Temperature-based TD to a NetCDF file #############
 
 # Define the dimensions
-time_dates <- seq(as.Date("1980-03-01"), as.Date("2021-11-01"), by = "month")
-dim_time <- ncdim_def("time", "days since 1980-03-01", as.numeric(time_dates - as.Date("1980-03-01")))
+time_dates <- seq(as.Date("1951-03-01"), as.Date("2024-11-01"), by = "month")
+dim_time <- ncdim_def("time", "days since 1951-03-01", as.numeric(time_dates - as.Date("1951-03-01")))
 dim_lat <- ncdim_def("lat", "degrees_north", lat)
 dim_lon <- ncdim_def("lon", "degrees_east", lon)
 
@@ -720,7 +720,7 @@ nc_file <- nc_create(
 detrended_signal[is.na(combined_data)] <- NA
 
 # Write the data to the NetCDF file (Trimming to account for incomplete seasons)
-ncvar_put(nc_file, var, detrended_signal[3:503, , ])
+ncvar_put(nc_file, var, detrended_signal[3:887, , ])
 
 # Close the NetCDF file
 nc_close(nc_file)

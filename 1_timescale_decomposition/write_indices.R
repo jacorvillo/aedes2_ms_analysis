@@ -19,9 +19,9 @@ library(ncdf4)
 library(s2dv)
 
 # SSSR data handling -------------------------------------------------------------------------------
-# Load monthly data and trim it from 1980:2021
+# Load monthly data and trim it from 1951:2024
 
-years <- 1980:2021
+years <- 1951:2024
 months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 # Create latitude and longitude values
@@ -30,7 +30,7 @@ lon <- seq(-179.75, 179.75, by = 0.5)
 
 # Load the monthly data, index it all in a list
 nc_file <- nc_open("4_outputs/data/detrended_vars/detrended_r_nought_data.nc")
-r_nought_data <- ncvar_get(nc_file, "detrended_r_nought")
+r_nought_data <- ncvar_get(nc_file, "detrended_data")
 
 # Lists with all the detected SSSRs:
 nca <- list(
@@ -156,6 +156,7 @@ quicksave(r_nought_data, mdg, lon, lat, "4_outputs/data/sssrs/r8.nc")
 quicksave(r_nought_data, nau, lon, lat, "4_outputs/data/sssrs/r9.nc")
 quicksave(r_nought_data, eau, lon, lat, "4_outputs/data/sssrs/r10.nc")
 quicksave(r_nought_data, med, lon, lat, "4_outputs/data/sssrs/r11.nc")
+quicksave(r_nought_data, global, lon, lat, "4_outputs/data/sssrs/global.nc")
 
 # CV indices data handling-------------------------------------------------------------------------
 
