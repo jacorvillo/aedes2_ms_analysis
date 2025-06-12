@@ -346,6 +346,9 @@ format_index_data <- function(index_data, years, months) {
 }
 
 write_formatted_index <- function(df, filename) {
+  # Month names for header
+  months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
   # Create a header line with proper spacing
   header <- paste("Year", paste(sprintf("%6s", months), collapse = ""))
   
@@ -354,7 +357,7 @@ write_formatted_index <- function(df, filename) {
   writeLines(header, con)
   
   # Write the data with proper formatting
-  for (i in 1:nrow(df)) {
+  for (i in seq_len(nrow(df))) {
     year_str <- sprintf(" %4d", df$Year[i])
     values_str <- paste(sprintf("%8.3f", unlist(df[i, 2:13])), collapse = "")
     line <- paste0(year_str, values_str)
