@@ -347,12 +347,11 @@ datasets = {
 # Dictionary to store processed data
 processed_detrended_data = {}
 
-# Process each dataset
-for region, dataset in datasets.items():
-  processed_detrended_data[region] = {
-    season: process_seasonal(dataset, season)
-    for season in ["DJF", "MAM", "JJA", "SON"]
-  }
+processed_detrended_data["Global"] = {}
+processed_detrended_data["Global"]["DJF"] = np.array(global_data.sel(time=global_data.time.dt.season == "DJF").detrended_data)
+processed_detrended_data["Global"]["MAM"] = np.array(global_data.sel(time=global_data.time.dt.season == "MAM").detrended_data)
+processed_detrended_data["Global"]["JJA"] = np.array(global_data.sel(time=global_data.time.dt.season == "JJA").detrended_data)
+processed_detrended_data["Global"]["SON"] = np.array(global_data.sel(time=global_data.time.dt.season == "SON").detrended_data)
 
 global_detrended_dict = {"Global": processed_detrended_data["Global"]}
 
