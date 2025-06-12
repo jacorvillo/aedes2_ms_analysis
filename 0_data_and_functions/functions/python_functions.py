@@ -4,7 +4,6 @@
 
 # Necessary imports:
 
-from scipy.stats import pearsonr
 import cartopy.crs as ccrs
 import numpy.ma as ma
 import matplotlib.colors as mc
@@ -56,75 +55,75 @@ def process_seasonal(dataset, season):
   data = dataset.sel(time=dataset.time.dt.season == season).detrended_data
   return np.array(data)
 
-  def spearmanr_2D(y, x):
-    """
-    Calculates the Spearman correlation coefficient between two arrays.
+def spearmanr_2D(y, x):
+  """
+  Calculates the Spearman correlation coefficient between two arrays.
 
-    Parameters:
-    - y: 1D/2D array
-    - x: 1D array
+  Parameters:
+  - y: 1D/2D array
+  - x: 1D array
 
-    """
-    
-    # Rank the data
-    x_ranked = rankdata(x)
-    y_ranked = np.array([rankdata(row) for row in y])
-    
-    # Calculate Spearman correlation using ranked data
-    upper = np.sum((x_ranked - np.mean(x_ranked)) * (y_ranked - np.mean(y_ranked, axis=1)[:,None]), axis=1)
-    lower = np.sqrt(np.sum(np.power(x_ranked - np.mean(x_ranked), 2)) * np.sum(np.power(y_ranked - np.mean(y_ranked, axis=1)[:,None], 2), axis=1))
-    rho = upper / lower
-    return rho
+  """
+  
+  # Rank the data
+  x_ranked = rankdata(x)
+  y_ranked = np.array([rankdata(row) for row in y])
+  
+  # Calculate Spearman correlation using ranked data
+  upper = np.sum((x_ranked - np.mean(x_ranked)) * (y_ranked - np.mean(y_ranked, axis=1)[:,None]), axis=1)
+  lower = np.sqrt(np.sum(np.power(x_ranked - np.mean(x_ranked), 2)) * np.sum(np.power(y_ranked - np.mean(y_ranked, axis=1)[:,None], 2), axis=1))
+  rho = upper / lower
+  return rho
 
-  def IndexRegrCorr(Data, Index, alfa, sig, pp):
-    """
-    Calculates the Spearman correlation between two arrays and the significance of the correlation.
+def IndexRegrCorr(Data, Index, alfa, sig, pp):
+  """
+  Calculates the Spearman correlation between two arrays and the significance of the correlation.
 
-    Parameters:
-    - Data: 1D/2D array
-    - Index: 1D array
-    - alfa: Significance level
-    - sig: Significance test type
-    """
-    
-    try:
-      [ns,nt] = Data.shape # n1=espacio, n2=tiempo
-    except ValueError:
-      # si Data es un índice
-      ns=1
-      nt=len(Data)
-      Data = np.array([Data])
+  Parameters:
+  - Data: 1D/2D array
+  - Index: 1D array
+  - alfa: Significance level
+  - sig: Significance test type
+  """
+  
+  try:
+    [ns,nt] = Data.shape # n1=espacio, n2=tiempo
+  except ValueError:
+    # si Data es un índice
+    ns=1
+    nt=len(Data)
+    Data = np.array([Data])
 
-    cor=ma.empty([ns,])
-    Pvalue=ma.empty([ns,])
+  cor=ma.empty([ns,])
+  Pvalue=ma.empty([ns,])
 
-    #Index tiene que estar estandarizado, es decir, dividido por la desviación tipica
-    reg=np.dot(Data,Index)/(nt-1)
+  #Index tiene que estar estandarizado, es decir, dividido por la desviación tipica
+  reg=np.dot(Data,Index)/(nt-1)
+
+  for nn in range(ns):
+    bb=spearmanr(Data[nn,:],Index)
+    cor[nn]=bb[0]
+    Pvalue[nn]=bb[1]
+
+  if sig == "test-t":
+    cor_sig=ma.masked_where(Pvalue>alfa,cor)
+    reg_sig=ma.masked_where(Pvalue>alfa,reg)
+
+  if sig == "MonteCarlo":
+    corp = ma.empty([ns,pp])
+    for p in range(pp):
+      corp[:,p] = spearmanr_2D(Data,np.random.permutation(Index))
+      # aquí uso la función spearmanr_2D y me ahorro un bucle en ns
 
     for nn in range(ns):
-      bb=spearmanr(Data[nn,:],Index)
-      cor[nn]=bb[0]
-      Pvalue[nn]=bb[1]
+      hcor = np.count_nonzero((cor[nn]>0)&(corp[nn,:]<cor[nn])|(cor[nn]<0)&(corp[nn,:]>cor[nn]))
+      # nivel de confianza
+      Pvalue[nn] = hcor/pp
 
-    if sig == "test-t":
-      cor_sig=ma.masked_where(Pvalue>alfa,cor)
-      reg_sig=ma.masked_where(Pvalue>alfa,reg)
+    cor_sig = ma.masked_where(Pvalue<(1-alfa),cor)
+    reg_sig = ma.masked_where(Pvalue<(1-alfa),reg)
 
-    if sig == "MonteCarlo":
-      corp = ma.empty([ns,pp])
-      for p in range(pp):
-        corp[:,p] = spearmanr_2D(Data,np.random.permutation(Index))
-        # aquí uso la función spearmanr_2D y me ahorro un bucle en ns
-
-      for nn in range(ns):
-        hcor = np.count_nonzero((cor[nn]>0)&(corp[nn,:]<cor[nn])|(cor[nn]<0)&(corp[nn,:]>cor[nn]))
-        # nivel de confianza
-        Pvalue[nn] = hcor/pp
-
-      cor_sig = ma.masked_where(Pvalue<(1-alfa),cor)
-      reg_sig = ma.masked_where(Pvalue<(1-alfa),reg)
-
-    return cor,Pvalue,cor_sig,reg,reg_sig
+  return cor,Pvalue,cor_sig,reg,reg_sig
 
 def causality1d3d(ds1,ds2,normalise=False,sig=95):
     
