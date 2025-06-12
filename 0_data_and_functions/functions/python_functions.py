@@ -304,6 +304,12 @@ def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileou
     lon = spatial_dict[region]["lon"]
     
     for j, season in enumerate(seasons):
+      # Print current analysis progress
+      if is_seasonal:
+        print(f"Analyzing {analysis_type} for region: {region}, season: {season}")
+      else:
+        print(f"Analyzing {analysis_type} for region: {region}")
+        
       if is_global:
         row = j // 2
         col = j % 2
