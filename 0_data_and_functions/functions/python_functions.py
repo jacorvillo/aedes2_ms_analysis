@@ -13,7 +13,7 @@ import xarray as xr
 import scipy.stats as stats
 import pandas as pd
 from scipy.stats import rankdata
-from scipy.stats import spearmanr
+from scipy.stats import pearsonr
 
 def extract_seasonal_months(date_range, data_vector):
   """
@@ -55,75 +55,91 @@ def process_seasonal(dataset, season):
   data = dataset.sel(time=dataset.time.dt.season == season).detrended_data
   return np.array(data)
 
-def spearmanr_2D(y, x):
+def pearsonr_2D(y, x):
   """
-  Calculates the Spearman correlation coefficient between two arrays.
+  Calculates the Pearson correlation coefficient between two arrays.
 
   Parameters:
   - y: 1D/2D array
   - x: 1D array
 
   """
-  
-  # Rank the data
-  x_ranked = rankdata(x)
-  y_ranked = np.array([rankdata(row) for row in y])
-  
-  # Calculate Spearman correlation using ranked data
-  upper = np.sum((x_ranked - np.mean(x_ranked)) * (y_ranked - np.mean(y_ranked, axis=1)[:,None]), axis=1)
-  lower = np.sqrt(np.sum(np.power(x_ranked - np.mean(x_ranked), 2)) * np.sum(np.power(y_ranked - np.mean(y_ranked, axis=1)[:,None], 2), axis=1))
+  upper = np.sum((x - np.mean(x)) * (y - np.mean(y, axis=1)[:,None]), axis=1)
+  lower = np.sqrt(np.sum(np.power(x - np.mean(x), 2)) * np.sum(np.power(y - np.mean(y, axis=1)[:,None], 2), axis=1))
   rho = upper / lower
   return rho
 
-def IndexRegrCorr(Data, Index, alfa, sig, pp):
-  """
-  Calculates the Spearman correlation between two arrays and the significance of the correlation.
+def spearmanr_2D(y, x):
+    """
+    Efficiently computes Spearman correlation between a 2D array (n_points, time) and a 1D array (time).
+    Returns an array of correlation coefficients.
+    """
+    # Rank data along time axis
+    y_ranked = np.apply_along_axis(rankdata, 1, y)
+    x_ranked = rankdata(x)
+    # Use Pearson on ranked data
+    return pearsonr_2D(y_ranked, x_ranked)
 
-  Parameters:
-  - Data: 1D/2D array
-  - Index: 1D array
-  - alfa: Significance level
-  - sig: Significance test type
-  """
-  
-  try:
-    [ns,nt] = Data.shape # n1=espacio, n2=tiempo
-  except ValueError:
-    # si Data es un índice
-    ns=1
-    nt=len(Data)
-    Data = np.array([Data])
+def IndexRegrCorr(Data, Index, alfa, sig, pp, method="pearson"):
+    """
+    Calculates the correlation between two arrays and the significance of the correlation.
 
-  cor=ma.empty([ns,])
-  Pvalue=ma.empty([ns,])
+    Parameters:
+    - Data: 1D/2D array
+    - Index: 1D array
+    - alfa: Significance level
+    - sig: Significance test type
+    - method: 'pearson' or 'spearman'
+    """
+    try:
+        [ns, nt] = Data.shape # n1=espacio, n2=tiempo
+    except ValueError:
+        # si Data es un índice
+        ns=1
+        nt=len(Data)
+        Data = np.array([Data])
 
-  #Index tiene que estar estandarizado, es decir, dividido por la desviación tipica
-  reg=np.dot(Data,Index)/(nt-1)
+    cor=ma.empty([ns,])
+    Pvalue=ma.empty([ns,])
 
-  for nn in range(ns):
-    bb=spearmanr(Data[nn,:],Index)
-    cor[nn]=bb[0]
-    Pvalue[nn]=bb[1]
+    #Index tiene que estar estandarizado, es decir, dividido por la desviación tipica
+    reg=np.dot(Data,Index)/(nt-1)
 
-  if sig == "test-t":
-    cor_sig=ma.masked_where(Pvalue>alfa,cor)
-    reg_sig=ma.masked_where(Pvalue>alfa,reg)
+    if method == "spearman":
+        cor[:] = spearmanr_2D(Data, Index)
+        # For p-value, fallback to scipy.stats.spearmanr for each point (slow, but only for significance)
+        for nn in range(ns):
+            if np.all(np.isnan(Data[nn, :])):
+                cor[nn] = np.nan
+                Pvalue[nn] = np.nan
+            else:
+                _, Pvalue[nn] = stats.spearmanr(Data[nn, :], Index, nan_policy='omit')
+    else:
+        for nn in range(ns):
+            if np.all(np.isnan(Data[nn, :])):
+                cor[nn] = np.nan
+                Pvalue[nn] = np.nan
+            else:
+                bb=pearsonr(Data[nn,:],Index)
+                cor[nn]=bb[0]
+                Pvalue[nn]=bb[1]
 
-  if sig == "MonteCarlo":
-    corp = ma.empty([ns,pp])
-    for p in range(pp):
-      corp[:,p] = spearmanr_2D(Data,np.random.permutation(Index))
-      # aquí uso la función spearmanr_2D y me ahorro un bucle en ns
+    if sig == "test-t":
+        cor_sig=ma.masked_where(Pvalue>alfa,cor)
+    if sig == "MonteCarlo":
+        corp = ma.empty([ns,pp])
+        for p in range(pp):
+            if method == "spearman":
+                corp[:,p] = spearmanr_2D(Data,np.random.permutation(Index))
+            else:
+                corp[:,p] = pearsonr_2D(Data,np.random.permutation(Index))
+        for nn in range(ns):
+            hcor = np.count_nonzero((cor[nn]>0)&(corp[nn,:]<cor[nn])|(cor[nn]<0)&(corp[nn,:]>cor[nn]))
+            # nivel de confianza
+            Pvalue[nn] = hcor/pp
+        cor_sig = ma.masked_where(Pvalue<(1-alfa),cor)
 
-    for nn in range(ns):
-      hcor = np.count_nonzero((cor[nn]>0)&(corp[nn,:]<cor[nn])|(cor[nn]<0)&(corp[nn,:]>cor[nn]))
-      # nivel de confianza
-      Pvalue[nn] = hcor/pp
-
-    cor_sig = ma.masked_where(Pvalue<(1-alfa),cor)
-    reg_sig = ma.masked_where(Pvalue<(1-alfa),reg)
-
-  return cor,Pvalue,cor_sig,reg,reg_sig
+    return cor,Pvalue,cor_sig
 
 def causality1d3d(ds1,ds2,normalise=False,sig=95):
     
