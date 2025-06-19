@@ -592,3 +592,248 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   plt.savefig(fileout + season + "_merged.png", dpi=300)
   plt.savefig(fileout + season + "_merged.eps", format="eps", dpi=300)
   plt.close("all")
+
+def plot_combined_figure(variance_file='4_outputs/data/td_time_decomposition.nc',
+                        timeseries_file='4_outputs/data/td_iquitos_timeseries.nc',
+                        output_file='4_outputs/figures/timescale_decomposition_combined.png',
+                        figsize=(20, 10)):
+    """
+    Create a combined figure with variance maps on the left and timeseries on the right.
+    
+    Parameters:
+    - variance_file: path to NetCDF file with variance percentages
+    - timeseries_file: path to NetCDF file with timeseries data
+    - output_file: path to save the output figure
+    - figsize: figure size tuple
+    """
+    # Load the data
+    variance_ds = xr.open_dataset(variance_file)
+    timeseries_ds = xr.open_dataset(timeseries_file)
+    
+    # Create figure with custom layout
+    fig = plt.figure(figsize=figsize)
+    # Create a grid: left side for maps (2x2), right side for timeseries (1x1)
+    gs = gridspec.GridSpec(2, 3, figure=fig, 
+                          width_ratios=[1, 1, 1],  # All columns same width
+                          height_ratios=[1, 1],
+                          hspace=0.1, wspace=0.15)
+    
+    # Define the components and their titles
+    components = {
+        'trend_percentage': 'Trend',
+        'seasonal_percentage': 'Seasonal',
+        'decadal_percentage': 'Decadal', 
+        'residual_percentage': 'Residual'    }
+    
+    # Use inferno colormap
+    cmap = plt.cm.inferno
+    
+    # Plot variance maps (left side)
+    positions = [(0, 0), (0, 1), (1, 0), (1, 1)]  # (row, col)
+    
+    for i, (var_name, title) in enumerate(components.items()):
+        row, col = positions[i]
+        ax = fig.add_subplot(gs[row, col], projection=ccrs.PlateCarree())
+        
+        # Get the data
+        data = variance_ds[var_name]
+        # Create the plot
+        im = ax.contourf(data.lon, data.lat, data.T, 
+                        levels=np.linspace(0, 100, 100),  # Fixed levels from 0 to 100
+                        cmap=cmap, extend='neither',
+                        transform=ccrs.PlateCarree())
+        
+        # Add coastlines and features
+        ax.coastlines(resolution='110m', linewidth=0.5)
+        ax.add_feature(cfeature.BORDERS, linewidth=0.3)
+        
+        # Set global extent
+        ax.set_global()
+        
+        # Add gridlines
+        gl = ax.gridlines(draw_labels=True, linewidth=0.5, alpha=0.5)
+        gl.top_labels = False
+        gl.right_labels = False
+        
+        # Add title
+        ax.set_title(f'({chr(97+i)}) {title}', fontsize=12, fontweight='bold', 
+                    loc='left', pad=10)
+        
+        # Add Iquitos marker
+        ax.plot(lon_iquitos, lat_iquitos, 'o', color='blue', markersize=4, 
+                markeredgecolor='white', markeredgewidth=1, transform=ccrs.PlateCarree())
+    
+    # Add colorbar for variance maps
+    cbar_ax = fig.add_axes([0.150, 0.02, 0.45, 0.03])  # Centered under the maps
+    cbar = plt.colorbar(im, cax=cbar_ax, orientation='horizontal')
+    cbar.set_ticks([0, 20, 40, 60, 80, 100])  # Set specific tick marks
+    cbar.set_label('Variance explained (%)', fontsize=12, fontweight='bold')
+    cbar.ax.tick_params(labelsize=10)
+    
+    # Plot timeseries (right side) - bottom row
+    ax_ts = fig.add_subplot(gs[1, 2])  # Bottom row, right column
+    
+    # Calculate R0 (raw) as sum of all components
+    r0_raw = (timeseries_ds.iquitos_trend + timeseries_ds.iquitos_seasonal + 
+              timeseries_ds.iquitos_decadal + timeseries_ds.iquitos_remainder)
+    # Plot all components
+    ax_ts.plot(timeseries_ds.time, r0_raw, 'k-', linewidth=0.8, label='Raw', alpha=0.7)
+    ax_ts.plot(timeseries_ds.time, timeseries_ds.iquitos_trend, 'r-', linewidth=2, label='Trend')
+    ax_ts.plot(timeseries_ds.time, timeseries_ds.iquitos_seasonal, 'g-', linewidth=1.5, label='Seasonal')
+    ax_ts.plot(timeseries_ds.time, timeseries_ds.iquitos_decadal, 'b-', linewidth=1.5, label='Decadal')
+    ax_ts.plot(timeseries_ds.time, timeseries_ds.iquitos_remainder, color='purple', linewidth=1, 
+               label='Residual', alpha=0.8)
+    
+    # Set labels and title for timeseries
+    ax_ts.set_xlabel('Time', fontsize=12, fontweight='bold')
+    ax_ts.set_ylabel('R₀', fontsize=12, fontweight='bold')
+    ax_ts.set_title('(e) Timescale Decomposition - Iquitos', fontsize=12, fontweight='bold', 
+                   loc='left', pad=10)
+    
+    # Add legend
+    ax_ts.legend(loc='lower right', frameon=True, fancybox=True, shadow=True, fontsize=10)
+    
+    # Set y-axis limits
+    y_min = min(r0_raw.min(), timeseries_ds.iquitos_trend.min(), 
+                timeseries_ds.iquitos_seasonal.min(), timeseries_ds.iquitos_decadal.min(),
+                timeseries_ds.iquitos_remainder.min()) - 0.5
+    y_max = max(r0_raw.max(), timeseries_ds.iquitos_trend.max()) + 0.5
+    ax_ts.set_ylim(y_min, y_max)
+    
+    # Add horizontal line at y=0
+    ax_ts.axhline(y=0, color='black', linestyle='-', linewidth=0.5, alpha=0.7)
+    
+    # Format the timeseries plot
+    ax_ts.grid(True, alpha=0.3)
+    ax_ts.tick_params(axis='both', labelsize=10)
+    
+    # Set x-axis to show years nicely
+    years = pd.date_range(start='1960', end='2025', freq='10YS')
+    ax_ts.set_xticks(years)
+    ax_ts.set_xticklabels([str(year.year) for year in years])
+    
+    # Save the figure
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.savefig(output_file.replace('.png', '.eps'), bbox_inches='tight')
+    print(f"Combined figure saved to {output_file}")
+    plt.close("all")
+    
+    return fig
+
+def plot_climatology_comparison(file_1961_1990='4_outputs/data/td_time_decomposition_1961_1990.nc',
+                               file_1991_2020='4_outputs/data/td_time_decomposition_1991_2020.nc',
+                               output_file='4_outputs/figures/timescale_decomposition_climatology_comparison.png',
+                               figsize=(20, 10)):
+    """
+    Create a figure with 6 maps comparing variance percentages between two climatological periods.
+    
+    Parameters:
+    - file_1961_1990: path to NetCDF file with 1961-1990 variance percentages
+    - file_1991_2020: path to NetCDF file with 1991-2020 variance percentages
+    - output_file: path to save the output figure
+    - figsize: figure size tuple
+    """
+    # Load the data
+    ds_1961_1990 = xr.open_dataset(file_1961_1990)
+    ds_1991_2020 = xr.open_dataset(file_1991_2020)
+    
+    # Create figure with 2 rows, 3 columns
+    fig = plt.figure(figsize=figsize)
+    gs = gridspec.GridSpec(2, 3, figure=fig, 
+                          hspace=0.01, wspace=0.1)
+    
+    # Define the components and their titles (removing decadal)
+    components = {
+        'trend_percentage': 'Trend',
+        'seasonal_percentage': 'Seasonal',
+        'residual_percentage': 'Residual'
+    }
+    
+    # Use inferno colormap
+    cmap = plt.cm.inferno
+    
+    # Define subplot positions for each component
+    positions = [(0, 0), (0, 1), (0, 2)]  # First row
+    
+    # Plot first row: 1961-1990
+    for i, (var_name, title) in enumerate(components.items()):
+        row, col = positions[i]
+        ax = fig.add_subplot(gs[row, col], projection=ccrs.PlateCarree())
+        
+        # Get the data
+        data = ds_1961_1990[var_name]
+        
+        # Create the plot
+        im = ax.contourf(data.lon, data.lat, data.T, 
+                        levels=np.linspace(0, 100, 100),  # Fixed levels from 0 to 100
+                        cmap=cmap, extend='neither',
+                        transform=ccrs.PlateCarree())
+        
+        # Add coastlines and features
+        ax.coastlines(resolution='110m', linewidth=0.5)
+        ax.add_feature(cfeature.BORDERS, linewidth=0.3)
+        
+        # Set global extent
+        ax.set_global()
+        
+        # Add gridlines with labels
+        gl = ax.gridlines(draw_labels=True, linewidth=0.5, alpha=0.5)
+        gl.top_labels = False
+        gl.right_labels = False
+        if row == 0:  # Only show top labels on first row
+            gl.bottom_labels = False
+        if col > 0:  # Only show left labels on first column
+            gl.left_labels = False
+          # Add subtitle
+        ax.set_title(f'({chr(97+i)}) {title}', fontsize=12, fontweight='bold', 
+                    loc='left', pad=10)
+    
+    # Plot second row: 1991-2020
+    for i, (var_name, title) in enumerate(components.items()):
+        row, col = 1, i  # Second row
+        ax = fig.add_subplot(gs[row, col], projection=ccrs.PlateCarree())
+        
+        # Get the data
+        data = ds_1991_2020[var_name]
+        
+        # Create the plot
+        im = ax.contourf(data.lon, data.lat, data.T, 
+                        levels=np.linspace(0, 100, 100),  # Fixed levels from 0 to 100
+                        cmap=cmap, extend='neither',
+                        transform=ccrs.PlateCarree())
+        
+        # Add coastlines and features
+        ax.coastlines(resolution='110m', linewidth=0.5)
+        ax.add_feature(cfeature.BORDERS, linewidth=0.3)
+        
+        # Set global extent
+        ax.set_global()
+        
+        # Add gridlines with labels
+        gl = ax.gridlines(draw_labels=True, linewidth=0.5, alpha=0.5)
+        gl.top_labels = False
+        gl.right_labels = False
+        if col > 0:  # Only show left labels on first column
+            gl.left_labels = False
+          # Add subtitle
+        ax.set_title(f'({chr(101+i)}) {title}', fontsize=12, fontweight='bold', 
+                    loc='left', pad=10)
+    
+    # Add supertitles for each row
+    fig.text(0.5, 0.95, '1961-1990', fontsize=16, fontweight='bold', ha='center')
+    fig.text(0.5, 0.48, '1991-2020', fontsize=16, fontweight='bold', ha='center')
+    
+    # Add shared colorbar at the bottom
+    cbar_ax = fig.add_axes([0.15, 0.02, 0.7, 0.03])  # Centered at bottom
+    cbar = plt.colorbar(im, cax=cbar_ax, orientation='horizontal')
+    cbar.set_ticks([0, 20, 40, 60, 80, 100])  # Set specific tick marks
+    cbar.set_label('Variance explained (%)', fontsize=14, fontweight='bold')
+    cbar.ax.tick_params(labelsize=12)
+    
+    # Save the figure
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.savefig(output_file.replace('.png', '.eps'), bbox_inches='tight')
+    print(f"Climatology comparison figure saved to {output_file}")
+    plt.close("all")
+    
+    return fig
