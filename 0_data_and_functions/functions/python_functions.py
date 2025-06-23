@@ -139,7 +139,7 @@ def IndexRegrCorr(Data, Index, alfa, sig, pp, method="pearson"):
             Pvalue[nn] = hcor/pp
         cor_sig = ma.masked_where(Pvalue<(1-alfa),cor)
 
-    return cor,Pvalue,cor_sig
+    return cor, cor_sig
 
 def causality1d3d(ds1,ds2,normalise=False,sig=95):
     
@@ -247,7 +247,7 @@ def causality1d3d(ds1,ds2,normalise=False,sig=95):
 
     return infflow, infflow_sig
 
-def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileout_name, levs, midpoint, colmap, title, analysis_type="correlation", is_global=False):
+def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileout_name, levs, midpoint, colmap, analysis_type="correlation", is_global=False):
   """
   Unified function to plot correlation or causality maps for regional or global data.
   
@@ -260,7 +260,6 @@ def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileou
   - levs: Levels for contour plots
   - midpoint: Midpoint for the colormap normalization
   - colmap: Colormap to use
-  - title: Title for the plot
   - analysis_type: Either "correlation" or "causality"
   - is_global: Whether to plot global data (affects subplot layout)
   
@@ -305,7 +304,6 @@ def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileou
   # Round levels to two significant digits if provided
   if levs is not None:
     levs = [round(level, 2) for level in levs]
-
   # Normalize the colormap to set the midpoint if provided
   if midpoint is not None and levs is not None:
     norm = mc.TwoSlopeNorm(vmin=min(levs), vcenter=midpoint, vmax=max(levs))
@@ -314,6 +312,9 @@ def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileou
   else:
     norm = None
 
+  # Create letter counter for subplot labeling
+  letter_counter = 0
+  
   for i, region in enumerate(r_nought_dict.keys()):
     lat = spatial_dict[region]["lat"]
     lon = spatial_dict[region]["lon"]
@@ -332,14 +333,16 @@ def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileou
       else:
         ax = axs[j, i]
         
-      # Set title based on whether data is seasonal
+      # Set title based on whether data is seasonal with lettering
+      letter = chr(97 + letter_counter)  # a, b, c, d, etc.
       if is_seasonal:
-        ax.set_title(f"{region} - {season}", fontsize=14, weight="bold")
+        # Add subplot title for all seasons with proper lettering
+        ax.set_title(f"{letter}) {season}", fontsize=22, weight="bold", loc="left")
         # Get seasonal data
         ds2 = np.transpose(r_nought_dict[region][season])
         ds1 = np.array(index_dict[season])
       else:
-        ax.set_title(f"{region}", fontsize=14, weight="bold")
+        ax.set_title(f"{letter}) {region}", fontsize=22, weight="bold", loc="left")
         # Get non-seasonal data
         ds2 = np.transpose(r_nought_dict[region])
         ds1 = np.array(index_dict)
@@ -347,7 +350,7 @@ def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileou
       if analysis_type == "correlation":
         # Transpose the data arrays before passing them to IndexRegrCorr
         ds2 = np.array(ds2).reshape(np.array(ds2).shape[0], np.array(ds2).shape[1]*np.array(ds2).shape[2])
-        corA, PvalueA, cor_sigA, regA, regA_sig = IndexRegrCorr(np.transpose(ds2), np.transpose(ds1), 0.01, "MonteCarlo", 100)
+        corA, cor_sigA = IndexRegrCorr(np.transpose(ds2), np.transpose(ds1), 0.01, "MonteCarlo", 100)
         
         if is_seasonal:
           analysis_maps[region][season] = corA.reshape(len(lat), len(lon))
@@ -389,12 +392,26 @@ def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileou
       gl.ylabels_right = False
       gl.xlabels_top = False
 
-  # Add a common colorbar at the bottom
+      letter_counter += 1  # Add a common colorbar at the bottom
   cbar_ax = fig.add_axes([0.2, 0.05, 0.6, 0.02])
-  fig.colorbar(cf, cax=cbar_ax, orientation="horizontal", norm=norm, label=f"{analysis_type.capitalize()} Value")
+  if levs is not None:
+    # Ensure colorbar uses the specified levels range
+    # Create custom ticks that always include min, midpoint, and max
+    tick_values = [min(levs), midpoint if midpoint is not None else 0, max(levs)]
+    # Add intermediate ticks for better visualization
+    tick_values = sorted(list(set(tick_values + [min(levs), -0.25, 0, 0.25, max(levs)])))
+    
+    cbar = fig.colorbar(cf, cax=cbar_ax, orientation="horizontal", norm=norm, 
+                       label=f"{analysis_type.capitalize()} Value", 
+                       boundaries=levs, ticks=tick_values)
+  else:
+    cbar = fig.colorbar(cf, cax=cbar_ax, orientation="horizontal", norm=norm, 
+                       label=f"{analysis_type.capitalize()} Value")
+  cbar.ax.tick_params(labelsize=14)
+  cbar.set_label(f"{analysis_type.capitalize()} Value", fontsize=16, weight="bold")
 
-  plt.suptitle(title, fontsize=22, weight="bold")
-  plt.tight_layout(rect=[0, 0.1, 1, 0.96])
+  # Remove supertitle and adjust layout
+  plt.tight_layout(rect=[0, 0.1, 1, 1.0])
   plt.savefig(fileout_name + ".png", dpi=300)
   plt.savefig(fileout_name + ".eps", format="eps", dpi=300)
   plt.close()
