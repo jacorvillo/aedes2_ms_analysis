@@ -14,6 +14,8 @@ import scipy.stats as stats
 import pandas as pd
 from scipy.stats import rankdata
 from scipy.stats import pearsonr
+import cartopy.feature as cfeature
+from matplotlib import gridspec
 
 def extract_seasonal_months(date_range, data_vector):
   """
