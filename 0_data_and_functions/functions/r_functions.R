@@ -2,8 +2,11 @@
 
 # @description: This file contains all the functions used in the R scripts.
 
+# Load necessary libraries
+library(ncdf4)
 
-fit_box <- function(x) {
+
+fit_box <- function(x, lon, lat) {
   # Fit the coordinates to their closest grid point in the R0 data:
 
   # Find the nearest grid point to the vertex
@@ -165,7 +168,9 @@ max_analysis_index <- function(analysis_data, season, analysis_type = "correlati
   ))
 }
 
-quicksave_analysis <- function(var, filename, analysis_type = "correlation", is_merge = FALSE) {
+quicksave_analysis <- function(
+    var, lat, lon, filename,
+    analysis_type = "correlation", is_merge = FALSE) {
   #' @param var List containing the analysis results
   #' @param filename Output filename
   #' @param analysis_type Type of analysis ("correlation" or "causality")
@@ -265,7 +270,7 @@ quicksave_analysis <- function(var, filename, analysis_type = "correlation", is_
   nc_close(nc_file)
 }
 
-calculate_climate_index <- function(data, region, std = TRUE, index_type = "temp") {
+calculate_climate_index <- function(data, region, lat, lon, std = TRUE, index_type = "temp") {
   #' @param data Input data array
   #' @param region List containing region boundaries (lat and lon)
   #' @param std Whether to standardize the output
