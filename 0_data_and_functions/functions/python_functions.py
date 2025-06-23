@@ -651,42 +651,43 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   plt.savefig(fileout + season + "_merged.eps", format="eps", dpi=300)
   plt.close("all")
 
-def plot_combined_figure(variance_file='4_outputs/data/td_time_decomposition.nc',
-                        timeseries_file='4_outputs/data/td_iquitos_timeseries.nc',
-                        output_file='4_outputs/figures/timescale_decomposition_combined.png',
-                        figsize=(20, 10)):
+def plot_variance_maps(variance_file='4_outputs/data/timescale_decomposition/td_time_decomposition.nc',
+                      output_file='4_outputs/figures/timescale_decomposition_maps.png',
+                      figsize=(16, 8)):
     """
-    Create a combined figure with variance maps on the left and timeseries on the right.
+    Create a figure with variance maps only.
     
     Parameters:
     - variance_file: path to NetCDF file with variance percentages
-    - timeseries_file: path to NetCDF file with timeseries data
     - output_file: path to save the output figure
     - figsize: figure size tuple
     """
     # Load the data
     variance_ds = xr.open_dataset(variance_file)
-    timeseries_ds = xr.open_dataset(timeseries_file)
     
-    # Create figure with custom layout
+    # Define coordinates for location markers
+    lat_iquitos = -3.75
+    lon_iquitos = -73.25
+    lat_santa_fe = -31.25
+    lon_santa_fe = -60.25
+    
+    # Create figure with 2x2 layout
     fig = plt.figure(figsize=figsize)
-    # Create a grid: left side for maps (2x2), right side for timeseries (1x1)
-    gs = gridspec.GridSpec(2, 3, figure=fig, 
-                          width_ratios=[1, 1, 1],  # All columns same width
-                          height_ratios=[1, 1],
-                          hspace=0.1, wspace=0.15)
+    gs = gridspec.GridSpec(2, 2, figure=fig, 
+                          hspace=0.3, wspace=0.15)
     
     # Define the components and their titles
     components = {
         'trend_percentage': 'Trend',
         'seasonal_percentage': 'Seasonal',
         'decadal_percentage': 'Decadal', 
-        'residual_percentage': 'Residual'    }
+        'residual_percentage': 'Residual'
+    }
     
     # Use inferno colormap
     cmap = plt.cm.inferno
     
-    # Plot variance maps (left side)
+    # Plot variance maps
     positions = [(0, 0), (0, 1), (1, 0), (1, 1)]  # (row, col)
     
     for i, (var_name, title) in enumerate(components.items()):
@@ -713,67 +714,126 @@ def plot_combined_figure(variance_file='4_outputs/data/td_time_decomposition.nc'
         gl.top_labels = False
         gl.right_labels = False
         
+        # Add location markers
+        ax.plot(lon_iquitos, lat_iquitos, 'bo', markersize=6, markeredgecolor='white', 
+                markeredgewidth=1, transform=ccrs.PlateCarree(), label='Iquitos')
+        ax.plot(lon_santa_fe, lat_santa_fe, 'ro', markersize=6, markeredgecolor='white', 
+                markeredgewidth=1, transform=ccrs.PlateCarree(), label='Santa Fe')
+        
         # Add title
         ax.set_title(f'({chr(97+i)}) {title}', fontsize=12, fontweight='bold', 
                     loc='left', pad=10)
-        
-        # Add Iquitos marker
-        ax.plot(lon_iquitos, lat_iquitos, 'o', color='blue', markersize=4, 
-                markeredgecolor='white', markeredgewidth=1, transform=ccrs.PlateCarree())
     
     # Add colorbar for variance maps
-    cbar_ax = fig.add_axes([0.150, 0.02, 0.45, 0.03])  # Centered under the maps
+    cbar_ax = fig.add_axes([0.15, 0.02, 0.7, 0.03])  # Centered under the maps
     cbar = plt.colorbar(im, cax=cbar_ax, orientation='horizontal')
     cbar.set_ticks([0, 20, 40, 60, 80, 100])  # Set specific tick marks
     cbar.set_label('Variance explained (%)', fontsize=12, fontweight='bold')
     cbar.ax.tick_params(labelsize=10)
     
-    # Plot timeseries (right side) - bottom row
-    ax_ts = fig.add_subplot(gs[1, 2])  # Bottom row, right column
+    # Save the figure
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.savefig(output_file.replace('.png', '.eps'), bbox_inches='tight')
+    print(f"Variance maps saved to {output_file}")
+    plt.close("all")
     
+    return fig
+
+def plot_timeseries_comparison(iquitos_file='4_outputs/data/timescale_decomposition/td_iquitos_timeseries.nc',
+                             santa_fe_file='4_outputs/data/timescale_decomposition/td_santa_fe_timeseries.nc',
+                             output_file='4_outputs/figures/timescale_decomposition_timeseries.png',
+                             figsize=(12, 4)):
+    """
+    Create a figure comparing timeseries decomposition for Iquitos and Santa Fe.
+    
+    Parameters:
+    - iquitos_file: path to NetCDF file with Iquitos timeseries data
+    - santa_fe_file: path to NetCDF file with Santa Fe timeseries data
+    - output_file: path to save the output figure
+    - figsize: figure size tuple
+    """
+    # Load the data
+    iquitos_ds = xr.open_dataset(iquitos_file)
+    santa_fe_ds = xr.open_dataset(santa_fe_file)
+    
+    # Create figure with 1x2 layout (single row)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figsize)
+    
+    # Plot Iquitos timeseries (top subplot)
     # Calculate R0 (raw) as sum of all components
-    r0_raw = (timeseries_ds.iquitos_trend + timeseries_ds.iquitos_seasonal + 
-              timeseries_ds.iquitos_decadal + timeseries_ds.iquitos_remainder)
-    # Plot all components
-    ax_ts.plot(timeseries_ds.time, r0_raw, 'k-', linewidth=0.8, label='Raw', alpha=0.7)
-    ax_ts.plot(timeseries_ds.time, timeseries_ds.iquitos_trend, 'r-', linewidth=2, label='Trend')
-    ax_ts.plot(timeseries_ds.time, timeseries_ds.iquitos_seasonal, 'g-', linewidth=1.5, label='Seasonal')
-    ax_ts.plot(timeseries_ds.time, timeseries_ds.iquitos_decadal, 'b-', linewidth=1.5, label='Decadal')
-    ax_ts.plot(timeseries_ds.time, timeseries_ds.iquitos_remainder, color='purple', linewidth=1, 
-               label='Residual', alpha=0.8)
+    r0_raw_iquitos = (iquitos_ds.iquitos_trend + iquitos_ds.iquitos_seasonal + 
+                     iquitos_ds.iquitos_decadal + iquitos_ds.iquitos_remainder)
     
-    # Set labels and title for timeseries
-    ax_ts.set_xlabel('Time', fontsize=12, fontweight='bold')
-    ax_ts.set_ylabel('R₀', fontsize=12, fontweight='bold')
-    ax_ts.set_title('(e) Timescale Decomposition - Iquitos', fontsize=12, fontweight='bold', 
-                   loc='left', pad=10)
+    # Plot all components
+    ax1.plot(iquitos_ds.time, r0_raw_iquitos, 'k-', linewidth=0.8, label='Raw', alpha=0.7)
+    ax1.plot(iquitos_ds.time, iquitos_ds.iquitos_trend, 'r-', linewidth=2, label='Trend')
+    ax1.plot(iquitos_ds.time, iquitos_ds.iquitos_seasonal, 'g-', linewidth=1.5, label='Seasonal')
+    ax1.plot(iquitos_ds.time, iquitos_ds.iquitos_decadal, 'b-', linewidth=1.5, label='Decadal')
+    ax1.plot(iquitos_ds.time, iquitos_ds.iquitos_remainder, color='purple', linewidth=1, 
+             label='Residual', alpha=0.8)
+    
+    # Set labels and title for Iquitos
+    ax1.set_ylabel('R0 Values', fontsize=12, fontweight='bold')
+    ax1.set_title('e) Iquitos, Peru', fontsize=12, fontweight='bold', loc='left')
     
     # Add legend
-    ax_ts.legend(loc='lower right', frameon=True, fancybox=True, shadow=True, fontsize=10)
+    ax1.legend(loc='lower right', frameon=True, fancybox=True, shadow=True, fontsize=10)
     
-    # Set y-axis limits
-    y_min = min(r0_raw.min(), timeseries_ds.iquitos_trend.min(), 
-                timeseries_ds.iquitos_seasonal.min(), timeseries_ds.iquitos_decadal.min(),
-                timeseries_ds.iquitos_remainder.min()) - 0.5
-    y_max = max(r0_raw.max(), timeseries_ds.iquitos_trend.max()) + 0.5
-    ax_ts.set_ylim(y_min, y_max)
+    # Set y-axis limits for Iquitos
+    y_min_iq = min(r0_raw_iquitos.min(), iquitos_ds.iquitos_trend.min(), 
+                   iquitos_ds.iquitos_seasonal.min(), iquitos_ds.iquitos_decadal.min(),
+                   iquitos_ds.iquitos_remainder.min()) - 0.5
+    y_max_iq = max(r0_raw_iquitos.max(), iquitos_ds.iquitos_trend.max()) + 0.5
+    ax1.set_ylim(y_min_iq, y_max_iq)
     
-    # Add horizontal line at y=0
-    ax_ts.axhline(y=0, color='black', linestyle='-', linewidth=0.5, alpha=0.7)
+    # Plot Santa Fe timeseries (bottom subplot)
+    # Calculate R0 (raw) as sum of all components
+    r0_raw_santa_fe = (santa_fe_ds.santa_fe_trend + santa_fe_ds.santa_fe_seasonal + 
+                      santa_fe_ds.santa_fe_decadal + santa_fe_ds.santa_fe_residual)
     
-    # Format the timeseries plot
-    ax_ts.grid(True, alpha=0.3)
-    ax_ts.tick_params(axis='both', labelsize=10)
+    # Plot all components
+    ax2.plot(santa_fe_ds.time, r0_raw_santa_fe, 'k-', linewidth=0.8, label='Raw', alpha=0.7)
+    ax2.plot(santa_fe_ds.time, santa_fe_ds.santa_fe_trend, 'r-', linewidth=2, label='Trend')
+    ax2.plot(santa_fe_ds.time, santa_fe_ds.santa_fe_seasonal, 'g-', linewidth=1.5, label='Seasonal')
+    ax2.plot(santa_fe_ds.time, santa_fe_ds.santa_fe_decadal, 'b-', linewidth=1.5, label='Decadal')
+    ax2.plot(santa_fe_ds.time, santa_fe_ds.santa_fe_residual, color='purple', linewidth=1, 
+             label='Residual', alpha=0.8)
     
-    # Set x-axis to show years nicely
-    years = pd.date_range(start='1960', end='2025', freq='10YS')
-    ax_ts.set_xticks(years)
-    ax_ts.set_xticklabels([str(year.year) for year in years])
+    # Set labels and title for Santa Fe
+    ax2.set_ylabel('R0 Values', fontsize=12, fontweight='bold')
+    ax2.set_title('f) Santa Fe, Argentina', fontsize=12, fontweight='bold', loc='left')
+    
+    # Add legend
+    # ax2.legend(loc='lower right', frameon=True, fancybox=True, shadow=True, fontsize=10)
+    
+    # Set y-axis limits for Santa Fe
+    y_min_sf = min(r0_raw_santa_fe.min(), santa_fe_ds.santa_fe_trend.min(), 
+                   santa_fe_ds.santa_fe_seasonal.min(), santa_fe_ds.santa_fe_decadal.min(),
+                   santa_fe_ds.santa_fe_residual.min()) - 0.5
+    y_max_sf = max(r0_raw_santa_fe.max(), santa_fe_ds.santa_fe_trend.max()) + 0.5
+    ax2.set_ylim(y_min_sf, y_max_sf)
+    
+    # Format both subplots
+    for ax in [ax1, ax2]:
+        # Add horizontal line at y=0
+        ax.axhline(y=0, color='black', linestyle='-', linewidth=0.5, alpha=0.7)
+        
+        # Format the plot
+        ax.grid(True, alpha=0.3)
+        ax.tick_params(axis='both', labelsize=10)
+        
+        # Set x-axis to show years nicely
+        years = pd.date_range(start='1960', end='2025', freq='10YS')
+        ax.set_xticks(years)
+        ax.set_xticklabels([str(year.year) for year in years])
+    
+    # Adjust layout
+    plt.tight_layout()
     
     # Save the figure
     plt.savefig(output_file, dpi=300, bbox_inches='tight')
     plt.savefig(output_file.replace('.png', '.eps'), bbox_inches='tight')
-    print(f"Combined figure saved to {output_file}")
+    print(f"Timeseries comparison saved to {output_file}")
     plt.close("all")
     
     return fig
