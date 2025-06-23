@@ -498,12 +498,21 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   # First subplot with colorbar
   cf1 = axs[0].contourf(lon, lat, overlap[0,:,:], cmap="RdYlBu_r", 
                        transform=ccrs.PlateCarree(), levels=levels, extend="both")
-  axs[0].set_title(f"Maximum {analysis_type.capitalize()} Values", weight="bold")
+  # Only add subplot title for DJF season
+  if season == "DJF":
+    axs[0].set_title(f"Maximum {analysis_type.capitalize()} Values", weight="bold")
   axs[0].coastlines()
   axs[0].set_global()
-  axs[0].gridlines()
-  plt.colorbar(cf1, ax=axs[0], orientation="horizontal", pad=0.1)
-  axs[0].text(0.5, -0.2, value_label, transform=axs[0].transAxes, ha="center", va="center")
+  gl1 = axs[0].gridlines(draw_labels=True, linewidth=0.5, alpha=0.7)
+  gl1.top_labels = False
+  gl1.right_labels = False
+  gl1.xlabel_style = {'size': 10}
+  gl1.ylabel_style = {'size': 10}
+  
+  # Only add colorbar for SON season
+  if season == "SON":
+    plt.colorbar(cf1, ax=axs[0], orientation="horizontal", pad=0.1)
+    axs[0].text(0.5, -0.2, value_label, transform=axs[0].transAxes, ha="center", va="center")
 
   # # Load statistical significance data for both correlation and causality
   # max_indices_sig = np.array(dataset["max_indices_sig"])
@@ -537,13 +546,22 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   cf2 = axs[1].contourf(lon, lat, reordered_overlap_indices[0,:,:], cmap=cmap,
               levels=np.arange(0.5, 10.5),  # Creates 9 discrete bins
               transform=ccrs.PlateCarree())
-  axs[1].set_title(f"Maximum {analysis_type.capitalize()} ID", weight="bold")
+  # Only add subplot title for DJF season
+  if season == "DJF":
+    axs[1].set_title(f"Maximum {analysis_type.capitalize()} ID", weight="bold")
   axs[1].coastlines()
   axs[1].set_global()
-  axs[1].gridlines()
-  cbar2 = plt.colorbar(cf2, ax=axs[1], orientation="horizontal", pad=0.1,
-            ticks=np.arange(1, 10))  # Center ticks on each color
-  cbar2.ax.set_xticklabels(ordered_labels, rotation=45, ha="right")
+  gl2 = axs[1].gridlines(draw_labels=True, linewidth=0.5, alpha=0.7)
+  gl2.top_labels = False
+  gl2.right_labels = False
+  gl2.xlabel_style = {'size': 10}
+  gl2.ylabel_style = {'size': 10}
+  
+  # Only add colorbar for SON season
+  if season == "SON":
+    cbar2 = plt.colorbar(cf2, ax=axs[1], orientation="horizontal", pad=0.1,
+              ticks=np.arange(1, 10))  # Center ticks on each color
+    cbar2.ax.set_xticklabels(ordered_labels, rotation=45, ha="right")
 
   # Calculate frequencies for concentric pie chart
   unique1, counts1 = np.unique(reordered_overlap_indices[0,:,:][~np.isnan(reordered_overlap_indices[0,:,:])], return_counts=True)
@@ -554,41 +572,64 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   percentages2 = counts2 / counts2.sum() * 100
   percentages3 = counts3 / counts3.sum() * 100
 
-  # Create pie chart with new code
-  size = 0.3
-
-  # Calculate average percentages for labels
-  avg_percentages = (percentages1 + percentages2 + percentages3) / 3
-
-  # Plot outer ring with percentages1 and average labels
-  wedges, _ = axs[2].pie(percentages1, radius=1, colors=colors[:len(percentages1)],
-                   wedgeprops=dict(width=size, edgecolor='w'), startangle=90)
-
-  # Add percentage labels on the outer ring
-  for i, wedge in enumerate(wedges):
-      # Get the angle at the center of the wedge
-      ang = (wedge.theta2 + wedge.theta1) / 2
-      # Convert angle to radians
-      ang_rad = np.deg2rad(ang)
-      # Calculate text position (slightly outside the outer ring)
-      x = 1.2 * np.cos(ang_rad)
-      y = 1.2 * np.sin(ang_rad)
-      # Add text with average percentage
-      axs[2].text(x, y, f'{avg_percentages[i]:.1f}%', 
-              ha='center', va='center')
-
-  # Plot middle ring with percentages2  
-  axs[2].pie(percentages2, radius=1-size, colors=colors[:len(percentages2)],
-         wedgeprops=dict(width=size, edgecolor='w'), startangle=90)
-
-  # Plot inner ring with percentages3
-  axs[2].pie(percentages3, radius=1-size*2, colors=colors[:len(percentages3)],
-         wedgeprops=dict(width=size, edgecolor='w'), startangle=90)
-
-  axs[2].set(aspect="equal")
-  axs[2].set_title(f'Top 3 {analysis_type.capitalize()} Distribution (% = Sum / 3)', weight="bold")
+  # Create horizontal stacked bar plot instead of pie chart
+  # Prepare data for stacked bar plot
+  bar_data = [percentages1, percentages2, percentages3]
+  bar_labels = ['Top 1', 'Top 2', 'Top 3']
   
-  plt.suptitle(f"Global SSig {analysis_type.capitalize()} Analysis - {season}", fontsize=16, weight="bold")
+  # Invert the order so Top 1 is at the top
+  y_positions = [2, 1, 0]  # Inverted positions
+  
+  # Create stacked horizontal bar plot
+  bottom = np.zeros(3)
+  for i in range(len(percentages1)):
+      values = [percentages1[i], percentages2[i], percentages3[i]]
+      bars = axs[2].barh(y_positions, values, left=bottom, color=colors[i], 
+                        label=ordered_labels[i], height=0.6)
+      
+      # Add percentage labels for values > 10%
+      for j, (bar, value) in enumerate(zip(bars, values)):
+          if value > 10:
+              # Calculate label position (center of the bar segment)
+              label_x = bottom[j] + value / 2
+              label_y = y_positions[j]
+              axs[2].text(label_x, label_y, f'{value:.1f}%', 
+                         ha='center', va='center', fontweight='bold', 
+                         fontsize=8, color='white')
+      
+      bottom += values
+  
+  # Customize the bar plot
+  axs[2].set_yticks(y_positions)
+  axs[2].set_yticklabels(bar_labels)
+  
+  # Only add xlabel for SON season
+  if season == "SON":
+    axs[2].set_xlabel('Percentage (%)', fontweight='bold')
+    
+  axs[2].set_xlim(0, 100)
+  # Set xticks to 10% increments
+  axs[2].set_xticks(range(0, 101, 10))
+  axs[2].grid(True, axis='x', alpha=0.3)
+  
+  # Only add legend for DJF season
+  if season == "DJF":
+    axs[2].legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
+  
+  # Only add subplot title for DJF season
+  if season == "DJF":
+    axs[2].set_title(f'Top 3 {analysis_type.capitalize()} Distribution', weight="bold")
+  
+  # Set season-specific supertitle on the left
+  season_titles = {
+    "DJF": "a) DJF",
+    "MAM": "b) MAM", 
+    "JJA": "c) JJA",
+    "SON": "d) SON"
+  }
+  plt.suptitle(season_titles.get(season, f"Global SSig {analysis_type.capitalize()} Analysis - {season}"), 
+               fontsize=16, weight="bold", x=0.02, ha='left')
+  
   plt.savefig(fileout + season + "_merged.png", dpi=300)
   plt.savefig(fileout + season + "_merged.eps", format="eps", dpi=300)
   plt.close("all")
