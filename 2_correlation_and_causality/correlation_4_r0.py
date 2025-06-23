@@ -290,7 +290,7 @@ nh_params = {
   "seasons": ["DJF", "MAM", "JJA", "SON"],
   "levs": np.linspace(-0.5, 0.5, 20),
   "midpoint": 0,
-  "colmap": "Spectral_r"
+  "colmap": "RdYlBu_r"
 }
 sh_params = {
   "r_nought_dict": sh_detrended_dict,
@@ -298,7 +298,7 @@ sh_params = {
   "seasons": ["DJF", "MAM", "JJA", "SON"],
   "levs": np.linspace(-0.5, 0.5, 20),
   "midpoint": 0,
-  "colmap": "Spectral_r"
+  "colmap": "RdYlBu_r"
 }
 
 # Dictionaries to store correlation and significance maps
@@ -317,8 +317,7 @@ for idx in indices:
     fileout_name=f"4_outputs/figures/correlation_seasonal_nh_{idx.lower().replace(' ', '_').replace('.', '')}",
     levs=np.linspace(-0.5, 0.5, 20),
     midpoint=0,
-    colmap="Spectral_r",
-    title=f"Seasonal R0 vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
+    colmap="RdYlBu_r",
     analysis_type="correlation",
     is_global=False
   )
@@ -333,8 +332,7 @@ for idx in indices:
     fileout_name=f"4_outputs/figures/correlation_seasonal_sh_{idx.lower().replace(' ', '_').replace('.', '')}",
     levs=np.linspace(-0.5, 0.5, 20),
     midpoint=0,
-    colmap="Spectral_r",
-    title=f"Seasonal R0 vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
+    colmap="RdYlBu_r",
     analysis_type="correlation",
     is_global=False
   )
@@ -400,8 +398,7 @@ for idx in indices:
     fileout_name=f"4_outputs/figures/correlation_seasonal_global_{idx.lower().replace(' ', '_').replace('.', '')}",
     levs=np.linspace(-0.5, 0.5, 20),
     midpoint=0,
-    colmap="Spectral_r",
-    title=f"Seasonal R0 vs {idx} Correlation (Detrended, dots = ssig of 0.01 alpha value)",
+    colmap="RdYlBu_r",
     analysis_type="correlation",
     is_global=True
   )
