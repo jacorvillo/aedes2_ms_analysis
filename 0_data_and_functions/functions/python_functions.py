@@ -838,6 +838,28 @@ def plot_timeseries_comparison(iquitos_file='4_outputs/data/timescale_decomposit
     
     return fig
 
+def plot_combined_figure(variance_file='4_outputs/data/timescale_decomposition/td_time_decomposition.nc',
+                        timeseries_file='4_outputs/data/timescale_decomposition/td_iquitos_timeseries.nc',
+                        output_file='4_outputs/figures/timescale_decomposition_combined.png',
+                        figsize=(20, 10)):
+    """
+    Deprecated: Use plot_variance_maps() and plot_timeseries_comparison() instead.
+    
+    This function is kept for backward compatibility but calls the new separate functions.
+    """
+    print("Warning: plot_combined_figure is deprecated. Use plot_variance_maps() and plot_timeseries_comparison() instead.")
+    
+    # Call the separate functions
+    variance_output = output_file.replace('.png', '_maps.png')
+    timeseries_output = output_file.replace('.png', '_timeseries.png')
+    
+    plot_variance_maps(variance_file, variance_output)
+    plot_timeseries_comparison(timeseries_file, 
+                             timeseries_file.replace('iquitos', 'santa_fe'),
+                             timeseries_output)
+    
+    return None
+   
 def plot_climatology_comparison(file_1961_1990='4_outputs/data/td_time_decomposition_1961_1990.nc',
                                file_1991_2020='4_outputs/data/td_time_decomposition_1991_2020.nc',
                                output_file='4_outputs/figures/timescale_decomposition_climatology_comparison.png',
