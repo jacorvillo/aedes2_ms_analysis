@@ -507,157 +507,121 @@ for (nlat in seq_along(lat)) {
       percentage_trend_time[nlat, nlon] <- NA
       percentage_seasonal_time[nlat, nlon] <- NA
       percentage_decadal_time[nlat, nlon] <- NA
-      percentage_remaining_time[nlat, nlon] <- NA
-    } else { # If there are some NA values, set those to 0
-
-      signal[is.na(signal)] <- 0
-
-      # Decompose the time series with the ideal span
-      components <- stl(signal, s.window = "per", t.window = optimal_span)
-
-      # STL mingles the decadal signal with the interannual and interdecadal signals. To filter
-      # it out, we use a 120-month frequency Butterworth filter of order 2:
-
-      # Apply Butterworth filter to extract decadal component
-      bf <- butter(2, 1 / 120, type = "low")
-      decadal <- filtfilt(bf, components$time.series[, 3])
-
-      # Remove the decadal component from the mingled signal:
-
-      remainder <- components$time.series[, 3] - decadal
-
-      # Calculate variance explained by each component
-      trend_var <- var(components$time.series[, 2], na.rm = TRUE)
-      seasonal_var <- var(components$time.series[, 1], na.rm = TRUE)
-      decadal_var <- var(decadal, na.rm = TRUE)
-      remainder_var <- var(remainder, na.rm = TRUE)
-      total_var <- var(combined_data[, nlat, nlon], na.rm = TRUE)
-
-      # Calculate percentages
-      percentage_trend_time[nlat, nlon] <- trend_var / total_var * 100
-      percentage_seasonal_time[nlat, nlon] <- seasonal_var / total_var * 100
-      percentage_decadal_time[nlat, nlon] <- decadal_var / total_var * 100
-      percentage_remaining_time[nlat, nlon] <- remainder_var / total_var * 100
+      percentage_residual_time[nlat, nlon] <- NA
+      next
     }
-    if (is.infinite(percentage_trend_time[nlat, nlon])) {
-      # If the percentage is infinite, set it to NA
 
-      percentage_trend_time[nlat, nlon] <- NA
-      percentage_seasonal_time[nlat, nlon] <- NA
-      percentage_decadal_time[nlat, nlon] <- NA
-      percentage_remaining_time[nlat, nlon] <- NA
-    }
-    if (nlat == 150 && nlon == 230) {
-      timeseries_time_seasonal <- components$time.series[, 1]
-      timeseries_time_trend <- components$time.series[, 2]
-      timeseries_time_decadal <- decadal
-      timeseries_time_remainder <- remainder
-    }
+    # Create time series object for STL
+    signal_ts <- ts(signal, frequency = 12, start = c(1991, 1))
+
+    # Try STL decomposition
+    tryCatch(
+      {
+        components <- stl(signal_ts, s.window = "per", t.window = optimal_span, na.action = na.exclude)
+
+        # For Butterworth filtering, use interpolation if there are NAs
+        residual_signal <- components$time.series[, 3]
+
+        if (any(is.na(residual_signal))) {
+          # Interpolate NAs for Butterworth filter
+          residual_signal <- na.approx(residual_signal, na.rm = FALSE)
+        }
+
+        # Apply Butterworth filter to extract decadal component
+        bf <- butter(2, 1 / 120, type = "low")
+        decadal <- filtfilt(bf, residual_signal)
+
+        # Remove the decadal component from the original residual
+        residual <- components$time.series[, 3] - decadal
+
+        # Calculate variance explained by each component (only on valid original data)
+        original_valid <- signal[valid_indices]
+        trend_var <- var(components$time.series[valid_indices, 2], na.rm = TRUE)
+        seasonal_var <- var(components$time.series[valid_indices, 1], na.rm = TRUE)
+        decadal_var <- var(decadal[valid_indices], na.rm = TRUE)
+        residual_var <- var(residual[valid_indices], na.rm = TRUE)
+        total_var <- var(original_valid, na.rm = TRUE)
+
+        if (is.na(total_var) || total_var <= 0) {
+          # No variance - set all to NA
+          percentage_trend_time[nlat, nlon] <- NA
+          percentage_seasonal_time[nlat, nlon] <- NA
+          percentage_decadal_time[nlat, nlon] <- NA
+          percentage_residual_time[nlat, nlon] <- NA
+        } else {
+          # Calculate percentages
+          pct_trend <- trend_var / total_var * 100
+          pct_seasonal <- seasonal_var / total_var * 100
+          pct_decadal <- decadal_var / total_var * 100
+          pct_residual <- residual_var / total_var * 100
+
+          # Ensure percentages sum to 100% (handle numerical precision issues)
+          total_pct <- pct_trend + pct_seasonal + pct_decadal + pct_residual
+          if (!is.na(total_pct) && total_pct > 0) {
+            pct_trend <- pct_trend / total_pct * 100
+            pct_seasonal <- pct_seasonal / total_pct * 100
+            pct_decadal <- pct_decadal / total_pct * 100
+            pct_residual <- pct_residual / total_pct * 100
+          }
+
+          percentage_trend_time[nlat, nlon] <- pct_trend
+          percentage_seasonal_time[nlat, nlon] <- pct_seasonal
+          percentage_decadal_time[nlat, nlon] <- pct_decadal
+          percentage_residual_time[nlat, nlon] <- pct_residual
+        }
+      },
+      error = function(e) {
+        # STL failed - set all to NA
+        cat("STL failed for grid point", nlat, nlon, ":", e$message, "\n")
+        percentage_trend_time[nlat, nlon] <- NA
+        percentage_seasonal_time[nlat, nlon] <- NA
+        percentage_decadal_time[nlat, nlon] <- NA
+        percentage_residual_time[nlat, nlon] <- NA
+      }
+    )
   }
 }
 
-# Define the color palette, plot titles and fileout paths
 
-rainbow <- colorRampPalette(viridis(10, option = "turbo"))
+dim_lat <- ncdim_def("lat", "degrees_north", lat)
+dim_lon <- ncdim_def("lon", "degrees_east", lon)
 
-toptitle_trend <- "Variance % Explained by Trend"
-toptitle_seasonal <- "Variance % Explained by Seasonal Variability"
-toptitle_decadal <- "Variance % Explained by Decadal Variability"
-toptitle_remaining <- "Variance % Explained by Remaining Variability"
-
-fileout_trend <- paste0("4_outputs/td_trend_time.png")
-fileout_seasonal <- paste0("4_outputs/td_seasonal_time.png")
-fileout_decadal <- paste0("4_outputs/td_decadal_time.png")
-fileout_remaining <- paste0("4_outputs/td_remaining_time.png")
-
-# Plot the maps
-
-s2dv::PlotEquiMap(
-  var = percentage_trend_time,
-  lon = lon,
-  lat = lat,
-  toptitle = toptitle_trend,
-  filled.continents = FALSE,
-  filled.oceans = TRUE,
-  brks = seq(0, 100),
-  color_fun = rainbow,
-  triangle_ends = c(FALSE, FALSE),
-  colNA = "grey",
-  draw_bar_ticks = TRUE,
-  title_scale = 0.65,
-  bar_tick_scale = 0.5,
-  axes_tick_scale = 0.5,
-  axes_label_scale = 0.5,
-  fileout = fileout_trend,
-  width = 8,
-  height = 8,
-  size_units = "in"
+# Define the variables for each component
+var_trend <- ncvar_def("trend_percentage", "percent", list(dim_lat, dim_lon),
+  -9999,
+  longname = "Percentage of Variance Explained by Trend"
 )
 
-s2dv::PlotEquiMap(
-  var = percentage_seasonal_time,
-  lon = lon,
-  lat = lat,
-  toptitle = toptitle_seasonal,
-  filled.continents = FALSE,
-  filled.oceans = TRUE,
-  brks = seq(0, 100),
-  color_fun = rainbow,
-  triangle_ends = c(FALSE, FALSE),
-  colNA = "grey",
-  draw_bar_ticks = TRUE,
-  title_scale = 0.65,
-  bar_tick_scale = 0.5,
-  axes_tick_scale = 0.5,
-  axes_label_scale = 0.5,
-  fileout = fileout_seasonal,
-  width = 8,
-  height = 8,
-  size_units = "in",
+var_seasonal <- ncvar_def("seasonal_percentage", "percent", list(dim_lat, dim_lon),
+  -9999,
+  longname = "Percentage of Variance Explained by Seasonal Component"
 )
 
-s2dv::PlotEquiMap(
-  var = percentage_decadal_time,
-  lon = lon,
-  lat = lat,
-  toptitle = toptitle_decadal,
-  filled.continents = FALSE,
-  triangle_ends = c(FALSE, FALSE),
-  filled.oceans = TRUE,
-  brks = seq(0, 100),
-  color_fun = rainbow,
-  colNA = "grey",
-  draw_bar_ticks = TRUE,
-  title_scale = 0.65,
-  bar_tick_scale = 0.5,
-  axes_tick_scale = 0.5,
-  axes_label_scale = 0.5,
-  fileout = fileout_decadal,
-  width = 8,
-  height = 8,
-  size_units = "in"
+var_decadal <- ncvar_def("decadal_percentage", "percent", list(dim_lat, dim_lon),
+  -9999,
+  longname = "Percentage of Variance Explained by Decadal Component"
 )
 
-s2dv::PlotEquiMap(
-  var = percentage_remaining_time,
-  lon = lon,
-  lat = lat,
-  toptitle = toptitle_remaining,
-  filled.continents = FALSE,
-  filled.oceans = TRUE,
-  brks = seq(0, 100),
-  color_fun = rainbow,
-  colNA = "grey",
-  draw_bar_ticks = TRUE,
-  title_scale = 0.65,
-  bar_tick_scale = 0.5,
-  axes_tick_scale = 0.5,
-  axes_label_scale = 0.5,
-  fileout = fileout_remaining,
-  width = 8,
-  height = 8,
-  size_units = "in"
+var_residual <- ncvar_def("residual_percentage", "percent", list(dim_lat, dim_lon),
+  -9999,
+  longname = "Percentage of Variance Explained by Residual Component"
 )
+
+
+# Create the NetCDF file
+nc_file <- nc_create(
+  "4_outputs/data/td_time_decomposition_1991_2020.nc",
+  list(var_trend, var_seasonal, var_decadal, var_residual)
+)
+
+# Write the data to the NetCDF file
+ncvar_put(nc_file, var_trend, percentage_trend_time)
+ncvar_put(nc_file, var_seasonal, percentage_seasonal_time)
+ncvar_put(nc_file, var_decadal, percentage_decadal_time)
+ncvar_put(nc_file, var_residual, percentage_residual_time)
+
+# Close the NetCDF file
+nc_close(nc_file)
 
 ####################### Temperature-based detrending ##################################
 
