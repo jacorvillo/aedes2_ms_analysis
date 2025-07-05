@@ -11,6 +11,9 @@ source("0_data_and_functions/functions/r_functions.r")
 library(ncdf4)
 library(s2dv)
 
+lat <- seq(-89.75, 89.75, by = 0.5)
+lon <- seq(-179.75, 179.75, by = 0.5)
+
 # Load correlation data:
 data_correlation <- load_analysis_data(
   "4_outputs/data/correlation_and_causality/global_correlation_seasonal.nc",
@@ -26,22 +29,22 @@ correlation_merge_son <- max_analysis_index(data_correlation, 4, "correlation")
 
 # Save the results to NetCDF files
 quicksave_analysis(
-  correlation_merge_djf,
+  correlation_merge_djf, lat, lon,
   "4_outputs/data/correlation_and_causality/global_correlation_djf_merged.nc",
   "correlation", TRUE
 )
 quicksave_analysis(
-  correlation_merge_mam,
+  correlation_merge_mam, lat, lon,
   "4_outputs/data/correlation_and_causality/global_correlation_mam_merged.nc",
   "correlation", TRUE
 )
 quicksave_analysis(
-  correlation_merge_jja,
+  correlation_merge_jja, lat, lon,
   "4_outputs/data/correlation_and_causality/global_correlation_jja_merged.nc",
   "correlation", TRUE
 )
 quicksave_analysis(
-  correlation_merge_son,
+  correlation_merge_son, lat, lon,
   "4_outputs/data/correlation_and_causality/global_correlation_son_merged.nc",
   "correlation", TRUE
 )
@@ -61,22 +64,22 @@ causality_merge_son <- max_analysis_index(data_causality, 4, "causality")
 
 # Save the results to NetCDF files
 quicksave_analysis(
-  causality_merge_djf,
+  causality_merge_djf, lat, lon,
   "4_outputs/data/correlation_and_causality/global_causality_djf_merged.nc",
   "causality", TRUE
 )
 quicksave_analysis(
-  causality_merge_mam,
+  causality_merge_mam, lat, lon,
   "4_outputs/data/correlation_and_causality/global_causality_mam_merged.nc",
   "causality", TRUE
 )
 quicksave_analysis(
-  causality_merge_jja,
+  causality_merge_jja, lat, lon,
   "4_outputs/data/correlation_and_causality/global_causality_jja_merged.nc",
   "causality", TRUE
 )
 quicksave_analysis(
-  causality_merge_son,
+  causality_merge_son, lat, lon,
   "4_outputs/data/correlation_and_causality/global_causality_son_merged.nc",
   "causality", TRUE
 )
