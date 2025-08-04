@@ -7,9 +7,6 @@
 # Load necesary libraries and functions for the script 
 
 import xarray as xr
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
 
 # Source the python functions
 exec(open("0_data_and_functions/functions/python_functions.py").read())

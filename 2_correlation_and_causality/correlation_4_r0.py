@@ -19,7 +19,7 @@ exec(open("0_data_and_functions/functions/python_functions.py").read())
 # Climate Variability Modes (CVMs) Analysis-------------------------------------------------------
 
 atl3 = np.reshape(pd.read_csv("4_outputs/data/climate_indices/atl3.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
-iob = np.reshape(pd.read_csv("4_outputs/data/climate_indices/iob.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
+iobm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/iobm.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
 nino = np.reshape(pd.read_csv("4_outputs/data/climate_indices/nino34.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
 npmm = np.reshape(pd.read_csv("4_outputs/data/climate_indices/npmm.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
 sasd = np.reshape(pd.read_csv("4_outputs/data/climate_indices/sasd.dat", delim_whitespace=True).iloc[:, 1:].values, (888))[2:887]
@@ -33,7 +33,7 @@ date_range = pd.date_range(start=start_date, end=end_date, freq="MS")
 
 # Extract seasonal data for each climate index
 atl3_seasonal = extract_seasonal_months(date_range, atl3)
-iob_seasonal = extract_seasonal_months(date_range, iob)
+iobm_seasonal = extract_seasonal_months(date_range, iobm)
 nino_seasonal = extract_seasonal_months(date_range, nino)
 npmm_seasonal = extract_seasonal_months(date_range, npmm)
 sasd_seasonal = extract_seasonal_months(date_range, sasd)
@@ -43,8 +43,8 @@ tna_seasonal = extract_seasonal_months(date_range, tna)
 # Save seasonal indexes in a dictionary
 index_dict_seasonal = {
   "ATL3": {"DJF": atl3_seasonal["DJF"], "MAM": atl3_seasonal["MAM"], "JJA": atl3_seasonal["JJA"], "SON": atl3_seasonal["SON"]},
-  "IOB": {"DJF": iob_seasonal["DJF"], "MAM": iob_seasonal["MAM"], "JJA": iob_seasonal["JJA"], "SON": iob_seasonal["SON"]},
-  "Niño 3.4": {"DJF": nino_seasonal["DJF"], "MAM": nino_seasonal["MAM"], "JJA": nino_seasonal["JJA"], "SON": nino_seasonal["SON"]},
+  "IOBM": {"DJF": iobm_seasonal["DJF"], "MAM": iobm_seasonal["MAM"], "JJA": iobm_seasonal["JJA"], "SON": iobm_seasonal["SON"]},
+  "Niño3.4": {"DJF": nino_seasonal["DJF"], "MAM": nino_seasonal["MAM"], "JJA": nino_seasonal["JJA"], "SON": nino_seasonal["SON"]},
   "NPMM": {"DJF": npmm_seasonal["DJF"], "MAM": npmm_seasonal["MAM"], "JJA": npmm_seasonal["JJA"], "SON": npmm_seasonal["SON"]},
   "SASD": {"DJF": sasd_seasonal["DJF"], "MAM": sasd_seasonal["MAM"], "JJA": sasd_seasonal["JJA"], "SON": sasd_seasonal["SON"]},
   "SPMM": {"DJF": spmm_seasonal["DJF"], "MAM": spmm_seasonal["MAM"], "JJA": spmm_seasonal["JJA"], "SON": spmm_seasonal["SON"]},
@@ -54,8 +54,8 @@ index_dict_seasonal = {
 # Full time series:
 index_dict_total = {
   "ATL3": atl3,
-  "IOB": iob,
-  "Niño 3.4": nino,
+  "IOBM": iobm,
+  "Niño3.4": nino,
   "NPMM": npmm,
   "SASD": sasd,
   "SPMM": spmm,
@@ -64,7 +64,7 @@ index_dict_total = {
 
 # Group all the data in a single matrix
 index_atl3 = np.column_stack((np.array(atl3_seasonal["DJF"]), np.array(atl3_seasonal["MAM"])[:-3], np.array(atl3_seasonal["JJA"])[:-3], np.array(atl3_seasonal["SON"])[:-3]))
-index_iob = np.column_stack((np.array(iob_seasonal["DJF"]), np.array(iob_seasonal["MAM"])[:-3], np.array(iob_seasonal["JJA"])[:-3], np.array(iob_seasonal["SON"])[:-3]))
+index_iobm = np.column_stack((np.array(iobm_seasonal["DJF"]), np.array(iobm_seasonal["MAM"])[:-3], np.array(iobm_seasonal["JJA"])[:-3], np.array(iobm_seasonal["SON"])[:-3]))
 index_nino = np.column_stack((np.array(nino_seasonal["DJF"]), np.array(nino_seasonal["MAM"])[:-3], np.array(nino_seasonal["JJA"])[:-3], np.array(nino_seasonal["SON"])[:-3]))
 index_npmm = np.column_stack((np.array(npmm_seasonal["DJF"]), np.array(npmm_seasonal["MAM"])[:-3], np.array(npmm_seasonal["JJA"])[:-3], np.array(npmm_seasonal["SON"])[:-3]))
 index_sasd = np.column_stack((np.array(sasd_seasonal["DJF"]), np.array(sasd_seasonal["MAM"])[:-3], np.array(sasd_seasonal["JJA"])[:-3], np.array(sasd_seasonal["SON"])[:-3]))
@@ -79,11 +79,11 @@ yr = np.arange(0, 219)
 
 # Store all indexes in a list to iterate over them
 
-list_indexes = [index_nino, index_atl3, index_tna, index_iob, index_npmm, index_spmm, index_sasd]
+list_indexes = [index_nino, index_atl3, index_tna, index_iobm, index_npmm, index_spmm, index_sasd]
 
-title_strings = ["Niño3.4 Index", "ATL3 Index", "TNA Index", "IOB Index", "NPMM Index", "SPMM Index", "SASD Index"]
+title_strings = ["Niño3.4 Index", "ATL3 Index", "TNA Index", "IOBM Index", "NPMM Index", "SPMM Index", "SASD Index"]
 
-fileout_cmvs = ["index_seasons_nino", "index_seasons_atl3", "index_seasons_tna", "index_seasons_iob", "index_seasons_npmm", "index_seasons_spmm", "index_seasons_sasd"]
+fileout_cmvs = ["index_seasons_nino", "index_seasons_atl3", "index_seasons_tna", "index_seasons_iobm", "index_seasons_npmm", "index_seasons_spmm", "index_seasons_sasd"]
 
 # Configure matrices to store the slope and confidence intervals for each CVM in the linear regression
 matrix_slope = np.zeros((7, 4))
@@ -152,7 +152,7 @@ fig, ax = plt.subplots(figsize=(9, 5))
 
 seasons = ["DJF", "MAM", "JJA", "SON"]
 
-index_names = ["ATL3", "IOB", "Niño3.4", "NPMM", "SASD", "SPMM", "TNA"]
+index_names = ["ATL3", "IOBM", "Niño3.4", "NPMM", "SASD", "SPMM", "TNA"]
 
 # Loop over each season and plot bars with error bars
 for i in range(num_seasons):
@@ -180,7 +180,8 @@ plt.close("all")
 
 #----------- Correlation Analysis between CVMs and Global data ----------------------------------------
 
-indices = ["ATL3", "IOB", "Niño 3.4", "NPMM", "SASD", "SPMM", "TNA"]
+# indices = ["ATL3", "IOBM", "Niño 3.4", "NPMM", "SASD", "SPMM", "TNA"]
+indices = ["Niño3.4"]
 
 global_data = xr.open_dataset("4_outputs/data/detrended_vars/detrended_r_nought_data.nc")
 datasets = {
