@@ -1,6 +1,9 @@
 # write_indices.R
 
-#' @description This script computes temperature-dependent Climate
+#' @description This script reads the detrended R0 monthly data from the AeDES2's Monitoring
+#' System,  as computed in the temperature-based timescale decomposition analysis, and trims
+#' it to the SSSRs detected in the aforementioned script, with the boxes defined by
+#' Iturbide et al., 2020. Additionally, this script also computes temperature-dependent Climate
 #' Variability indices with the detrended temperature data obtained in temp_detrend.R, saving the
 #' data in .dat files for the subsequent correlation and causality analysis.
 
@@ -28,14 +31,14 @@ nc_file <- nc_open("4_outputs/data/detrended_vars/detrended_tas_3d.nc")
 dtemps <- ncvar_get(nc_file, "detrended_temps")
 
 atl3_region <- list(lat = c(-3, 3), lon = c(-20, 0))
-iob_region <- list(lat = c(-30, 30), lon = c(30, 120))
+iobm_region <- list(lat = c(-30, 30), lon = c(30, 120))
 nino34_region <- list(lat = c(-5, 5), lon = c(-170, -120))
 npmm_region <- list(lat = c(20, 40), lon = c(150, -180 + 210))
 spmm_region <- list(lat = c(-20, -40), lon = c(-180 + 180, -180 + 210))
 tna_region <- list(lat = c(5.5, 23.5), lon = c(-57.5, -15))
 
 atl3 <- calculate_climate_index(dtemps, atl3_region, std = TRUE, index_type = "temp", lon = lon, lat = lat)
-iob <- calculate_climate_index(dtemps, iob_region, std = TRUE, index_type = "temp", lon = lon, lat = lat)
+iobm <- calculate_climate_index(dtemps, iobm_region, std = TRUE, index_type = "temp", lon = lon, lat = lat)
 nino34 <- calculate_climate_index(dtemps, nino34_region, std = TRUE, index_type = "temp", lon = lon, lat = lat)
 npmm <- calculate_climate_index(dtemps, npmm_region, std = TRUE, index_type = "temp", lon = lon, lat = lat)
 spmm <- calculate_climate_index(dtemps, spmm_region, std = TRUE, index_type = "temp", lon = lon, lat = lat)
@@ -54,7 +57,7 @@ sasd <- (sasd - mean(sasd, na.rm = TRUE)) / sd(sasd, na.rm = TRUE)
 
 # Format each index
 atl3_df <- format_index_data(atl3, years, months)
-iob_df <- format_index_data(iob, years, months)
+iobm_df <- format_index_data(iobm, years, months)
 nino34_df <- format_index_data(nino34, years, months)
 npmm_df <- format_index_data(npmm, years, months)
 sasd_df <- format_index_data(sasd, years, months)
@@ -63,7 +66,7 @@ tna_df <- format_index_data(tna, years, months)
 
 # Save each index with proper formatting
 write_formatted_index(atl3_df, "4_outputs/data/climate_indices/atl3.dat")
-write_formatted_index(iob_df, "4_outputs/data/climate_indices/iob.dat")
+write_formatted_index(iobm_df, "4_outputs/data/climate_indices/iobm.dat")
 write_formatted_index(nino34_df, "4_outputs/data/climate_indices/nino34.dat")
 write_formatted_index(npmm_df, "4_outputs/data/climate_indices/npmm.dat")
 write_formatted_index(spmm_df, "4_outputs/data/climate_indices/spmm.dat")
