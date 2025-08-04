@@ -73,7 +73,7 @@ def pearsonr_2D(y, x):
 
 def spearmanr_2D(y, x):
     """
-    Efficiently computes Spearman correlation between a 2D array (n_points, time) and a 1D array (time).
+    Efficiently computes Spearman partial correlation between a 2D array (n_points, time) and a 1D array (time).
     Returns an array of correlation coefficients.
     """
     # Rank data along time axis
@@ -145,6 +145,8 @@ def IndexRegrCorr(Data, Index, alfa, sig, pp, method="pearson"):
 
 def causality1d3d(ds1,ds2,normalise=False,sig=95):
     
+    # Initial code provided by Ángel Muñoz (angel.g.munoz.iri@gmail.com), modified by Javier Corvillo (javier.corvillo@bsc.es)
+    
     hycov=np.vectorize(np.cov, signature='(i),(i)->(m,n)') #vectorise the calculation of the cross-variance matrix
     
     N = ds1.time.size
@@ -204,7 +206,6 @@ def causality1d3d(ds1,ds2,normalise=False,sig=95):
     var_a12 = abs(invNI[2,2]) #this is the key component we need, although we needed the entire matrix for the inverse.
     #Variance (uncertainty in the information flow)
     varinfflow=var_a12 * np.power(xr.cov(ds1,ds2,dim='time')/xr.cov(ds1,ds1,dim='time'),2)
-
     
     #Now, which p-value?
     if sig==90:
@@ -233,7 +234,6 @@ def causality1d3d(ds1,ds2,normalise=False,sig=95):
                                               )
         
         norm = abs(infflow) + abs(p) + abs(dH1noisedt) #eq 20 in Liang (2015) 
-        #masking=abs(infflow)
         infflow=infflow/norm#*masking
         infflow_sig=infflow_sig/norm
         infflow.name = "Liang-Kleeman causality" + "\n" +"(normalised)"
@@ -245,7 +245,6 @@ def causality1d3d(ds1,ds2,normalise=False,sig=95):
         infflow_sig=infflow_sig/norm
         infflow.name = "Liang-Kleeman causality" + "\n" +"     (not normalised)"
         infflow_sig.name = "Liang-Kleeman causality" + "\n" +"     (not normalised, significant)"
-        
 
     return infflow, infflow_sig
 
@@ -316,6 +315,15 @@ def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileou
 
   # Create letter counter for subplot labeling
   letter_counter = 0
+
+  mask = xr.open_dataset("4_outputs/data/mask.nc")
+
+  # Apply the mask to the correlation datasets
+  # Transpose mask to match data coordinate order (lat, lon) and convert 1s to NaN (inverse mask)
+  mask_array = mask.na_mask.transpose('lat', 'lon')
+
+  # Convert True to NaN and False to 1 in the mask array
+  mask_array = mask_array.where(mask_array == False, other=float('nan')).where(mask_array == True, other=1)
   
   for i, region in enumerate(r_nought_dict.keys()):
     lat = spatial_dict[region]["lat"]
@@ -353,20 +361,23 @@ def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileou
         # Transpose the data arrays before passing them to IndexRegrCorr
         ds2 = np.array(ds2).reshape(np.array(ds2).shape[0], np.array(ds2).shape[1]*np.array(ds2).shape[2])
         corA, cor_sigA = IndexRegrCorr(np.transpose(ds2), np.transpose(ds1), 0.01, "MonteCarlo", 100)
-        
+
         if is_seasonal:
-          analysis_maps[region][season] = corA.reshape(len(lat), len(lon))
-          sig_maps[region][season] = cor_sigA.reshape(len(lat), len(lon))
+          analysis_maps[region][season] = corA.reshape(len(lat), len(lon)) * mask_array
+          sig_maps[region][season] = cor_sigA.reshape(len(lat), len(lon)) * mask_array
         else:
-          analysis_maps[region] = corA.reshape(len(lat), len(lon))
-          sig_maps[region] = cor_sigA.reshape(len(lat), len(lon))
-          
+          analysis_maps[region] = corA.reshape(len(lat), len(lon)) * mask_array
+          sig_maps[region] = cor_sigA.reshape(len(lat), len(lon)) * mask_array
+
       else:  # causality
         # Convert arrays to xarray DataArrays with "time" dimension
         ds2 = xr.DataArray(ds2, dims=["time", "lat", "lon"])
         ds1 = xr.DataArray(ds1, dims=["time"])
         causalA, causalsigA = causality1d3d(ds1, ds2, normalise=True, sig=99)
-        
+        # Apply the mask to the causality results
+        causalA = causalA * mask_array
+        causalsigA = causalsigA * mask_array
+
         if is_seasonal:
           analysis_maps[region][season] = causalA
           sig_maps[region][season] = causalsigA
@@ -395,6 +406,7 @@ def plot_dicts_analysis(r_nought_dict, spatial_dict, index_dict, seasons, fileou
       gl.xlabels_top = False
 
       letter_counter += 1  # Add a common colorbar at the bottom
+      
   cbar_ax = fig.add_axes([0.2, 0.05, 0.6, 0.02])
   if levs is not None:
     # Ensure colorbar uses the specified levels range
@@ -485,7 +497,7 @@ def save_analysis_to_netcdf(analysis_dict, output_filename, analysis_type="corre
 
 def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   """
-  Plots three maps: maximum values, their corresponding indices, and a concentric pie chart
+  Plots three maps: maximum values, their corresponding indices, and a barplot
   showing the distribution of top 3 values. Can handle both correlation and causality analysis.
 
   Parameters:
@@ -515,7 +527,7 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
     value_label = "Causality Value"
 
   # First subplot with colorbar
-  cf1 = axs[0].contourf(lon, lat, overlap[0,:,:], cmap="RdYlBu_r", 
+  cf1 = axs[0].contourf(lon, lat, overlap[0,:,:], cmap="RdBu_r", 
                        transform=ccrs.PlateCarree(), levels=levels, extend="both")
   # Only add subplot title for DJF season
   if season == "DJF":
@@ -543,9 +555,9 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   # Load the plotting components for 2nd plot
   overlap_indices = np.array(dataset["overlap_indices"])
 
-  # Define index labels and ordered labels
-  index_labels = ["ATL3", "IOD", "IOB", "Nino 3.4", "NPMM", "SASD1", "SIOD", "SPMM", "TNA"]
-  ordered_labels = ["ATL3", "IOD", "IOB", "Nino 3.4", "NPMM", "SASD1", "SIOD", "SPMM", "TNA"]
+  # Define index labels and ordered labels (removed NPMM and SPMM)
+  index_labels = ["ATL3", "IOBM", "Nino3.4", "NPMM", "SASD1", "SPMM", "TNA"]
+  ordered_labels = ["ATL3", "IOBM", "Nino3.4", "NPMM", "SASD1", "SPMM", "TNA"]
 
   # Create mapping from original indices to new order
   label_to_index = {label: i+1 for i, label in enumerate(index_labels)}
@@ -557,13 +569,13 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   for old_idx, new_idx in index_to_newindex.items():
     reordered_overlap_indices[overlap_indices == old_idx] = new_idx
 
-  # Create discrete colormap with 9 distinct colors
+  # Create discrete colormap with 7 distinct colors (reduced from 9)
   colors = ["#ef476f", "#f78c6b", "#ffd166", "#83d483", "#06d6a0", 
-            "#0cb0a9", "#118ab2", "#0c637f", "#073b4c"]
+            "#118ab2", "#073b4c"]
   cmap = plt.cm.colors.ListedColormap(colors)
 
   cf2 = axs[1].contourf(lon, lat, reordered_overlap_indices[0,:,:], cmap=cmap,
-              levels=np.arange(0.5, 10.5),  # Creates 9 discrete bins
+              levels=np.arange(0.5, 8.5),  # Creates 7 discrete bins (reduced from 9)
               transform=ccrs.PlateCarree())
   # Only add subplot title for DJF season
   if season == "DJF":
@@ -579,7 +591,7 @@ def plot_merged_analysis(dataset, season, fileout, analysis_type="correlation"):
   # Only add colorbar for SON season
   if season == "SON":
     cbar2 = plt.colorbar(cf2, ax=axs[1], orientation="horizontal", pad=0.1,
-              ticks=np.arange(1, 10))  # Center ticks on each color
+              ticks=np.arange(1, 8))  # Center ticks on each color (reduced from 10 to 8)
     cbar2.ax.set_xticklabels(ordered_labels, rotation=45, ha="right")
 
   # Calculate frequencies for concentric pie chart
