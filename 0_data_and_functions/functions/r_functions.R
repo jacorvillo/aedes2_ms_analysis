@@ -48,7 +48,7 @@ load_analysis_data <- function(nc_file, nc_sig_file, analysis_type = "correlatio
   nc_sig <- nc_open(nc_sig_file)
 
   # List of climate indices in alphabetical order
-  indices <- c("ATL3", "IOD", "IOB", "Niño_34", "NPMM", "SASD1", "SIOD", "SPMM", "TNA")
+  indices <- c("ATL3", "IOB", "Niño_34", "NPMM", "SASD1", "SPMM", "TNA")
 
   # Initialize results lists
   seasons <- list(djf = 1, mam = 2, jja = 3, son = 4)
@@ -93,7 +93,7 @@ max_analysis_index <- function(analysis_data, season, analysis_type = "correlati
 
   # Remove any -Inf values for causality analysis
   if (analysis_type == "causality") {
-    for (i in 1:9) {
+    for (i in 1:7) {
       season_analysis[[i]][is.infinite(season_analysis[[i]])] <- NA
       season_significance[[i]][is.infinite(season_significance[[i]])] <- NA
     }
@@ -106,9 +106,9 @@ max_analysis_index <- function(analysis_data, season, analysis_type = "correlati
   max_indices_sig <- array(NA, dim = c(720, 360, 3))
 
   # Convert list to array for easier processing
-  data_array <- array(NA, dim = c(720, 360, 9))
-  data_array_sig <- array(NA, dim = c(720, 360, 9))
-  for (i in 1:9) {
+  data_array <- array(NA, dim = c(720, 360, 7))
+  data_array_sig <- array(NA, dim = c(720, 360, 7))
+  for (i in 1:7) {
     data_array[, , i] <- season_analysis[[i]]
     data_array_sig[, , i] <- season_significance[[i]]
   }
