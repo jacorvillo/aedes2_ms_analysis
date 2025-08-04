@@ -126,6 +126,9 @@ percentage_seasonal_time <- array(NA, dim = c(length(lat), length(lon)))
 percentage_decadal_time <- array(NA, dim = c(length(lat), length(lon)))
 percentage_residual_time <- array(NA, dim = c(length(lat), length(lon)))
 
+# Initialize NA mask to track grid points with insufficient data
+na_mask_time <- array(FALSE, dim = c(length(lat), length(lon)))
+
 # Initialize variables to store Iquitos time series components
 timeseries_time_trend <- rep(NA, length(median_data))
 timeseries_time_seasonal <- rep(NA, length(median_data))
@@ -167,6 +170,7 @@ for (nlat in seq_along(lat)) {
       percentage_seasonal_time[nlat, nlon] <- NA
       percentage_decadal_time[nlat, nlon] <- NA
       percentage_residual_time[nlat, nlon] <- NA
+      na_mask_time[nlat, nlon] <- TRUE
       next
     }
 
@@ -176,6 +180,7 @@ for (nlat in seq_along(lat)) {
       percentage_seasonal_time[nlat, nlon] <- NA
       percentage_decadal_time[nlat, nlon] <- NA
       percentage_residual_time[nlat, nlon] <- NA
+      na_mask_time[nlat, nlon] <- TRUE
       next
     }
 
@@ -187,6 +192,7 @@ for (nlat in seq_along(lat)) {
       percentage_seasonal_time[nlat, nlon] <- NA
       percentage_decadal_time[nlat, nlon] <- NA
       percentage_residual_time[nlat, nlon] <- NA
+      na_mask_time[nlat, nlon] <- TRUE
       next
     }
 
@@ -272,6 +278,7 @@ for (nlat in seq_along(lat)) {
         percentage_seasonal_time[nlat, nlon] <- NA
         percentage_decadal_time[nlat, nlon] <- NA
         percentage_residual_time[nlat, nlon] <- NA
+        na_mask_time[nlat, nlon] <- TRUE
       }
     )
   }
@@ -304,10 +311,16 @@ var_residual <- ncvar_def("residual_percentage", "percent", list(dim_lat, dim_lo
   longname = "Percentage of Variance Explained by Residual Component"
 )
 
+# Define the NA mask variable
+var_na_mask <- ncvar_def("na_mask", "logical", list(dim_lat, dim_lon),
+  -9999,
+  longname = "NA Mask for Grid Points with Insufficient Data"
+)
+
 # Create the NetCDF file
 nc_file <- nc_create(
-  "4_outputs/data/td_time_decomposition.nc",
-  list(var_trend, var_seasonal, var_decadal, var_residual)
+  "4_outputs/data/mask.nc",
+  list(var_na_mask)
 )
 
 # Write the data to the NetCDF file
@@ -315,6 +328,7 @@ ncvar_put(nc_file, var_trend, percentage_trend_time)
 ncvar_put(nc_file, var_seasonal, percentage_seasonal_time)
 ncvar_put(nc_file, var_decadal, percentage_decadal_time)
 ncvar_put(nc_file, var_residual, percentage_residual_time)
+ncvar_put(nc_file, var_na_mask, na_mask_time)
 
 # Close the NetCDF file
 nc_close(nc_file)
