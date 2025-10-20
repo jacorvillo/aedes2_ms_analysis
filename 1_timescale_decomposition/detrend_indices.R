@@ -55,6 +55,9 @@ sasd <- sasd_north - sasd_south
 # Standardize the IOD, SIOD and SASD indices
 sasd <- (sasd - mean(sasd, na.rm = TRUE)) / sd(sasd, na.rm = TRUE)
 
+years <- 1951:2024
+months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
 # Format each index
 atl3_df <- format_index_data(atl3, years, months)
 iobm_df <- format_index_data(iobm, years, months)
@@ -67,7 +70,7 @@ tna_df <- format_index_data(tna, years, months)
 # Save each index with proper formatting
 write_formatted_index(atl3_df, "4_outputs/data/climate_indices/atl3.dat")
 write_formatted_index(iobm_df, "4_outputs/data/climate_indices/iobm.dat")
-write_formatted_index(nino34_df, "4_outputs/data/climate_indices/nino34.dat")
+write_formatted_index(nino34_df, "4_outputs/data/climate_indices/nino342.dat")
 write_formatted_index(npmm_df, "4_outputs/data/climate_indices/npmm.dat")
 write_formatted_index(spmm_df, "4_outputs/data/climate_indices/spmm.dat")
 write_formatted_index(sasd_df, "4_outputs/data/climate_indices/sasd.dat")

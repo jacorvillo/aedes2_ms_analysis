@@ -1,6 +1,6 @@
 # timescale_decomposition.R
 
-#' @description This script reads the R0 monthly data from the AeDES2's Monitoring System and
+#' @description This script reads the R0 monthly data from the AIMES and
 #' decomposes each individual grid point's time series into trend, seasonal, and decadal
 #' components, calculating the variance explained by each component and plotting the results on
 #' maps. The timescale decomposition is done in two different ways:
@@ -174,27 +174,8 @@ for (nlat in seq_along(lat)) {
       next
     }
 
-    if (n_valid < 24) {
-      # Less than 2 years of data - insufficient for STL
-      percentage_trend_time[nlat, nlon] <- NA
-      percentage_seasonal_time[nlat, nlon] <- NA
-      percentage_decadal_time[nlat, nlon] <- NA
-      percentage_residual_time[nlat, nlon] <- NA
-      na_mask_time[nlat, nlon] <- TRUE
-      next
-    }
-
-    # Check for reasonable seasonal coverage (at least 6 different months)
-    months_with_data <- unique((which(valid_indices) - 1) %% 12 + 1)
-    if (length(months_with_data) < 6) {
-      # Poor seasonal coverage - set outputs to NA
-      percentage_trend_time[nlat, nlon] <- NA
-      percentage_seasonal_time[nlat, nlon] <- NA
-      percentage_decadal_time[nlat, nlon] <- NA
-      percentage_residual_time[nlat, nlon] <- NA
-      na_mask_time[nlat, nlon] <- TRUE
-      next
-    }
+    # Make NA points be zero instead
+    signal <- ifelse(is.na(signal), 0, signal)
 
     # Create time series object for STL
     signal_ts <- ts(signal, frequency = 12, start = c(1951, 1))
@@ -311,27 +292,36 @@ var_residual <- ncvar_def("residual_percentage", "percent", list(dim_lat, dim_lo
   longname = "Percentage of Variance Explained by Residual Component"
 )
 
-# Define the NA mask variable
-var_na_mask <- ncvar_def("na_mask", "logical", list(dim_lat, dim_lon),
-  -9999,
-  longname = "NA Mask for Grid Points with Insufficient Data"
-)
+# # Define the NA mask variable
+# var_na_mask <- ncvar_def("na_mask", "logical", list(dim_lat, dim_lon),
+#   -9999,
+#   longname = "NA Mask for Grid Points with Insufficient Data"
+# )
 
-# Create the NetCDF file
-nc_file <- nc_create(
-  "4_outputs/data/mask.nc",
-  list(var_na_mask)
+# # Create the NetCDF file
+# nc_file <- nc_create(
+#   "4_outputs/data/timescale_decomposition/mask.nc",
+#   list(var_na_mask)
+# )
+
+# ncvar_put(nc_file, var_na_mask, na_mask_time)
+
+# # Close the NetCDF file
+# nc_close(nc_file)
+
+# Create the NetCDF file for the time-based TD
+nc_file_time <- nc_create(
+  "4_outputs/data/timescale_decomposition/td_time_decomposition.nc",
+  list(var_trend, var_seasonal, var_decadal, var_residual)
 )
 
 # Write the data to the NetCDF file
-ncvar_put(nc_file, var_trend, percentage_trend_time)
-ncvar_put(nc_file, var_seasonal, percentage_seasonal_time)
-ncvar_put(nc_file, var_decadal, percentage_decadal_time)
-ncvar_put(nc_file, var_residual, percentage_residual_time)
-ncvar_put(nc_file, var_na_mask, na_mask_time)
-
+ncvar_put(nc_file_time, var_trend, percentage_trend_time)
+ncvar_put(nc_file_time, var_seasonal, percentage_seasonal_time)
+ncvar_put(nc_file_time, var_decadal, percentage_decadal_time)
+ncvar_put(nc_file_time, var_residual, percentage_residual_time)
 # Close the NetCDF file
-nc_close(nc_file)
+nc_close(nc_file_time)
 
 # Save the Iquitos time series data to a NetCDF file
 # Define the dimensions (only time dimension is needed for the timeseries, months since 1951-01-01)
@@ -364,7 +354,7 @@ var_iquitos_residual <- ncvar_def("iquitos_residual", "units", list(dim_time),
 
 # Create the NetCDF file
 nc_file_iquitos <- nc_create(
-  "4_outputs/data/td_iquitos_timeseries.nc",
+  "4_outputs/data/timescale_decomposition/td_iquitos_timeseries.nc",
   list(var_iquitos_trend, var_iquitos_seasonal, var_iquitos_decadal, var_iquitos_residual)
 )
 
@@ -402,7 +392,7 @@ var_santa_fe_residual <- ncvar_def("santa_fe_residual", "units", list(dim_time),
 
 # Create the NetCDF file
 nc_file_santa_fe <- nc_create(
-  "4_outputs/data/td_santa_fe_timeseries.nc",
+  "4_outputs/data/timescale_decomposition/td_santa_fe_timeseries.nc",
   list(var_santa_fe_trend, var_santa_fe_seasonal, var_santa_fe_decadal, var_santa_fe_residual)
 )
 
@@ -415,9 +405,10 @@ ncvar_put(nc_file_santa_fe, var_santa_fe_residual, timeseries_time_residual_sant
 # Close the NetCDF file
 nc_close(nc_file_santa_fe)
 
-####################### Same analysis for a subset of the data (1961-2020) ############
+####################### Same analysis for a subset of the data (1961-1990) ############
 
-median_data <- apply(combined_data[481:840, , ], 1, median, na.rm = TRUE)
+# From January 1961 to December 1990
+median_data <- apply(combined_data[117:476, , ], 1, median, na.rm = TRUE)
 
 # LOESS analysis (finding optimal span for R0 vs time)
 
@@ -505,28 +496,11 @@ for (nlat in seq_along(lat)) {
       next
     }
 
-    if (n_valid < 24) {
-      # Less than 2 years of data - insufficient for STL
-      percentage_trend_time[nlat, nlon] <- NA
-      percentage_seasonal_time[nlat, nlon] <- NA
-      percentage_decadal_time[nlat, nlon] <- NA
-      percentage_residual_time[nlat, nlon] <- NA
-      next
-    }
-
-    # Check for reasonable seasonal coverage (at least 6 different months)
-    months_with_data <- unique((which(valid_indices) - 1) %% 12 + 1)
-    if (length(months_with_data) < 6) {
-      # Poor seasonal coverage - set outputs to NA
-      percentage_trend_time[nlat, nlon] <- NA
-      percentage_seasonal_time[nlat, nlon] <- NA
-      percentage_decadal_time[nlat, nlon] <- NA
-      percentage_residual_time[nlat, nlon] <- NA
-      next
-    }
+    # Make NA points be zero instead
+    signal <- ifelse(is.na(signal), 0, signal)
 
     # Create time series object for STL
-    signal_ts <- ts(signal, frequency = 12, start = c(1991, 1))
+    signal_ts <- ts(signal, frequency = 12, start = c(1951, 1))
 
     # Try STL decomposition
     tryCatch(
@@ -591,6 +565,148 @@ for (nlat in seq_along(lat)) {
         percentage_seasonal_time[nlat, nlon] <- NA
         percentage_decadal_time[nlat, nlon] <- NA
         percentage_residual_time[nlat, nlon] <- NA
+        na_mask_time[nlat, nlon] <- TRUE
+      }
+    )
+  }
+}
+
+
+dim_lat <- ncdim_def("lat", "degrees_north", lat)
+dim_lon <- ncdim_def("lon", "degrees_east", lon)
+
+# Define the variables for each component
+var_trend <- ncvar_def("trend_percentage", "percent", list(dim_lat, dim_lon),
+  -9999,
+  longname = "Percentage of Variance Explained by Trend"
+)
+
+var_seasonal <- ncvar_def("seasonal_percentage", "percent", list(dim_lat, dim_lon),
+  -9999,
+  longname = "Percentage of Variance Explained by Seasonal Component"
+)
+
+var_decadal <- ncvar_def("decadal_percentage", "percent", list(dim_lat, dim_lon),
+  -9999,
+  longname = "Percentage of Variance Explained by Decadal Component"
+)
+
+var_residual <- ncvar_def("residual_percentage", "percent", list(dim_lat, dim_lon),
+  -9999,
+  longname = "Percentage of Variance Explained by Residual Component"
+)
+
+
+# Create the NetCDF file
+nc_file <- nc_create(
+  "4_outputs/data/td_time_decomposition_1991_1990.nc",
+  list(var_trend, var_seasonal, var_decadal, var_residual)
+)
+
+# Write the data to the NetCDF file
+ncvar_put(nc_file, var_trend, percentage_trend_time)
+ncvar_put(nc_file, var_seasonal, percentage_seasonal_time)
+ncvar_put(nc_file, var_decadal, percentage_decadal_time)
+ncvar_put(nc_file, var_residual, percentage_residual_time)
+
+# Close the NetCDF file
+nc_close(nc_file)
+
+###########################################################################
+
+# From January 1991 to December 2020
+median_data <- apply(combined_data[477:836, , ], 1, median, na.rm = TRUE)
+
+for (nlat in seq_along(lat)) {
+  for (nlon in seq_along(lon)) {
+    cat("Processing grid point:", nlat, nlon, "for time-based TD\n")
+
+    # Extract the time series for the current grid point
+    signal <- combined_data[, nlat, nlon]
+
+    # Check for all NA or insufficient data
+    valid_indices <- !is.na(signal)
+    n_valid <- sum(valid_indices)
+
+    if (n_valid == 0) {
+      # All NAs - set outputs to NA
+      percentage_trend_time[nlat, nlon] <- NA
+      percentage_seasonal_time[nlat, nlon] <- NA
+      percentage_decadal_time[nlat, nlon] <- NA
+      percentage_residual_time[nlat, nlon] <- NA
+      next
+    }
+
+    # Make NA points be zero instead
+    signal <- ifelse(is.na(signal), 0, signal)
+
+    # Create time series object for STL
+    signal_ts <- ts(signal, frequency = 12, start = c(1951, 1))
+
+    # Try STL decomposition
+    tryCatch(
+      {
+        components <- stl(signal_ts, s.window = "per", t.window = optimal_span, na.action = na.exclude)
+
+        # For Butterworth filtering, use interpolation if there are NAs
+        residual_signal <- components$time.series[, 3]
+
+        if (any(is.na(residual_signal))) {
+          # Interpolate NAs for Butterworth filter
+          residual_signal <- na.approx(residual_signal, na.rm = FALSE)
+        }
+
+        # Apply Butterworth filter to extract decadal component
+        bf <- butter(2, 1 / 120, type = "low")
+        decadal <- filtfilt(bf, residual_signal)
+
+        # Remove the decadal component from the original residual
+        residual <- components$time.series[, 3] - decadal
+
+        # Calculate variance explained by each component (only on valid original data)
+        original_valid <- signal[valid_indices]
+        trend_var <- var(components$time.series[valid_indices, 2], na.rm = TRUE)
+        seasonal_var <- var(components$time.series[valid_indices, 1], na.rm = TRUE)
+        decadal_var <- var(decadal[valid_indices], na.rm = TRUE)
+        residual_var <- var(residual[valid_indices], na.rm = TRUE)
+        total_var <- var(original_valid, na.rm = TRUE)
+
+        if (is.na(total_var) || total_var <= 0) {
+          # No variance - set all to NA
+          percentage_trend_time[nlat, nlon] <- NA
+          percentage_seasonal_time[nlat, nlon] <- NA
+          percentage_decadal_time[nlat, nlon] <- NA
+          percentage_residual_time[nlat, nlon] <- NA
+        } else {
+          # Calculate percentages
+          pct_trend <- trend_var / total_var * 100
+          pct_seasonal <- seasonal_var / total_var * 100
+          pct_decadal <- decadal_var / total_var * 100
+          pct_residual <- residual_var / total_var * 100
+
+          # Ensure percentages sum to 100% (handle numerical precision issues)
+          total_pct <- pct_trend + pct_seasonal + pct_decadal + pct_residual
+          if (!is.na(total_pct) && total_pct > 0) {
+            pct_trend <- pct_trend / total_pct * 100
+            pct_seasonal <- pct_seasonal / total_pct * 100
+            pct_decadal <- pct_decadal / total_pct * 100
+            pct_residual <- pct_residual / total_pct * 100
+          }
+
+          percentage_trend_time[nlat, nlon] <- pct_trend
+          percentage_seasonal_time[nlat, nlon] <- pct_seasonal
+          percentage_decadal_time[nlat, nlon] <- pct_decadal
+          percentage_residual_time[nlat, nlon] <- pct_residual
+        }
+      },
+      error = function(e) {
+        # STL failed - set all to NA
+        cat("STL failed for grid point", nlat, nlon, ":", e$message, "\n")
+        percentage_trend_time[nlat, nlon] <- NA
+        percentage_seasonal_time[nlat, nlon] <- NA
+        percentage_decadal_time[nlat, nlon] <- NA
+        percentage_residual_time[nlat, nlon] <- NA
+        na_mask_time[nlat, nlon] <- TRUE
       }
     )
   }
@@ -637,12 +753,14 @@ ncvar_put(nc_file, var_residual, percentage_residual_time)
 # Close the NetCDF file
 nc_close(nc_file)
 
+
 ####################### Temperature-based detrending ##################################
 
 # Load the detrended temperature signal:
 
 ncfile <- nc_open("4_outputs/data/detrended_vars/detrended_tas_1d.nc")
 detrended_temps <- ncvar_get(ncfile, "detrended_temps")
+nc_close(ncfile)
 # Create a data frame with the temperature signal and the R0 data
 r_nought_vs_temp_df <- data.frame(
   r_nought = median_data,
@@ -717,12 +835,6 @@ for (nlat in seq_along(lat)) {
       next
     }
 
-    if (n_valid < 12) {
-      # Less than 1 year of data - insufficient for LOESS
-      detrended_signal[, nlat, nlon] <- NA
-      next
-    }
-
     # Try LOESS detrending
     tryCatch(
       {
@@ -733,7 +845,7 @@ for (nlat in seq_along(lat)) {
           valid_signal <- signal[valid_indices]
 
           # Fit LOESS model only on valid data
-          model <- loess(valid_signal ~ valid_temps, span = optimal_span / 504)
+          model <- loess(valid_signal ~ valid_temps, span = optimal_span / 888)
 
           # Predict for all time points (including those with NA signal)
           trend_full <- rep(NA, length(signal))
@@ -751,7 +863,7 @@ for (nlat in seq_along(lat)) {
           detrended_signal[, nlat, nlon] <- detrended_result
         } else {
           # No NAs in signal - use original approach
-          model <- loess(signal ~ detrended_temps, span = optimal_span / 504)
+          model <- loess(signal ~ detrended_temps, span = optimal_span / 888)
           trend <- predict(model)
           detrended_signal[, nlat, nlon] <- signal - trend
         }

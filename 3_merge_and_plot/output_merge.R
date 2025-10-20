@@ -5,7 +5,7 @@
 #' and also for the whole time series.
 
 # Source the R functions
-source("0_data_and_functions/functions/r_functions.r")
+source("0_data_and_functions/functions/r_functions.R")
 
 # Load the necessary libraries
 library(ncdf4)

@@ -81,9 +81,9 @@ yr = np.arange(0, 219)
 
 list_indexes = [index_nino, index_atl3, index_tna, index_iobm, index_npmm, index_spmm, index_sasd]
 
-title_strings = ["Niño3.4 Index", "ATL3 Index", "TNA Index", "IOBM Index", "NPMM Index", "SPMM Index", "SASD Index"]
+title_strings = ["ATL3 Index", "IOBM Index", "Niño3.4 Index",  "NPMM Index", "SPMM Index", "SASD Index", "TNA Index"]
 
-fileout_cmvs = ["index_seasons_nino", "index_seasons_atl3", "index_seasons_tna", "index_seasons_iobm", "index_seasons_npmm", "index_seasons_spmm", "index_seasons_sasd"]
+fileout_cmvs = ["index_seasons_atl3", "index_seasons_iobm", "index_seasons_nino", "index_seasons_npmm", "index_seasons_spmm", "index_seasons_sasd", "index_seasons_tna"]
 
 # Configure matrices to store the slope and confidence intervals for each CVM in the linear regression
 matrix_slope = np.zeros((7, 4))
@@ -180,8 +180,7 @@ plt.close("all")
 
 #----------- Correlation Analysis between CVMs and Global data ----------------------------------------
 
-# indices = ["ATL3", "IOBM", "Niño 3.4", "NPMM", "SASD", "SPMM", "TNA"]
-indices = ["Niño3.4"]
+indices = ["ATL3", "IOBM", "Niño3.4", "NPMM", "SASD", "SPMM", "TNA"]
 
 global_data = xr.open_dataset("4_outputs/data/detrended_vars/detrended_r_nought_data.nc")
 datasets = {
@@ -191,11 +190,12 @@ datasets = {
 # Dictionary to store processed data
 processed_detrended_data = {}
 
-processed_detrended_data["Global"] = {}
-processed_detrended_data["Global"]["DJF"] = np.array(global_data.sel(time=global_data.time.dt.season == "DJF").detrended_data)
-processed_detrended_data["Global"]["MAM"] = np.array(global_data.sel(time=global_data.time.dt.season == "MAM").detrended_data)
-processed_detrended_data["Global"]["JJA"] = np.array(global_data.sel(time=global_data.time.dt.season == "JJA").detrended_data)
-processed_detrended_data["Global"]["SON"] = np.array(global_data.sel(time=global_data.time.dt.season == "SON").detrended_data)
+# Process each dataset
+for region, dataset in datasets.items():
+  processed_detrended_data[region] = {
+    season: process_seasonal(global_data, season)
+    for season in ["DJF", "MAM", "JJA", "SON"]
+  }
 
 global_detrended_dict = {"Global": processed_detrended_data["Global"]}
 

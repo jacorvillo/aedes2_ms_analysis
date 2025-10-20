@@ -229,7 +229,7 @@ yearly_df <- data.frame(
 p1 <- ggplot(data = monthly_df, aes(x = time, y = median_data)) +
   geom_line(
     color = "blue",
-    aes(linetype = "AeDES2 Observational Ensemble (Era5 + Era5Land + CPC Unfied Global + GHCN-CAMS)")
+    aes(linetype = "AIMES Observational Ensemble (Era5 + Era5Land + CPC Unfied Global + GHCN-CAMS)")
   ) +
   geom_line(aes(y = smoothed_data, linetype = " "),
     color = "red", size = 1
@@ -257,7 +257,7 @@ p1 <- ggplot(data = monthly_df, aes(x = time, y = median_data)) +
 p2 <- ggplot(data = yearly_df, aes(x = time, y = median_data)) +
   geom_line(
     color = "blue",
-    aes(linetype = "AeDES2 Observational Ensemble (Era5 + Era5Land + CPC Unfied Global + GHCN-CAMS)")
+    aes(linetype = "AIMES Observational Ensemble (Era5 + Era5Land + CPC Unfied Global + GHCN-CAMS)")
   ) +
   geom_line(aes(
     x = time, y = smoothed_data,

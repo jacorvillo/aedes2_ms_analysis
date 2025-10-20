@@ -684,6 +684,15 @@ def plot_variance_maps(variance_file='4_outputs/data/timescale_decomposition/td_
     lon_iquitos = -73.25
     lat_santa_fe = -31.25
     lon_santa_fe = -60.25
+
+    mask = xr.open_dataset("4_outputs/data/mask.nc")
+
+    # Apply the mask to the correlation datasets
+    # Transpose mask to match data coordinate order (lat, lon) and convert 1s to NaN (inverse mask)
+    mask_array = mask.na_mask.transpose('lat', 'lon')
+
+    # Convert True to NaN and False to 1 in the mask array
+    mask_array = mask_array.where(mask_array == False, other=float('nan')).where(mask_array == True, other=1)
     
     # Create figure with 2x2 layout
     fig = plt.figure(figsize=figsize)
@@ -710,8 +719,11 @@ def plot_variance_maps(variance_file='4_outputs/data/timescale_decomposition/td_
         
         # Get the data
         data = variance_ds[var_name]
+
+        data = data * mask_array  # Apply the mask
+
         # Create the plot
-        im = ax.contourf(data.lon, data.lat, data.T, 
+        im = ax.contourf(data.lon, data.lat, data.values.T, 
                         levels=np.linspace(0, 100, 100),  # Fixed levels from 0 to 100
                         cmap=cmap, extend='neither',
                         transform=ccrs.PlateCarree())
@@ -776,14 +788,14 @@ def plot_timeseries_comparison(iquitos_file='4_outputs/data/timescale_decomposit
     # Plot Iquitos timeseries (top subplot)
     # Calculate R0 (raw) as sum of all components
     r0_raw_iquitos = (iquitos_ds.iquitos_trend + iquitos_ds.iquitos_seasonal + 
-                     iquitos_ds.iquitos_decadal + iquitos_ds.iquitos_remainder)
+                     iquitos_ds.iquitos_decadal + iquitos_ds.iquitos_residual)
     
     # Plot all components
     ax1.plot(iquitos_ds.time, r0_raw_iquitos, 'k-', linewidth=0.8, label='Raw', alpha=0.7)
     ax1.plot(iquitos_ds.time, iquitos_ds.iquitos_trend, 'r-', linewidth=2, label='Trend')
     ax1.plot(iquitos_ds.time, iquitos_ds.iquitos_seasonal, 'g-', linewidth=1.5, label='Seasonal')
     ax1.plot(iquitos_ds.time, iquitos_ds.iquitos_decadal, 'b-', linewidth=1.5, label='Decadal')
-    ax1.plot(iquitos_ds.time, iquitos_ds.iquitos_remainder, color='purple', linewidth=1, 
+    ax1.plot(iquitos_ds.time, iquitos_ds.iquitos_residual, color='purple', linewidth=1, 
              label='Residual', alpha=0.8)
     
     # Set labels and title for Iquitos
@@ -796,7 +808,7 @@ def plot_timeseries_comparison(iquitos_file='4_outputs/data/timescale_decomposit
     # Set y-axis limits for Iquitos
     y_min_iq = min(r0_raw_iquitos.min(), iquitos_ds.iquitos_trend.min(), 
                    iquitos_ds.iquitos_seasonal.min(), iquitos_ds.iquitos_decadal.min(),
-                   iquitos_ds.iquitos_remainder.min()) - 0.5
+                   iquitos_ds.iquitos_residual.min()) - 0.5
     y_max_iq = max(r0_raw_iquitos.max(), iquitos_ds.iquitos_trend.max()) + 0.5
     ax1.set_ylim(y_min_iq, y_max_iq)
     
@@ -874,8 +886,8 @@ def plot_combined_figure(variance_file='4_outputs/data/timescale_decomposition/t
     
     return None
    
-def plot_climatology_comparison(file_1961_1990='4_outputs/data/td_time_decomposition_1961_1990.nc',
-                               file_1991_2020='4_outputs/data/td_time_decomposition_1991_2020.nc',
+def plot_climatology_comparison(file_1961_1990='4_outputs/data/timescale_decomposition/td_time_decomposition_1961_1990.nc',
+                               file_1991_2020='4_outputs/data/timescale_decomposition/td_time_decomposition_1991_2020.nc',
                                output_file='4_outputs/figures/timescale_decomposition_climatology_comparison.png',
                                figsize=(20, 10)):
     """
@@ -905,6 +917,15 @@ def plot_climatology_comparison(file_1961_1990='4_outputs/data/td_time_decomposi
     
     # Use inferno colormap
     cmap = plt.cm.inferno
+
+    mask = xr.open_dataset("4_outputs/data/mask.nc")
+
+    # Apply the mask to the correlation datasets
+    # Transpose mask to match data coordinate order (lat, lon) and convert 1s to NaN (inverse mask)
+    mask_array = mask.na_mask.transpose('lat', 'lon')
+
+    # Convert True to NaN and False to 1 in the mask array
+    mask_array = mask_array.where(mask_array == False, other=float('nan')).where(mask_array == True, other=1)
     
     # Define subplot positions for each component
     positions = [(0, 0), (0, 1), (0, 2)]  # First row
@@ -915,10 +936,10 @@ def plot_climatology_comparison(file_1961_1990='4_outputs/data/td_time_decomposi
         ax = fig.add_subplot(gs[row, col], projection=ccrs.PlateCarree())
         
         # Get the data
-        data = ds_1961_1990[var_name]
+        data = ds_1961_1990[var_name] * mask_array  # Apply the mask
         
         # Create the plot
-        im = ax.contourf(data.lon, data.lat, data.T, 
+        im = ax.contourf(data.lon, data.lat, data.values.T, 
                         levels=np.linspace(0, 100, 100),  # Fixed levels from 0 to 100
                         cmap=cmap, extend='neither',
                         transform=ccrs.PlateCarree())
@@ -951,7 +972,7 @@ def plot_climatology_comparison(file_1961_1990='4_outputs/data/td_time_decomposi
         data = ds_1991_2020[var_name]
         
         # Create the plot
-        im = ax.contourf(data.lon, data.lat, data.T, 
+        im = ax.contourf(data.lon, data.lat, data.values.T, 
                         levels=np.linspace(0, 100, 100),  # Fixed levels from 0 to 100
                         cmap=cmap, extend='neither',
                         transform=ccrs.PlateCarree())
